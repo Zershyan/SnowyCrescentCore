@@ -11,10 +11,20 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * The final serialization, deserialization, and retrieval methods of capability
+ * @param <C> extends {@link ICapabilitySync}
+ */
 @AutoRegisterCapability
 public class PlayerCapabilityProvider<C extends ICapabilitySync<?>> implements ICapabilitySerializable<CompoundTag> {
     private final C instance;
     private final ResourceLocation resourceLocation;
+
+    /**
+     * Constructor
+     * @param resourceLocation key
+     * @param instance instance
+     */
     public PlayerCapabilityProvider(ResourceLocation resourceLocation, C instance) {
         this.resourceLocation = resourceLocation;
         this.instance = instance;

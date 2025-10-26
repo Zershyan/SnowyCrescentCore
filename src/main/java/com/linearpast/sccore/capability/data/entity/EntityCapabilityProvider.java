@@ -13,13 +13,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * cap的最终 序列化、反序列化、获取方法
- * @param <C> 继承 {@link ICapabilitySync}
+ * The final serialization, deserialization, and retrieval methods of capability
+ * @param <C> extends {@link ICapabilitySync}
  */
 @AutoRegisterCapability
 public class EntityCapabilityProvider<C extends ICapabilitySync<? extends Entity>> implements ICapabilitySerializable<CompoundTag> {
     private final C instance;
     private final ResourceLocation resourceLocation;
+
+    /**
+     * Constructor
+     * @param resourceLocation key
+     * @param instance instance
+     */
     public EntityCapabilityProvider(ResourceLocation resourceLocation, C instance) {
         this.resourceLocation = resourceLocation;
         this.instance = instance;

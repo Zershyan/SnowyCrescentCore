@@ -1,23 +1,25 @@
 package com.linearpast.sccore.capability.data;
 
 import com.linearpast.sccore.capability.network.SimpleCapabilityPacket;
-import com.linearpast.sccore.network.Channel;
+import com.linearpast.sccore.core.ModChannel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public interface ICapabilitySync<T extends Entity> extends INBTSerializable<CompoundTag> {
+    /**
+     * You should call it to set it to true in the setter of each property to trigger automatic synchronization
+     * @param dirty dirty
+     */
     void setDirty(boolean dirty);
+
     boolean isDirty();
 
-    CompoundTag toTag(CompoundTag tag);
-    void fromTag(CompoundTag tag);
-
     /**
-     * 该方法重写时应该在最后调用super方法
-     * @param oldData 旧数据
-     * @param listenDone 最后是否执行完成方法 {@link ICapabilitySync#onCopyDone()}
+     * When this method is overridden, the super method should be called at the end
+     * @param oldData old data
+     * @param listenDone Whether to execute the completion method at the end: {@link ICapabilitySync#onCopyDone()}
      */
     default void copyFrom(ICapabilitySync<?> oldData, boolean listenDone) {
         this.setDirty(oldData.isDirty());
@@ -25,40 +27,40 @@ public interface ICapabilitySync<T extends Entity> extends INBTSerializable<Comp
     }
 
     /**
-     * 当copy结束之后，如果某些值需要被重定义，你应该重写这个方法 <br>
-     * 多用于玩家 跨越维度/死亡 时重置数据
+     * After the copy is completed, if certain values need to be redefined, you should override this method <br>
+     * Commonly used for resetting data when players cross dimensions or die
      */
     default void onCopyDone(){}
 
     /**
-     * 一般情况下建议重写，否则会以sccore的Channel实例发送<br>
-     * 服务端给全体玩家发送客户端同步数据
+     * In general, it is recommended to rewrite it, otherwise it will be sent as a Channel instance of SCCore<br>
+     * The server sends client synchronized data to all players
      */
     default void sendToClient(){
-        Channel.sendAllPlayer(getDefaultPacket());
+        ModChannel.sendAllPlayer(getDefaultPacket());
     }
 
     /**
-     * 一般情况下建议重写，否则会以sccore的Channel实例发送<br>
-     * 服务端给单个玩家发送客户端同步数据
-     * @param player 发送给的目标玩家
+     * In general, it is recommended to rewrite it, otherwise it will be sent as a Channel instance of SCCore<br>
+     * The server sends client synchronized data to a single player
+     * @param player Target player
      */
     default void sendToClient(ServerPlayer player){
-        Channel.sendToPlayer(getDefaultPacket(), player);
+        ModChannel.sendToPlayer(getDefaultPacket(), player);
     }
 
     /**
-     * 重写该方法为你的Capability设定一个网络包类，目前仅有客户端 <br>
-     * 当调用sendToClient方法时会从这里获取网络包直接发送 <br>
-     * 一般情况下，你应该extends SimpleCapabilityPacket然后重写该方法返回你的子类
-     * @return 网络包类SimpleCapabilityPacket
+     * Rewrite this method to set a network packet class for your Capability <br>
+     * When calling the sendToClient method, network packets will be obtained from here and sent directly <br>
+     * In general, you should extend SimpleCapacityPackage and then override the method to return your subclass
+     * @return SimpleCapacityPacket, a network packet class
      */
     SimpleCapabilityPacket<T> getDefaultPacket();
 
     /**
-     * 当玩家登录 / 实体加入世界时的cao初始化时会调用 <br>
-     * 必须实现，但可为空方法
-     * @param entity 目标
+     * When players log in or entity join the world, the capability initialization will be called <br>
+     * Must be implemented, but can be an empty method
+     * @param entity Target
      */
     void attachInit(T entity);
 }

@@ -12,10 +12,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 
 public class EntityCapabilityRemainder {
     /**
-     * 玩家追踪实体事件<br>
-     * 当有其他实体被加载时，客户端需要对方的capability，该事件可以主动发送<br>
-     * 会调用{@link ICapabilitySync#sendToClient(ServerPlayer)}
-     * @param event 追踪事件实例
+     * Player start tracking an entity event<br>
+     * When other entities are loaded, the client requires the capabilities of the other party, and this event can be actively sent<br>
+     * Will call{@link ICapabilitySync#sendToClient(ServerPlayer)}
+     * @param event event
      */
     public static void onEntityBeTracked(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer attacker) {
@@ -28,10 +28,10 @@ public class EntityCapabilityRemainder {
     }
 
     /**
-     * 实体Tick事件<br>
-     * 如果capability是dirty的，就会调用{@link ICapabilitySync#sendToClient()} <br>
-     * 为了性能，每秒才触发一次同步
-     * @param event 事件实例
+     * Entity Tick Event<br>
+     * If the capability is dirty, it will call {@link ICapabilitySync#sendToClient()} <br>
+     * For performance reasons, synchronization is only triggered once per second
+     * @param event event
      */
     public static void capabilitySync(LivingEvent.LivingTickEvent event) {
         LivingEntity entity = event.getEntity();
@@ -50,8 +50,8 @@ public class EntityCapabilityRemainder {
     }
 
     /**
-     * 实体加入level的事件，初始化
-     * @param event 实体加入事件
+     * Event of entity joining level, initialization
+     * @param event event
      */
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();

@@ -1,4 +1,4 @@
-package com.linearpast.sccore.example.cap;
+package com.linearpast.sccore.example.capability.data;
 
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.capability.CapabilityUtils;
@@ -8,56 +8,61 @@ import com.linearpast.sccore.capability.network.SimpleCapabilityPacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Sheep;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 /**
- * cap的实体类 <br>
- * 继承SimpleEntityCapabilitySync意味着自动托管一个id的同步 <br>
- * 实现的IsheepData仅含有属性value的getter和setter <br>
+ * The entity class of cap <br>
+ * Inheriting SimpleElementCapability Sync means automatically hosting synchronization of an ID <br>
+ * The IsheepData implemented only contains the property 'value' as a getter and setter <br>
+ * @see SimpleEntityCapabilitySync
  */
 public class SheepDataCapability extends SimpleEntityCapabilitySync<Sheep> implements ISheepData {
-    //代表cap的key，注册、获取时都需要它
     public static final ResourceLocation key = new ResourceLocation(SnowyCrescentCore.MODID, "sheep_data");
 
-    //只是为了统一管理(反)序列化时的keyName
     public static final String Value = "Value";
 
-    //最后附加到实体实例变量
     private Integer value;
 
-    //getter
     @Override
     public Integer getValue() {
         return value;
     }
 
-    //setter
     @Override
     public void setValue(Integer value) {
         this.value = value;
         setDirty(true);
     }
 
-    //在SimpleEntityCapabilitySync的serializeNBT方法中会调用
-    //实际上相当于serializeNBT
+    /**
+     * @param tag data tag
+     * @return tag
+     * @see SimpleEntityCapabilitySync#toTag(CompoundTag)
+     */
     @Override
     public CompoundTag toTag(CompoundTag tag) {
         if(value != null) tag.putInt(Value, value);
         return tag;
     }
 
-    //在SimpleEntityCapabilitySync的deserializeNBT方法中会调用
-    //实际上相当于deserializeNBT
+    /**
+     * @see SimpleEntityCapabilitySync#fromTag(CompoundTag)
+     * @param tag data tag
+     */
     @Override
     public void fromTag(CompoundTag tag) {
         this.value = null;
         if(tag.contains(Value)) this.value = tag.getInt(Value);
     }
 
-    //从旧实例中复制数据到新实例的方法
+    /**
+     * @see SimpleEntityCapabilitySync#copyFrom(ICapabilitySync)
+     * @param oldData Copy from this data to the current instance
+     */
     @Override
     public void copyFrom(ICapabilitySync<?> oldData) {
         SheepDataCapability data = (SheepDataCapability) oldData;
@@ -65,43 +70,54 @@ public class SheepDataCapability extends SimpleEntityCapabilitySync<Sheep> imple
     }
 
     /**
-     * 网络包，你可以在里面重写任意方法，关于方法的作用请参阅<br>
+     * Network packet, you can rewrite any method inside. For the function of methods, please refer to<br>
      * {@link com.linearpast.sccore.capability.network.ICapabilityPacket} <br>
-     * 可以不写在内部类中，作者是觉得它内容太少，写里面显得更紧凑美观
+     * It is not necessary to include it in the internal class. I feel that the content is too limited and writing it inside makes it more compact and beautiful
+     * @see SimpleCapabilityPacket
      */
     public static class SheepCapabilityPacket extends SimpleCapabilityPacket<Sheep> {
-        //网络包构造方法
         public SheepCapabilityPacket(CompoundTag data) {
             super(data);
         }
 
-        //这实际上是decoder
         public SheepCapabilityPacket(FriendlyByteBuf buf) {
             super(buf);
         }
 
-        //仅用在网络包内部的getCap
         @Override
         public @Nullable SheepDataCapability getCapability(Sheep entity) {
             return SheepDataCapability.getCapability(entity).orElse(null);
         }
     }
 
-    //获取默认网络包，会在sendToClient的时候调用以发送
+    /**
+     * Get the default network packet, which will be called when sendToClient sends it
+     * @return network packet
+     * @see ICapabilitySync#getDefaultPacket()
+     */
     @Override
     public SimpleCapabilityPacket<Sheep> getDefaultPacket() {
         return new SheepCapabilityPacket(serializeNBT());
     }
 
-    //该方法会在cap初始化时调用，比如玩家登录
-    //该例中，当羊加入level时会调用该方法以初始化cap
+    /**
+     * This method will be called during cap initialization, such as player login <br>
+     * In this example, when the sheep joins the level, this method will be called to initialize the capability
+     * @param entity Target
+     * @see ICapabilitySync#attachInit(Entity)
+     */
     @Override
     public void attachInit(Sheep entity) {
 
     }
 
-    //在其他地方需要用到cap的时候调用这个
-    //目的是为了简化cap utils的方法
+    /**
+     * It is not necessary. <br>
+     * Call this when capability is needed in other places <br>
+     * The purpose is to simplify the method of capability get
+     * @param sheep Target
+     * @return Optional capability
+     */
     public static Optional<SheepDataCapability> getCapability(Sheep sheep){
         return Optional.ofNullable(CapabilityUtils.getEntityCapability(
                 sheep, SheepDataCapability.key, SheepDataCapability.class

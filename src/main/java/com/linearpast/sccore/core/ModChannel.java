@@ -1,4 +1,4 @@
-package com.linearpast.sccore.network;
+package com.linearpast.sccore.core;
 
 import com.linearpast.sccore.SnowyCrescentCore;
 import net.minecraft.resources.ResourceLocation;
@@ -8,8 +8,8 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-public class Channel {
-    public static int cid = 0;
+public class ModChannel {
+    private static int cid = 0;
     private static final String PROTOCOL_VERSION = ModList.get()
             .getModContainerById(SnowyCrescentCore.MODID)
             .map(c -> c.getModInfo().getVersion().toString())
@@ -25,12 +25,8 @@ public class Channel {
 
     }
 
-    public static int getCid() {
-        return cid;
-    }
-
-    public static void setCid(int cid) {
-        Channel.cid = cid;
+    public static int getAndAddCid() {
+        return cid++;
     }
 
     public static <MSG> void sendAllPlayer(MSG message){

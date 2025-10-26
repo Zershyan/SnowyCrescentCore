@@ -13,19 +13,18 @@ public class PlayerCapabilityRegistry {
     private final Map<ResourceLocation, CapabilityRecord<?>> capabilityRecordMap = new HashMap<>();
 
     /**
-     * 通过此方法注册capability，仅当 {@link net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent}
-     * 事件结束之前有效
-     * @param key capability的唯一name
-     * @param capabilityRecord 使用record存储了应该注册的capability的各项数据，参阅：{@link CapabilityRecord}
+     * Registering player capabilities through this method only applies to {@link net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent}<br>
+     * @param key The unique name of capability.
+     * @param capabilityRecord Record is used to store various data of the capabilities that should be registered, refer to: {@link PlayerCapabilityRegistry.CapabilityRecord}
      */
     public static void registerCapability(ResourceLocation key, CapabilityRecord<?> capabilityRecord) {
         CAPABILITIES.capabilityRecordMap.put(key, capabilityRecord);
     }
 
     /**
-     * 通过此方法获取对应的capability数据
-     * @param key 根据key获取
-     * @return capability 数据
+     * Obtain corresponding capability data through this method
+     * @param key Obtain based on key
+     * @return capability
      */
     public static CapabilityRecord<?> getCapabilityRecord(ResourceLocation key){
         return CAPABILITIES.capabilityRecordMap.get(key);
@@ -36,10 +35,10 @@ public class PlayerCapabilityRegistry {
     }
 
     /**
-     * 记录capability的注册数据
-     * @param aClass 最终会附加给玩家的实例，应该是ICapabilitySync的实例
-     * @param capability 一般情况下不需要初始化它，默认：CapabilityManager.get(new CapabilityToken<>(){})
-     * @param interfaceClass instance实例对应的接口类，比如ICapabilitySync.class
+     * Record the registration data of capability
+     * @param aClass The instance that will ultimately be attached to the player. Should be an instance of ICapabilitySync
+     * @param capability In general, it is not necessary to initialize it, default: <span>{@code CapabilityManager.get(new CapabilityToken<>(){})}</span>
+     * @param interfaceClass The interface class corresponding to the instance, such as: ICapabilitySync.class.
      */
     public record CapabilityRecord<T extends ICapabilitySync<? extends Player>>(Class<?> aClass, Capability<T> capability, Class<T> interfaceClass) {    }
 }

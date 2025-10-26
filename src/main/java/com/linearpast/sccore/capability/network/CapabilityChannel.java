@@ -10,31 +10,32 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * 在Mod主类构造方法逻辑中调用createChannel，有两种：<br>
+ * Call createChannel in the Mod main class construction method logic. There are two ways:<br>
  * <pre>
  * 1. {@link com.linearpast.sccore.capability.CapabilityUtils#createChannel(SimpleChannel)}
- * 若如此做，则必须重写Cap实体类中的所有sendToPlayer方法，并在重写中调用使用你的Channel
+ * If you do this, you must override all the sendToPlayer methods in the Capability class, and call your Channel in the override
  * </pre>
  * <pre>
  * 2. {@link com.linearpast.sccore.capability.CapabilityUtils#createChannel()}
- * 若如此做，则网络包会以SnowyCrescentCore的Channel注册
+ * If this is done, the network package will be registered with SCCore's Channel
  * </pre>
- * 所添加的网络包必须实现ICapabilityPacket接口
+ * The added network packet must implement the ICapabilityPacket interface
  */
 public class CapabilityChannel {
     private final SimpleChannel channel;
+
     public CapabilityChannel(SimpleChannel channel) {
         this.channel = channel;
     }
 
     /**
-     * 通过此方法预设添加一个网络包，等待实例register
-     * @param clazz 网络包类
-     * @param cid 索引
-     * @param decoder 解码器
-     * @param encoder 编码器
-     * @param handler 句柄
-     * @param <T> 网络包接口
+     * Add a network packet through this method and register
+     * @param clazz Network packet class
+     * @param cid index
+     * @param decoder decoder
+     * @param encoder encoder
+     * @param handler handler
+     * @param <T> extend {@code ICapabilityPacket<?>}
      */
     public <T extends ICapabilityPacket<?>> void register(
             Class<T> clazz,

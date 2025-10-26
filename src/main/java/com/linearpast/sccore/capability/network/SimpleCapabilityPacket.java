@@ -13,19 +13,35 @@ import net.minecraftforge.network.NetworkEvent;
 public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapabilityPacket<T> {
     private final CompoundTag data;
 
+    /**
+     * Constructor
+     * @param data data tag
+     */
     public SimpleCapabilityPacket(CompoundTag data) {
         this.data = data;
     }
 
+    /**
+     * decoder
+     * @param buf buf
+     */
     public SimpleCapabilityPacket(FriendlyByteBuf buf) {
         this.data = buf.readNbt();
     }
 
+    /**
+     * encoder
+     * @param buf buf
+     */
     @Override
     public void encode(FriendlyByteBuf buf) {
         buf.writeNbt(data);
     }
 
+    /**
+     * Default network packet handle, generally sufficient for use
+     * @param context NetworkEvent.Context
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void handler(NetworkEvent.Context context) {
@@ -43,7 +59,7 @@ public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapab
         }
         if(entity == null) return;
         try {
-            ICapabilitySync data = getCapability((T) entity);
+            ICapabilitySync<?> data = getCapability((T) entity);
             syncData(nbt, data);
         }catch (Exception ignored) {}
     }

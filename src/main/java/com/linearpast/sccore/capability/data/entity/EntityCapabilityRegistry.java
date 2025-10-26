@@ -7,46 +7,47 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class EntityCapabilityRegistry {
     public static final EntityCapabilityRegistry CAPABILITIES = new EntityCapabilityRegistry();
     private final Map<ResourceLocation, CapabilityRecord<?>> capabilityRecordMap = new HashMap<>();
 
     /**
-     * 通过此方法注册capability，仅当 {@link net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent}
-     * 事件结束之前有效
-     * @param key capability的唯一name
-     * @param capabilityRecord 使用record存储了应该注册的capability的各项数据，参阅：{@link CapabilityRecord}
+     * Registering entity capabilities through this method only applies to {@link net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent}<br>
+     * @param key The unique name of capability.
+     * @param capabilityRecord Record is used to store various data of the capabilities that should be registered, refer to: {@link EntityCapabilityRegistry.CapabilityRecord}
      */
     public static void registerCapability(ResourceLocation key, CapabilityRecord<?> capabilityRecord) {
         CAPABILITIES.capabilityRecordMap.put(key, capabilityRecord);
     }
 
     /**
-     * 通过此方法获取对应的capability数据
-     * @param key 根据key获取
-     * @return capability 数据
+     * Obtain corresponding capability data through this method
+     * @param key Obtain based on key
+     * @return capability
      */
     public static CapabilityRecord<?> getCapabilityRecord(ResourceLocation key){
         return CAPABILITIES.capabilityRecordMap.get(key);
     }
 
-    /**
-     * 获取所有key对应的cap数据集
-     * @return map
-     */
     public static Map<ResourceLocation, CapabilityRecord<?>> getCapabilityMap(){
         return CAPABILITIES.capabilityRecordMap;
     }
 
     /**
-     * 记录capability的注册数据
-     * @param aClass 最终会附加给实体的实例的类，应该是实现了clazz的类
-     * @param capability 注册时一般默认{@code CapabilityManager.get(new CapabilityToken<>(){})}即可
-     * @param interfaceClass instance类对应的实例对应的接口类，比如ICapabilitySync.class
-     * @param target capability附加的目标类型
+     * Record the registration data of capability
+     * @param aClass The instance that will ultimately be attached to the entity. Should be an instance of ICapabilitySync
+     * @param capability In general, it is not necessary to initialize it, default: <span>{@code CapabilityManager.get(new CapabilityToken<>(){})}</span>
+     * @param interfaceClass The interface class corresponding to the instance, such as: ICapabilitySync.class.
+     * @param targets Targets types attached to capability
      */
-    public record CapabilityRecord<T extends ICapabilitySync<? extends Entity>>(Class<?> aClass, Capability<T> capability, Class<T> interfaceClass, Class<? extends Entity> target) {
+    public record CapabilityRecord<T extends ICapabilitySync<? extends Entity>>(
+            Class<?> aClass,
+            Capability<T> capability,
+            Class<T> interfaceClass,
+            Set<Class<? extends Entity>> targets
+    ) {
 
     }
 }

@@ -18,8 +18,10 @@ public class PlayerCapabilityHandler {
     private static boolean isRegistered = false;
 
     /**
-     * 应在Forge主线中调用以监听capability注册 <br>
-     * 建议在Mod构造方法里调用
+     * It should be called in the Forge mainline to listen to the capability registration <br>
+     * Suggest calling it in the Mod constructor method <br>
+     * Normally SCCore will call it, so you should not call it
+     * @param forgeBus forge event bus
      */
     public static void register(IEventBus forgeBus) {
         if (isRegistered) return;
@@ -32,7 +34,10 @@ public class PlayerCapabilityHandler {
         isRegistered = true;
     }
 
-    //注册 capability
+    /**
+     * Register capability
+     * @param event event
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void registerCapability(RegisterCapabilitiesEvent event) {
         PlayerCapabilityRegistry.getCapabilityMap().values().forEach(record ->
@@ -40,7 +45,10 @@ public class PlayerCapabilityHandler {
         );
     }
 
-    //附加 capability
+    /**
+     * Attach capability to entity
+     * @param event event
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void attachCapability(AttachCapabilitiesEvent<?>  event) {
         if(event.getObject() instanceof Player) {

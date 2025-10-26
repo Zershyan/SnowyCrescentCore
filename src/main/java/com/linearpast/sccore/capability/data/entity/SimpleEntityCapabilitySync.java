@@ -5,9 +5,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 
 /**
- * 实现时建议手动添加：<br>
- * key  —— 作为cap的唯一标识 <br>
- * getCapability(Entity entity) —— 获取cap的简化方法<br>
+ * It is recommended to manually add it during implementation: <br>
+ * {@code key}  ----  As the unique identifier of capability. <br>
+ * {@code getCapability(Entity entity)} ----  Simplified method for obtaining capability<br>
  * 例：
  * <pre>
  * {@code
@@ -23,6 +23,9 @@ import net.minecraft.world.entity.Entity;
  *
  */
 public abstract class SimpleEntityCapabilitySync<T extends Entity> implements ICapabilitySync<T> {
+    /**
+     * Id
+     */
     public static final String Id = "Id";
 
     private boolean dirty;
@@ -34,28 +37,36 @@ public abstract class SimpleEntityCapabilitySync<T extends Entity> implements IC
     }
 
     /**
-     * 你应该在每个属性的setter里调用它设置为true，以触发自动同步
-     * @param dirty 是否应该同步（是否为脏）
+     * You should call it to set it to true in the setter of each property to trigger automatic synchronization
+     * @param dirty dirty
      */
     @Override
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
 
+    /**
+     * get id
+     * @return Id
+     */
     public Integer getId() {
         return id;
     }
 
+    /**
+     * set id
+     * @param id id
+     */
     public void setId(Integer id) {
         this.id = id;
         setDirty(true);
     }
 
     /**
-     * 从参数实例中复制数据到当前实例 <br>
-     * 你不应该重写它，你应该实现 {@link SimpleEntityCapabilitySync#copyFrom(ICapabilitySync)}
-     * @param oldData 旧数据
-     * @param listenDone 最后是否执行完成方法 {@link ICapabilitySync#onCopyDone()}
+     * Copy data from parameter instance to current instance <br>
+     *You shouldn't rewrite it, you should implement: {@link SimpleEntityCapabilitySync#copyFrom(ICapabilitySync)}
+     * @param oldData old data
+     * @param listenDone Whether to execute the completion method at the end: {@link ICapabilitySync#onCopyDone()}
      */
     @Override
     public void copyFrom(ICapabilitySync<?> oldData, boolean listenDone) {
@@ -66,14 +77,14 @@ public abstract class SimpleEntityCapabilitySync<T extends Entity> implements IC
     }
 
     /**
-     * 触发数据复制时会执行的方法
-     * @param oldData 从这个数据中复制到当前实例
+     * The method that will be executed when triggering data replication
+     * @param oldData Copy from this data to the current instance
      */
     public abstract void copyFrom(ICapabilitySync<?> oldData);
 
     /**
-     * 序列化为tag <br>
-     * 你不应该重写它，你应该实现{@link ICapabilitySync#toTag(CompoundTag)}
+     * Serialize to tag <br>
+     * You shouldn't rewrite it, you should implement: {@link SimpleEntityCapabilitySync#toTag(CompoundTag)}
      * @return tag
      */
     @Override
@@ -85,8 +96,8 @@ public abstract class SimpleEntityCapabilitySync<T extends Entity> implements IC
     }
 
     /**
-     * 反序列化为实例对象 <br>
-     * 你应该不需要重写它，你应该实现{@link ICapabilitySync#fromTag(CompoundTag)}
+     * Deserialize to instance object <br>
+     * You don't need to rewrite it, you should implement: {@link SimpleEntityCapabilitySync#fromTag(CompoundTag)}
      * @param nbt nbt
      */
     @Override
@@ -95,4 +106,19 @@ public abstract class SimpleEntityCapabilitySync<T extends Entity> implements IC
         if(nbt.contains(Id)) this.id = nbt.getInt(Id);
         fromTag(nbt);
     }
+
+    /**
+     * In the serializeNBT method of SimpleElementCapability Sync, it will be called <br>
+     * Actually equivalent to serializeNBT()
+     * @param tag data tag
+     * @return tag
+     */
+    public abstract CompoundTag toTag(CompoundTag tag);
+
+    /**
+     * In the deserializeNBT method of SimpleElementCapability Sync, it will be called <br>
+     * Actually equivalent to deserializeNBT()
+     * @param tag data tag
+     */
+    public abstract void fromTag(CompoundTag tag);
 }

@@ -11,13 +11,13 @@ import java.util.function.Supplier;
 
 public interface ICapabilityPacket<T extends Entity> {
     /**
-     * 解码网络包
+     * Decoding network packets
      * @param buf FriendlyByteBuf
      */
     void encode(FriendlyByteBuf buf);
 
     /**
-     * 网络包处理事件，一般情况下不需要重写它，默认的行为足够使用
+     * Network packet processing events generally do not need to be rewritten, and the default behavior is sufficient for use
      * @param supplier supplier
      */
     default void handle(Supplier<NetworkEvent.Context> supplier){
@@ -26,30 +26,30 @@ public interface ICapabilityPacket<T extends Entity> {
     }
 
     /**
-     * 网络包处理事件应该在这重写
+     * Network packet processing events should be rewritten here
      * @param context NetworkEvent.Context
      */
     void handler(NetworkEvent.Context context);
 
     /**
-     * 在网络包中获取对应的capability，一般在 {@link ICapabilityPacket#syncData}后执行
-     * @param entity 目标实体
-     * @return 返回Capability
+     * Retrieve the corresponding capability from the network packet, usually executed after {@link ICapabilityPacket#syncData}
+     * @param entity Target
+     * @return capability
      */
-    @Nullable ICapabilitySync getCapability(T entity);
+    @Nullable ICapabilitySync<?> getCapability(T entity);
 
     /**
-     * 获取Tag
-     * @return Tag
+     * Get tag
+     * @return tag
      */
     CompoundTag getData();
 
     /**
-     * 网络包中将tag转换为capability data，默认直接反序列化
+     * Convert tags to capability data in network packets and deserialize them directly by default
      * @param dataTag tag
-     * @param data 应被写入数据的data
+     * @param data The data that should be written into the data
      */
-    default void syncData(CompoundTag dataTag, ICapabilitySync data){
+    default void syncData(CompoundTag dataTag, ICapabilitySync<?> data){
         if(data == null) return;
         data.deserializeNBT(dataTag);
     }

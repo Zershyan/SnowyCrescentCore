@@ -1,6 +1,6 @@
-package com.linearpast.sccore.example.event;
+package com.linearpast.sccore.example.capability.event;
 
-import com.linearpast.sccore.example.cap.SheepDataCapability;
+import com.linearpast.sccore.example.capability.data.SheepDataCapability;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -9,7 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 public class PlayerAttackEvent {
-    //简单的测试一下cap是否生效
     public static void onPlayerAttack(AttackEntityEvent event) {
         Entity target = event.getTarget();
         Player entity = event.getEntity();
@@ -22,7 +21,7 @@ public class PlayerAttackEvent {
                     data.setValue(value);
                     Integer id = data.getId();
                     player.sendSystemMessage(Component.literal(
-                            "第" + value + "攻击了id为\"" + id + "\"的羊"
+                            value + "th attack on sheep with ID " + id
                     ));
                 });
             }
