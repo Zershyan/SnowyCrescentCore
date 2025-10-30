@@ -57,7 +57,7 @@ public class EntityCapabilityHandler {
                                 ICapabilitySync<?> capabilitySync = (ICapabilitySync<?>) record.aClass().getDeclaredConstructor().newInstance();
                                 event.addCapability(key, new EntityCapabilityProvider<>(key, capabilitySync));
                             } catch (Exception e) {
-                                log.error("Failed to instantiate capability sync class {}. Your capability register is wrong.", record.aClass(), e);
+                                log.error("Failed to instantiate capability sync class {}. Your capability invite is wrong.", record.aClass(), e);
                             }
                         }
                     }));

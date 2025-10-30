@@ -1,0 +1,10 @@
+[
+  {
+    "key": "sccore:normal_layers",
+    "priority": 42
+  },
+  {
+    "key": "sccore:ride_layers",
+    "priority": 43
+  }
+]

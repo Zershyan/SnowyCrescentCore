@@ -1,4 +1,4 @@
-package com.linearpast.sccore.animation.registry;
+package com.linearpast.sccore.animation.register;
 
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.entity.AnimationRideEntity;

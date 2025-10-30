@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 public class CapabilityUtils {
 
     /**
-     * Simultaneously register player capability and corresponding network packets
+     * Simultaneously invite player capability and corresponding network packets
      * @param key The unique name of capability
      * @param capabilityRecord Registration data for capability
      * @param channelRegister You should create an instance in advance to pass in, see: {@link CapabilityUtils#createChannel}
@@ -49,7 +49,7 @@ public class CapabilityUtils {
     }
 
     /**
-     * Simultaneously register entity capability and corresponding network packets
+     * Simultaneously invite entity capability and corresponding network packets
      * @param key The unique name of capability
      * @param capabilityRecord Registration data for capability
      * @param channelRegister You should create an instance in advance to pass in, see: {@link CapabilityUtils#createChannel}

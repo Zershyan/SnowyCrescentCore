@@ -29,7 +29,7 @@ public class CapabilityChannel {
     }
 
     /**
-     * Add a network packet through this method and register
+     * Add a network packet through this method and invite
      * @param clazz Network packet class
      * @param cid index
      * @param decoder decoder

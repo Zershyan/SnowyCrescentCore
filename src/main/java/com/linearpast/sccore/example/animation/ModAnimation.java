@@ -5,6 +5,7 @@ import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.animation.data.Animation;
 import com.linearpast.sccore.animation.data.Ride;
 import com.linearpast.sccore.animation.event.create.AnimationLayerRegisterEvent;
+import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
 import com.linearpast.sccore.example.animation.event.ExampleCommandEvent;
 import com.linearpast.sccore.example.animation.event.ExamplePlayerAttackEvent;
 import net.minecraft.resources.ResourceLocation;
@@ -32,29 +33,48 @@ public class ModAnimation {
     public static final ResourceLocation WaltzGentleman = new ResourceLocation(SnowyCrescentCore.MODID, "waltz_gentleman");
     public static final ResourceLocation WaltzLady = new ResourceLocation(SnowyCrescentCore.MODID, "waltz_lady");
 
-    public static void register(IEventBus forgeBus, IEventBus modBus) {
-        //You must define corresponding Animation to register
-        Animation amLTRL = new Animation(AmLyingToRightLying)
+    /**
+     * You can register animation layer by event or json <br>
+     * See wiki (If I'm done.)
+     * @param event event
+     */
+    public static void onLayerRegister(AnimationLayerRegisterEvent event) {
+        event.registerLayer(normalLayers, 42);
+    }
+
+    /**
+     * You can register animation by event or json <br>
+     * See wiki (If I'm done.)
+     * @param event event
+     */
+    public static void onAnimationRegister(AnimationRegisterEvent event) {
+        //You must define corresponding Animation to invite
+        Animation amLTRL = Animation.create(AmLyingToRightLying)
                 .withLyingType(Animation.LyingType.RIGHT)
-                .withRide(Ride.create().addComponentAnimation(AmStandToLying));
-        Animation amSTL = new Animation(AmStandToLying)
+                .withName("Lying-to-Right-Lying");
+        Animation amSTL = Animation.create(AmStandToLying)
+                .withName("Stand-to-Lying")
                 .withLyingType(Animation.LyingType.FRONT);
-
-        Animation waltzGentleman = new Animation(WaltzGentleman)
+        Animation waltzGentleman = Animation.create(WaltzGentleman)
+                .withName("Waltz-Gentleman")
                 .withRide(Ride.create().addComponentAnimation(WaltzLady));
-        Animation waltzLady = new Animation(WaltzLady)
-                .withCamYaw(180);
+        Animation waltzLady = Animation.create(WaltzLady)
+                .withName("Waltz-Lady")
+                .withCamYaw(180)
+                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
 
-        //You can use it to register an Animation
-        AnimationUtils.registerAnimation(AmLyingToRightLying, amLTRL);
-        AnimationUtils.registerAnimation(AmStandToLying, amSTL);
-        AnimationUtils.registerAnimation(WaltzGentleman, waltzGentleman);
-        AnimationUtils.registerAnimation(WaltzLady, waltzLady);
+        //You can use it to invite an Animation
+        event.registerAnimation(AmLyingToRightLying, amLTRL);
+        event.registerAnimation(AmStandToLying, amSTL);
+        event.registerAnimation(WaltzGentleman, waltzGentleman);
+        event.registerAnimation(WaltzLady, waltzLady);
+    }
 
-
+    public static void register(IEventBus forgeBus, IEventBus modBus) {
         //Register by event
         //Or use AnimationUtils.registerAnimationLayer(ResourceLocation layer, int priority);
-        modBus.addListener(ModAnimation::onLayerRegister);
+        forgeBus.addListener(ModAnimation::onLayerRegister);
+        forgeBus.addListener(ModAnimation::onAnimationRegister);
 
         //Try to play animation
         forgeBus.addListener(ExamplePlayerAttackEvent::onPlayerAttack);
@@ -62,9 +82,5 @@ public class ModAnimation {
         if(FMLEnvironment.dist == Dist.CLIENT){
             forgeBus.addListener(ExamplePlayerAttackEvent::onInputEvent);
         }
-    }
-
-    public static void onLayerRegister(AnimationLayerRegisterEvent event) {
-        event.putLayer(normalLayers, 42);
     }
 }

@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.network.toserver;
 
 import com.linearpast.sccore.animation.AnimationPlayer;
-import com.linearpast.sccore.animation.event.AnimationLayerRegistry;
+import com.linearpast.sccore.animation.register.AnimationRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,7 +43,7 @@ public class PlayAnimationRidePacket {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             context.setPacketHandled(true);
-            if (AnimationLayerRegistry.getAnimLayers().containsKey(layer)) {
+            if (AnimationRegistry.getLayers().containsKey(layer)) {
                 ServerPlayer sender = context.getSender();
                 if(sender == null) return;
                 AnimationPlayer.playAnimationWithRide(sender, layer, animation, force);

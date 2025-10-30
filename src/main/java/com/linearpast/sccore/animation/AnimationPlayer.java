@@ -10,6 +10,7 @@ import com.linearpast.sccore.animation.network.toclient.SyncAnimationPacket;
 import com.linearpast.sccore.animation.network.toserver.PlayAnimationRequestPacket;
 import com.linearpast.sccore.animation.network.toserver.PlayAnimationRidePacket;
 import com.linearpast.sccore.core.ModChannel;
+import com.linearpast.sccore.core.datagen.ModLang;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
@@ -17,7 +18,11 @@ import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,10 +30,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class AnimationPlayer {
-    public static void requestAnimationToServer(ResourceLocation layer, @Nullable ResourceLocation animation) {
-        ModChannel.sendToServer(new PlayAnimationRequestPacket(layer, animation));
+
+    public static void requestAnimationToServer(@Nullable AbstractClientPlayer player, ResourceLocation layer, @Nullable ResourceLocation animation) {
+        UUID uuid = null;
+        if(player != null) uuid = player.getUUID();
+        ModChannel.sendToServer(new PlayAnimationRequestPacket(uuid, layer, animation));
     }
 
     public static boolean serverPlayAnimation(ServerPlayer serverPlayer, ResourceLocation layer, @Nullable ResourceLocation animation) {
@@ -43,12 +52,10 @@ public class AnimationPlayer {
 
     public static boolean playAnimationWithRide(ServerPlayer serverPlayer, ResourceLocation layer, @Nullable ResourceLocation animation, boolean force){
         if(animation != null) {
-            IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
-            if(data == null) return false;
-            data.setRideAnimLayer(layer);
             return AnimationRideEntity.create(serverPlayer, layer, animation, force);
         } else {
             serverPlayer.unRide();
+            AnimationDataCapability.getCapability(serverPlayer).ifPresent(IAnimationCapability::removeRiderAnimation);
             return true;
         }
     }
@@ -63,19 +70,26 @@ public class AnimationPlayer {
         data.clearAnimations();
     }
 
-    public static void syncAnimation(ServerPlayer player, ServerPlayer target, ResourceLocation layer) {
-        ModChannel.sendToPlayer(new SyncAnimationPacket(player.getUUID(), target.getUUID(), layer), player);
-        ModChannel.sendToPlayer(new SyncAnimationPacket(player.getUUID(), target.getUUID(), layer), target);
+    public static void syncAnimation(ServerPlayer player, ServerPlayer target) {
+        ModChannel.sendToPlayer(new SyncAnimationPacket(player.getUUID(), target.getUUID()), player);
+        ModChannel.sendToPlayer(new SyncAnimationPacket(player.getUUID(), target.getUUID()), target);
     }
 
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
-    public static void syncAnimation(AbstractClientPlayer clientPlayer, AbstractClientPlayer target, ResourceLocation layer) {
+    public static void syncAnimation(AbstractClientPlayer clientPlayer, AbstractClientPlayer target) {
         try {
+            IAnimationCapability clientPlayerData = AnimationDataCapability.getCapability(clientPlayer).orElse(null);
+            if(clientPlayerData == null) return;
+            IAnimationCapability targetData = AnimationDataCapability.getCapability(target).orElse(null);
+            if(targetData == null) return;
+            ResourceLocation clientPlayerLayer = clientPlayerData.getRiderAnimLayer();
+            ResourceLocation targetLayer = targetData.getRiderAnimLayer();
+            if(clientPlayerLayer == null || targetLayer == null) return;
             ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
-                    .getPlayerAssociatedData(clientPlayer).get(layer);
+                    .getPlayerAssociatedData(clientPlayer).get(clientPlayerLayer);
             ModifierLayer<IAnimation> targetModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
-                    .getPlayerAssociatedData(target).get(layer);
+                    .getPlayerAssociatedData(target).get(targetLayer);
             if(modifierLayer == null || targetModifierLayer == null) return;
             IMixinKeyframeAnimationPlayer animation = (IMixinKeyframeAnimationPlayer) modifierLayer.getAnimation();
             KeyframeAnimationPlayer targetAnimation = (KeyframeAnimationPlayer) targetModifierLayer.getAnimation();
@@ -87,8 +101,11 @@ public class AnimationPlayer {
 
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
-    public static void playAnimation(AbstractClientPlayer clientPlayer, ResourceLocation layer, @Nullable ResourceLocation animation) {
+    public static void playAnimation(@Nullable AbstractClientPlayer clientPlayer, ResourceLocation layer, @Nullable ResourceLocation animation) {
         try {
+            LocalPlayer localPlayer = Minecraft.getInstance().player;
+            if(clientPlayer == null) clientPlayer = localPlayer;
+            if(clientPlayer == null) return;
             ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                     .getPlayerAssociatedData(clientPlayer).get(layer);
             if(animation == null) {
@@ -104,7 +121,14 @@ public class AnimationPlayer {
             if(anim == null) return;
             if(modifierLayer == null) return;
             KeyframeAnimation keyframeAnimation = anim.getAnimation();
-            if(keyframeAnimation == null) return;
+            if(keyframeAnimation == null) {
+                if(localPlayer == null) return;
+                localPlayer.sendSystemMessage(Component.translatable(
+                        ModLang.TranslatableMessage.UNKNOWN_ANIMATION.getKey(),
+                        animation.toString()
+                ).withStyle(ChatFormatting.RED));
+                return;
+            };
             Objects.requireNonNull(modifierLayer).replaceAnimationWithFade(
                     AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
                     new KeyframeAnimationPlayer(keyframeAnimation)

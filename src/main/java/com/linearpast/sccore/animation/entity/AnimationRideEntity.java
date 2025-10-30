@@ -5,7 +5,7 @@ import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.Animation;
 import com.linearpast.sccore.animation.data.Ride;
-import com.linearpast.sccore.animation.registry.AnimationEntities;
+import com.linearpast.sccore.animation.register.AnimationEntities;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -20,9 +20,7 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class AnimationRideEntity extends Entity {
     public AnimationRideEntity(Level pLevel) {
@@ -35,6 +33,7 @@ public class AnimationRideEntity extends Entity {
     private static final String Layer = "Layer";
 
     private final Set<ServerPlayer> players = new HashSet<>();
+    private final Map<ResourceLocation, UUID> animationPair = new HashMap<>();
     private Animation animation;
     private ServerPlayer player;
     private ResourceLocation layer;
@@ -43,6 +42,13 @@ public class AnimationRideEntity extends Entity {
         this.player = pPlayer;
         this.layer = layer;
         this.animation = animation;
+        Ride ride = animation.getRide();
+        if(ride != null) {
+            List<ResourceLocation> componentAnimations = ride.getComponentAnimations();
+            for (ResourceLocation componentAnimation : componentAnimations) {
+                animationPair.put(componentAnimation, null);
+            }
+        }
     }
 
     public ResourceLocation getLayer() {
@@ -51,6 +57,10 @@ public class AnimationRideEntity extends Entity {
 
     public Set<ServerPlayer> getPlayers() {
         return players;
+    }
+
+    public ServerPlayer getPlayer() {
+        return player;
     }
 
     public Animation getAnimation() {
@@ -88,7 +98,7 @@ public class AnimationRideEntity extends Entity {
         pCompound.putUUID(PlayerUUID, player.getUUID());
         pCompound.putString(Layer, layer.toString());
         if(animation != null) {
-            pCompound.putString(Animation, animation.getName().toString());
+            pCompound.putString(Animation, animation.getKey().toString());
         }
     }
 
@@ -98,18 +108,6 @@ public class AnimationRideEntity extends Entity {
         if(!this.level().isClientSide) {
             Ride ride = animation == null ? null : animation.getRide();
             if(!this.getPassengers().contains(player) || (ride != null && ride.getExistTick() > 0 && this.tickCount >= ride.getExistTick())) {
-                if(player != null) {
-                    IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-                    if(data != null) {
-                        AnimationUtils.removeAnimation(player, layer);
-                        data.setRideAnimLayer(null);
-                    }
-                }
-                if(ride != null) players.forEach(player -> {
-                    IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-                    AnimationUtils.removeAnimation(player, layer);
-                    if(data != null) data.setRideAnimLayer(null);
-                });
                 this.remove(RemovalReason.DISCARDED);
             }
         }
@@ -139,6 +137,9 @@ public class AnimationRideEntity extends Entity {
         Animation anim = AnimationUtils.getAnimation(animation);
         if(anim == null) return false;
         if(anim.getRide() == null) return false;
+        IAnimationCapability data = AnimationDataCapability.getCapability(pPlayer).orElse(null);
+        if(data == null) return false;
+        data.setRiderAnimation(layer, animation);
         AnimationRideEntity seat = new AnimationRideEntity(pPlayer, layer, anim);
         float xRot = anim.getRide().getXRot();
         float yRot = anim.getRide().getYRot();
@@ -149,7 +150,7 @@ public class AnimationRideEntity extends Entity {
         seat.setPos(pos.x, pos.y + 0.35f, pos.z);
         pPlayer.level().addFreshEntity(seat);
         pPlayer.startRiding(seat, force);
-        return AnimationUtils.playAnimation(pPlayer, layer, animation);
+        return true;
     }
 
     @Override
@@ -184,9 +185,17 @@ public class AnimationRideEntity extends Entity {
             List<ResourceLocation> componentAnimations = ride.getComponentAnimations();
             if(componentAnimations.isEmpty()) return;
             if(passengerNum > componentAnimations.size()) return;
-            ResourceLocation location = componentAnimations.get(passengerNum - 1);
-            AnimationUtils.playAnimation(serverPlayer, layer, location);
-            AnimationUtils.syncAnimation(serverPlayer, player, layer);
+            ResourceLocation animLocation = null;
+            for (ResourceLocation location : animationPair.keySet()) {
+                if(animationPair.get(location) == null)
+                    animLocation = location;
+            }
+            if(animLocation == null) return;
+            animationPair.put(animLocation, serverPlayer.getUUID());
+            IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
+            if(data == null) return;
+            data.setRiderAnimation(layer, animLocation);
+            AnimationUtils.syncAnimation(serverPlayer, player);
             players.add(serverPlayer);
         }
     }
@@ -196,13 +205,20 @@ public class AnimationRideEntity extends Entity {
         super.removePassenger(entity);
         if(entity instanceof ServerPlayer serverPlayer) {
             AnimationUtils.removeAnimation(serverPlayer, layer);
-            AnimationDataCapability.getCapability(serverPlayer).ifPresent(data -> data.setRideAnimLayer(null));
             players.remove(serverPlayer);
+            new HashMap<>(animationPair).forEach((key, value) -> {
+                if(Objects.equals(value, serverPlayer.getUUID())) {
+                    animationPair.put(key, null);
+                }
+            });
+            IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
+            if(data == null) return;
+            data.removeRiderAnimation();
         }
     }
 
     @Override
-    protected boolean canAddPassenger(@NotNull Entity pPassenger) {
+    public boolean canAddPassenger(@NotNull Entity pPassenger) {
         boolean isServerPlayer = pPassenger instanceof ServerPlayer;
         int size = players.size();
         Ride ride = animation.getRide();

@@ -1,6 +1,6 @@
 package com.linearpast.sccore.animation.command.argument;
 
-import com.linearpast.sccore.animation.event.AnimationLayerRegistry;
+import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -20,15 +20,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class AnimationLayerArgument implements ArgumentType<String> {
-    private static final Supplier<Collection<String>> EXAMPLES = () -> AnimationLayerRegistry.getAnimLayers().keySet().stream()
+    private static final Supplier<Collection<String>> EXAMPLES = () -> AnimationRegistry.getLayers().keySet().stream()
             .map(ResourceLocation::toString).collect(Collectors.toSet());
     private static final DynamicCommandExceptionType UNKNOWN_TYPE = new DynamicCommandExceptionType(
             layer -> Component.literal("Unknow layer : " + layer.toString())
     );
 
-    private final Set<String> animationLayers;
+    private final Supplier<Set<String>> animationLayers;
     public AnimationLayerArgument() {
-        this.animationLayers = AnimationLayerRegistry.getAnimLayers().keySet().stream()
+        this.animationLayers = () -> AnimationRegistry.getLayers().keySet().stream()
                 .map(ResourceLocation::toString).collect(Collectors.toSet());
     }
 
@@ -41,7 +41,7 @@ public class AnimationLayerArgument implements ArgumentType<String> {
     }
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(animationLayers, builder);
+        return SharedSuggestionProvider.suggest(animationLayers.get(), builder);
     }
 
     public Collection<String> getExamples() {
@@ -54,7 +54,7 @@ public class AnimationLayerArgument implements ArgumentType<String> {
             reader.skip();
         }
         String s = reader.getString().substring(start, reader.getCursor());
-        if (!animationLayers.contains(s)) {
+        if (!animationLayers.get().contains(s)) {
             throw UNKNOWN_TYPE.create(s);
         } else {
             return s;

@@ -1,7 +1,6 @@
 package com.linearpast.sccore.animation.network.toclient;
 
 import com.linearpast.sccore.animation.AnimationPlayer;
-import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.capability.data.player.SimplePlayerCapabilitySync;
@@ -50,14 +49,24 @@ public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
     }
 
     private void testPlayAnimations(AbstractClientPlayer player, CompoundTag tag, IAnimationCapability data) {
-        Set<ResourceLocation> oldLayerSet = new HashSet<>();
-        if(data != null) oldLayerSet.addAll(data.getAnimations().keySet());
+        if(data == null) return;
+        ResourceLocation oldRiderAnimLayer = data.getRiderAnimLayer();
+        String riderAnimLayerString = tag.getString(AnimationDataCapability.RideAnimLayer);
+        ResourceLocation newRiderAnimLayer = riderAnimLayerString.isEmpty() ? null : new ResourceLocation(riderAnimLayerString);
+        if(!Objects.equals(oldRiderAnimLayer, newRiderAnimLayer)) {
+            String riderAnimationString = tag.getString(AnimationDataCapability.RideAnimation);
+            ResourceLocation newRiderAnimation = riderAnimationString.isEmpty() ? null : new ResourceLocation(riderAnimationString);
+            if(oldRiderAnimLayer != null) AnimationPlayer.playAnimation(player, oldRiderAnimLayer, null);
+            if(newRiderAnimLayer != null) AnimationPlayer.playAnimation(player, newRiderAnimLayer, newRiderAnimation);
+        }
+
+        Set<ResourceLocation> oldLayerSet = new HashSet<>(data.getAnimations().keySet());
         CompoundTag animMap = tag.getCompound(AnimationDataCapability.AnimMap);
         for (String newLayerString : animMap.getAllKeys()) {
             ResourceLocation newLayerLocation = new ResourceLocation(newLayerString);
             String newAnimString = animMap.getString(newLayerString);
             ResourceLocation newAnimLocation = newAnimString.isEmpty() ? null : new ResourceLocation(newAnimString);
-            ResourceLocation oldAnimLocation = data == null ? null : data.getAnimation(newLayerLocation);
+            ResourceLocation oldAnimLocation = data.getAnimation(newLayerLocation);
             if (!Objects.equals(newAnimLocation, oldAnimLocation)) {
                 AnimationPlayer.playAnimation(player, newLayerLocation, newAnimLocation);
             }
@@ -67,10 +76,7 @@ public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
             AnimationPlayer.playAnimation(player, oldLayerLocation, null);
         }
 
-        if(!tag.contains(AnimationDataCapability.RideAnimLayer)) {
-            if(data != null && data.getRideAnimLayer() != null) {
-                AnimationUtils.playAnimation(null, data.getRideAnimLayer(), null);
-            }
-        }
+
+
     }
 }

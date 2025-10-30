@@ -1,7 +1,7 @@
 package com.linearpast.sccore.core;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.command.AnimationCommands;
+import com.linearpast.sccore.animation.register.AnimationCommands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;

@@ -1,11 +1,11 @@
 package com.linearpast.sccore;
 
 
-import com.linearpast.sccore.animation.registry.AnimationRegistry;
+import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.capability.CapabilityUtils;
 import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.core.ModCommands;
-import com.linearpast.sccore.core.ModConfigs;
+import com.linearpast.sccore.core.configs.ModConfigs;
 import com.linearpast.sccore.example.animation.ModAnimation;
 import com.linearpast.sccore.example.capability.ModCapability;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,15 +27,14 @@ public class SnowyCrescentCore {
 
     public SnowyCrescentCore() {
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
-        modLoadingContext.registerConfig(ModConfig.Type.COMMON, ModConfigs.Common.SPEC);
+        modLoadingContext.registerConfig(ModConfig.Type.SERVER, ModConfigs.Server.SPEC);
 
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
         CapabilityUtils.registerHandler(forgeBus);
         ModChannel.register();
-        AnimationRegistry.register();
-        AnimationRegistry.addAnimationListener(forgeBus, modBus);
+        AnimationUtils.register(forgeBus, modBus);
         ModCommands.registerCommands(forgeBus, modBus);
 
         if(!FMLEnvironment.production || Boolean.getBoolean(ENABLE_EXAMPLES_PROPERTY_KEY)) {

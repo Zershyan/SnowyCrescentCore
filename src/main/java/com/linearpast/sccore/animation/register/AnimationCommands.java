@@ -1,9 +1,11 @@
-package com.linearpast.sccore.animation.command;
+package com.linearpast.sccore.animation.register;
 
 import com.linearpast.sccore.animation.AnimationUtils;
+import com.linearpast.sccore.animation.command.*;
 import com.linearpast.sccore.animation.command.argument.AnimationArgument;
 import com.linearpast.sccore.animation.command.argument.AnimationLayerArgument;
-import com.linearpast.sccore.animation.command.client.AnimationRefreshCommand;
+import com.linearpast.sccore.animation.command.client.GenerateJsonClientCommand;
+import com.linearpast.sccore.animation.command.client.RefreshAnimCommand;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
@@ -17,8 +19,11 @@ public class AnimationCommands {
 	public static void commonCommandRegister(LiteralArgumentBuilder<CommandSourceStack> builder) {
 		if(AnimationUtils.ANIMATION_RUNNER.isModLoaded()){
 			LiteralArgumentBuilder<CommandSourceStack> anim = literal("anim");
-			PlayAnimationCommand.register(anim);
-
+			PlayAnimCommand.register(anim);
+			RequestAnimCommand.register(anim);
+			CombineAnimCommand.register(anim);
+			GenerateJsonCommand.register(anim);
+			ApplyJoinAnimCommand.register(anim);
 			builder.then(anim);
 		}
 	}
@@ -26,7 +31,8 @@ public class AnimationCommands {
 	public static void clientCommandRegister(LiteralArgumentBuilder<CommandSourceStack> builder) {
 		if(AnimationUtils.ANIMATION_RUNNER.isModLoaded()) {
 			LiteralArgumentBuilder<CommandSourceStack> anim = literal("anim");
-			AnimationRefreshCommand.register(anim);
+			RefreshAnimCommand.register(anim);
+			GenerateJsonClientCommand.register(anim);
 			builder.then(anim);
 		}
 	}

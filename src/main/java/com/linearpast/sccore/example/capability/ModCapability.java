@@ -23,11 +23,11 @@ public class ModCapability {
      * @see CapabilityUtils#registerPlayerCapabilityWithNetwork
      */
     public static void register(){
-        //If you want to register network packets in your own mod, to use : createChannel(INSTANCE)
+        //If you want to invite network packets in your own mod, to use : createChannel(INSTANCE)
         //And don't forget to rewrite all the sendToClient methods in the capability class
         CapabilityChannel channel = CapabilityUtils.createChannel();
         //Register the entity capability and its network packet
-        //If you want register about player, please use CapabilityUtils.registerPlayerCapabilityWithNetwork()
+        //If you want invite about player, please use CapabilityUtils.registerPlayerCapabilityWithNetwork()
         CapabilityUtils.registerEntityCapabilityWithNetwork(
                 //A resourceLocation, named arbitrarily without repetition
                 SheepDataCapability.key,

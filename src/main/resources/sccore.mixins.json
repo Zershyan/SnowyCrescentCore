@@ -6,7 +6,8 @@
 	"refmap": "sccore.refmap.json",
 	"plugin": "com.linearpast.sccore.mixin.SCCoreMixinPlugin",
 	"mixins": [
-		"animation.MixinEntity"
+		"animation.MixinEntity",
+		"animation.client.MixinPlayerAnimationFactoryHolder"
 	],
 	"client": [
 		"animation.client.MixinEntity",

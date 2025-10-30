@@ -16,6 +16,8 @@ public interface IAnimationCapability extends ICapabilitySync<Player> {
     void clearAnimations();
     boolean isAnimationPresent(ResourceLocation layer);
 
-    void setRideAnimLayer(ResourceLocation layer);
-    ResourceLocation getRideAnimLayer();
+    ResourceLocation getRiderAnimLayer();
+    ResourceLocation getRiderAnimation();
+    void setRiderAnimation(ResourceLocation layer, ResourceLocation animation);
+    void removeRiderAnimation();
 }

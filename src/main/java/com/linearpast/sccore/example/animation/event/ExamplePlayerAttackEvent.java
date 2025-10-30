@@ -16,8 +16,7 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 public class ExamplePlayerAttackEvent {
     /**
-     * when attack sheep, will play stand to lying animation <br>
-     * when attack other player, will play animation together
+     * when attack sheep, will play stand to lying animation
      * @param event event
      */
     public static void onPlayerAttack(AttackEntityEvent event) {
@@ -32,18 +31,7 @@ public class ExamplePlayerAttackEvent {
                     AnimationUtils.playAnimation(player, ModAnimation.normalLayers, null);
                 }
             }
-            if(target instanceof ServerPlayer serverPlayer) {
-                AnimationUtils.startAnimationTogether(
-                        serverPlayer,
-                        ModAnimation.normalLayers,
-                        ModAnimation.AmLyingToRightLying,
-                        true,
-                        player
-                );
-
-            }
         }
-
     }
 
     /**

@@ -5,13 +5,15 @@ import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.Animation;
 import com.linearpast.sccore.animation.data.Ride;
 import com.linearpast.sccore.animation.entity.AnimationRideEntity;
-import com.linearpast.sccore.animation.event.AnimationLayerRegistry;
-import com.linearpast.sccore.animation.event.EntityRendererRegistry;
+import com.linearpast.sccore.animation.event.PlayerTickEvent;
 import com.linearpast.sccore.animation.event.client.CameraAnglesModify;
 import com.linearpast.sccore.animation.event.client.ClientPlayerTick;
+import com.linearpast.sccore.animation.event.client.EntityRendererRegisterEvent;
 import com.linearpast.sccore.animation.network.toserver.RefreshAnimationPacket;
-import com.linearpast.sccore.animation.registry.AnimationEntities;
-import com.linearpast.sccore.animation.registry.AnimationRegistry;
+import com.linearpast.sccore.animation.register.AnimationCapabilities;
+import com.linearpast.sccore.animation.register.AnimationChannels;
+import com.linearpast.sccore.animation.register.AnimationEntities;
+import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.core.ModLazyRun;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
@@ -40,14 +42,15 @@ public class AnimationUtils {
         @Override
         public void addCommonListener(IEventBus forgeBus, IEventBus modBus) {
             AnimationEntities.register(modBus);
-            modBus.addListener(AnimationLayerRegistry::onCommonSetUp);
+            forgeBus.addListener(AnimationRegistry::onServerStarted);
+            forgeBus.addListener(AnimationRegistry::onPlayerLoggedIn);
+            forgeBus.addListener(PlayerTickEvent::onPlayerTickEvent);
         }
 
         @Override
         public void addClientListener(IEventBus forgeBus, IEventBus modBus) {
             forgeBus.addListener(CameraAnglesModify::changeCameraView);
-            modBus.addListener(AnimationLayerRegistry::onClientSetup);
-            modBus.addListener(EntityRendererRegistry::registerEntityRenderer);
+            modBus.addListener(EntityRendererRegisterEvent::registerEntityRenderer);
             forgeBus.addListener(ClientPlayerTick::onPlayerTick);
             forgeBus.addListener(ClientPlayerTick::delayRuns);
         }
@@ -56,23 +59,41 @@ public class AnimationUtils {
     /**
      * <pre>
      * Play animation.
-     * If run in Dist.CLIENT, the serverPlayer can be null.
+     * If run in Dist.CLIENT, player can be null, it will play animation only client.
      * If animation be null, it will remove animation on layer.
      * </pre>
-     * @param serverPlayer Target player
+     * @param player Target player
      * @param layer Target layer
      * @param animation Animation
      * @return If success
      */
-    public static boolean playAnimation(@Nullable ServerPlayer serverPlayer, ResourceLocation layer, @Nullable ResourceLocation animation) {
+    public static boolean playAnimation(@Nullable Player player, ResourceLocation layer, @Nullable ResourceLocation animation) {
         return ANIMATION_RUNNER.testLoadedAndCall(() -> {
             if(isAnimationLayerPresent(layer) && (animation == null || isAnimationPresent(animation))) {
-                if(serverPlayer != null) {
+                if(player instanceof ServerPlayer serverPlayer) {
                     return AnimationPlayer.serverPlayAnimation(serverPlayer, layer, animation);
-                }else {
-                    AnimationPlayer.requestAnimationToServer(layer, animation);
+                }else if(player == null || player instanceof AbstractClientPlayer) {
+                    AnimationPlayer.requestAnimationToServer((AbstractClientPlayer) player, layer, animation);
                     return true;
                 }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Client send request to server and run play animation. <br>
+     * Only play animation with client self.
+     * @param layer Target layer
+     * @param animation Target animation
+     * @return If success
+     */
+    @OnlyIn(Dist.CLIENT)
+    public static boolean requestAnimationClient(@Nullable AbstractClientPlayer player, ResourceLocation layer, @Nullable ResourceLocation animation) {
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            if(isAnimationLayerPresent(layer) && (animation == null || isAnimationPresent(animation))) {
+                AnimationPlayer.requestAnimationToServer(player, layer, animation);
+                return true;
             }
             return false;
         });
@@ -100,7 +121,8 @@ public class AnimationUtils {
                 if(serverPlayer != null) {
                     if(serverPlayer.getVehicle() != null && force) serverPlayer.unRide();
                     else if(serverPlayer.getVehicle() != null) return false;
-                    AnimationPlayer.playAnimationWithRide(serverPlayer, layer, animation, true);
+                    return AnimationPlayer.playAnimationWithRide(serverPlayer, layer, animation, true);
+
                 } else {
                     AnimationPlayer.requestAnimationRideToServer(layer, animation, force);
                     return true;
@@ -113,12 +135,12 @@ public class AnimationUtils {
     /**
      * Remove animation.
      * @see AnimationUtils#playAnimation
-     * @param serverPlayer Target player
+     * @param player Target player
      * @param layer Target layer
      * @return If success
      */
-    public static boolean removeAnimation(@Nullable ServerPlayer serverPlayer, ResourceLocation layer) {
-        return playAnimation(serverPlayer, layer, null);
+    public static boolean removeAnimation(@Nullable Player player, ResourceLocation layer) {
+        return playAnimation(player, layer, null);
     }
 
     /**
@@ -147,20 +169,20 @@ public class AnimationUtils {
     }
 
     /**
-     * Test if layer exist animation which is playing.
+     * Test if layer exist animation which is not stop.
      * <p>
      * Only in dist client
      * @param player Target player
      * @param layer Target layer
-     * @return If layer exist animation which is playing
+     * @return True when the currentTick not larger than stopTick
      */
     @OnlyIn(Dist.CLIENT)
     @SuppressWarnings("unchecked")
-    public static boolean isClientAnimationPlaying(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
+    public static boolean isClientAnimationNotStop(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
         return ANIMATION_RUNNER.testLoadedAndCall(() -> {
             try {
                 Set<ResourceLocation> resourceLocations = new HashSet<>();
-                if(layer == null) resourceLocations = AnimationLayerRegistry.getAnimLayers().keySet();
+                if(layer == null) resourceLocations = AnimationRegistry.getLayers().keySet();
                 else resourceLocations.add(layer);
                 for (ResourceLocation location : resourceLocations) {
                     ModifierLayer<IAnimation> animationModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
@@ -178,24 +200,54 @@ public class AnimationUtils {
     }
 
     /**
+     * Test if layer exist animation which is not end.
+     * <p>
+     * Only in dist client
+     * @param player Target player
+     * @param layer Target layer
+     * @return True when animation is loop, or currentTick not larger than endTick
+     */
+    @OnlyIn(Dist.CLIENT)
+    @SuppressWarnings("unchecked")
+    public static boolean isClientAnimationNotEnd(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            try {
+                Set<ResourceLocation> resourceLocations = new HashSet<>();
+                if(layer == null) resourceLocations = AnimationRegistry.getLayers().keySet();
+                else resourceLocations.add(layer);
+                for (ResourceLocation location : resourceLocations) {
+                    ModifierLayer<IAnimation> animationModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                            .getPlayerAssociatedData(player).get(location);
+                    if(animationModifierLayer == null) continue;
+                    KeyframeAnimationPlayer animation = (KeyframeAnimationPlayer) animationModifierLayer.getAnimation();
+                    if(animation == null) return false;
+                    int currentTick = animation.getCurrentTick();
+                    boolean isLoop = animation.getData().isInfinite;
+                    int endTick = animation.getData().endTick;
+                    return isLoop || currentTick <= endTick;
+                }
+            } catch (Exception ignored) {}
+            return false;
+        });
+    }
+
+    /**
      * Sync animation tick to client
      * @param player Player
      * @param target Target player
-     * @param layer Target layer
      */
-    public static void syncAnimation(ServerPlayer player, ServerPlayer target, ResourceLocation layer) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationPlayer.syncAnimation(player, target, layer));
+    public static void syncAnimation(ServerPlayer player, ServerPlayer target) {
+        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationPlayer.syncAnimation(player, target));
     }
 
     /**
      * Sync animation tick on client
      * @param player Player
      * @param target Target player
-     * @param layer Target layer
      */
     @OnlyIn(Dist.CLIENT)
-    public static void syncAnimation(AbstractClientPlayer player, AbstractClientPlayer target, ResourceLocation layer) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationPlayer.syncAnimation(player, target, layer));
+    public static void syncAnimation(AbstractClientPlayer player, AbstractClientPlayer target) {
+        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationPlayer.syncAnimation(player, target));
     }
 
     /**
@@ -266,43 +318,34 @@ public class AnimationUtils {
     }
 
     /**
-     * Test if layer exist and has been register.
+     * Test if layer exist and has been invite.
      * @param layer Target layer
-     * @return If layer exist and has been register
+     * @return If layer exist and has been invite
      */
     public static boolean isAnimationLayerPresent(ResourceLocation layer) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> AnimationLayerRegistry.isLayerPresent(layer));
+        return ANIMATION_RUNNER.testLoadedAndCall(() ->  AnimationRegistry.getLayers().containsKey(layer));
     }
 
     /**
-     * Test if animation exist and has been register.
+     * Test if animation exist and has been invite.
      * @param location Animation resource location
-     * @return If animation exist and has been register
+     * @return If animation exist and has been invited
      */
     public static boolean isAnimationPresent(ResourceLocation location) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> AnimationRegistry.isAnimationPresent(location));
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> AnimationRegistry.getAnimations().containsKey(location));
     }
 
     /**
-     * Register an animation through static function
-     * @param location Animation resource location
-     * @param animation Animation data
+     * The register handler
+     * @param forgeBus Forge event bus
+     * @param modBus Mod event bus
      */
-    public static void registerAnimation(ResourceLocation location, Animation animation) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationRegistry.registerAnimation(location, animation));
-    }
-
-    /**
-     * Register an animation layer through static function. <br>
-     * The number is bigger and the priority is higher. <br>
-     * It must run before these events : <br>
-     * {@link net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent} <br>
-     * {@link net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent}
-     * @param location Layer location key
-     * @param priority Layer priority,
-     */
-    public static void registerAnimationLayer(ResourceLocation location, int priority) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> AnimationLayerRegistry.registerPlayerAnimation(location, priority));
+    public static void register(IEventBus forgeBus, IEventBus modBus){
+        AnimationUtils.ANIMATION_RUNNER.testLoadedAndRun(() -> {
+            AnimationCapabilities.registerAnimationCapability();
+            AnimationChannels.registerChannel();
+        });
+        AnimationUtils.ANIMATION_RUNNER.testLoadedAndAddListener(forgeBus, modBus);
     }
 
     /**
@@ -314,7 +357,7 @@ public class AnimationUtils {
      */
     @Nullable
     public static Animation getAnimation(ResourceLocation location) {
-        return AnimationRegistry.getAnimation(location);
+        return AnimationRegistry.getAnimations().getOrDefault(location, null);
     }
 
     /**
@@ -377,11 +420,13 @@ public class AnimationUtils {
         IAnimationCapability data = AnimationDataCapability.getCapability(clientPlayer).orElse(null);
         if(data == null) return;
         Set<ResourceLocation> oldLayers = new HashSet<>(data.getAnimations().keySet());
-        oldLayers.forEach(layer -> {
-            if (isClientAnimationPlaying(clientPlayer, layer)) {
+        boolean dirty = false;
+        for (ResourceLocation layer : Set.copyOf(oldLayers)) {
+            if (!isClientAnimationNotStop(clientPlayer, layer)) {
                 oldLayers.remove(layer);
+                dirty = true;
             }
-        });
-        ModChannel.sendToServer(new RefreshAnimationPacket(oldLayers));
+        }
+        if(dirty) ModChannel.sendToServer(new RefreshAnimationPacket(oldLayers));
     }
 }

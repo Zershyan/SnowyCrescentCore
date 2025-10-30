@@ -23,6 +23,7 @@ import java.util.UUID;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
+@Deprecated
 public class ExampleCommandEvent {
     record InviteRecord(long time, ResourceLocation layer, ResourceLocation animation, boolean isForce){}
     private static final Map<UUID, Map<UUID, InviteRecord>> invites = new HashMap<>();

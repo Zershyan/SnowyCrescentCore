@@ -5,8 +5,11 @@ import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 public class Animation {
-    private final ResourceLocation name;
+    private @Nullable String name;
+    private final ResourceLocation key;
     private KeyframeAnimation animation;
     private float heightModifier = 1.0f;
     private float camYaw;
@@ -16,15 +19,37 @@ public class Animation {
     private @Nullable Animation.LyingType lyingType;
     private @Nullable Ride ride;
 
-    public Animation(ResourceLocation name) {
-        this.name = name;
+    Animation(ResourceLocation key) {
+        this.key = key;
+    }
+
+    public static Animation create(ResourceLocation name) {
+        return new Animation(name);
     }
 
     public enum LyingType {
-        RIGHT,
-        LEFT,
-        FRONT,
-        BACK
+        RIGHT("RIGHT"),
+        LEFT("LEFT"),
+        FRONT("FRONT"),
+        BACK("BACK");
+        private final String name;
+        LyingType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Nullable
+        public static LyingType getLyingType(String name) {
+            for (LyingType type : LyingType.values()) {
+                if (type.name.equals(name)) {
+                    return type;
+                }
+            }
+            return null;
+        }
     }
 
     public Animation withLyingType(@Nullable Animation.LyingType lyingType) {
@@ -77,6 +102,18 @@ public class Animation {
         return this;
     }
 
+    public Animation withName(String name) {
+        String regex = "^[a-zA-Z0-9_-]+$";
+        Pattern pattern = Pattern.compile(regex);
+        if (!pattern.matcher(name).matches()) {
+            throw new IllegalArgumentException(
+                    "Invalid animation name: " + name + ", must match " + regex
+            );
+        }
+        this.name = name;
+        return this;
+    }
+
     public void setLyingType(@Nullable LyingType lyingType) {
         this.lyingType = lyingType;
     }
@@ -95,7 +132,7 @@ public class Animation {
 
     @Nullable
     public KeyframeAnimation getAnimation() {
-        return PlayerAnimationRegistry.getAnimation(name);
+        return PlayerAnimationRegistry.getAnimation(key);
     }
 
     public @Nullable Animation.LyingType getLyingType() {
@@ -114,7 +151,11 @@ public class Animation {
         return ride;
     }
 
-    public ResourceLocation getName() {
+    public ResourceLocation getKey() {
+        return key;
+    }
+
+    public @Nullable String getName() {
         return name;
     }
 }
