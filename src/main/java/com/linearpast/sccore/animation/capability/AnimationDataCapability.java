@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AnimationDataCapability extends SimplePlayerCapabilitySync implements IAnimationCapability {
@@ -35,7 +36,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
         animations.forEach((key, value) -> {
             if (AnimationRegistry.getLayers().containsKey(key)) {
                 if (AnimationUtils.isAnimationPresent(value)) {
-                    if(this.rideAnimLayer.equals(key)) {
+                    if(Objects.equals(rideAnimLayer, key)) {
                         removeRiderAnimation();
                     }
                     this.animMap.put(key, value);
@@ -49,7 +50,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     public boolean mergeAnimation(ResourceLocation layer, ResourceLocation animation) {
         if (AnimationRegistry.getLayers().containsKey(layer)) {
             if (AnimationUtils.isAnimationPresent(animation)) {
-                if(this.rideAnimLayer.equals(layer)) {
+                if(Objects.equals(rideAnimLayer, layer)) {
                     removeRiderAnimation();
                 }
                 this.animMap.put(layer, animation);

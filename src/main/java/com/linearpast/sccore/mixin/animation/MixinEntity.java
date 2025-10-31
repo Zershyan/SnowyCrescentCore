@@ -37,15 +37,18 @@ public abstract class MixinEntity {
         if(self instanceof Player player){
             IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
             if(data == null) return;
-            float camYModifier = 0.0f;
+            Float camYModifier = null;
             for (ResourceLocation value : data.getAnimations().values()) {
                 Animation animation = AnimationUtils.getAnimation(value);
                 if(animation == null) continue;
                 float animationCamY = animation.getCamY();
+                if(camYModifier == null) camYModifier = animationCamY;
                 camYModifier = Math.min(camYModifier, animationCamY);
             }
-            this.eyeHeight = this.getEyeHeight(Pose.STANDING) + camYModifier;
-            cir.setReturnValue(this.eyeHeight);
+            if(camYModifier != null){
+                this.eyeHeight = this.getEyeHeight(Pose.STANDING) + camYModifier;
+                cir.setReturnValue(this.eyeHeight);
+            }
         }
     }
 
