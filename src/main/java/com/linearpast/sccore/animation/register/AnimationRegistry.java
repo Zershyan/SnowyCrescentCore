@@ -261,19 +261,8 @@ public class AnimationRegistry {
                             ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
                             ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
                             ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
-                            ArrayList<Pair<Integer, IAnimation>> newListCopy = new ArrayList<>(newArrayList);
-                            for (Pair<Integer, IAnimation> oldPair : oldArrayList) {
-                                newListCopy.removeIf(pair -> {
-                                    if(pair.getLeft().equals(oldPair.getLeft())) {
-                                        result.add(pair);
-                                        return true;
-                                    } else {
-                                        result.add(oldPair);
-                                        return false;
-                                    }
-                                });
-                            }
-                            result.addAll(newListCopy);
+                            result.addAll(oldArrayList);
+                            result.addAll(newArrayList);
                             layersField.set(newAnimationStack, result);
                             animationStackField.set(player, newAnimationStack);
                             Field animationApplierField = playerClass.getDeclaredField("animationApplier");

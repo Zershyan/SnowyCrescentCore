@@ -1,3 +1,4 @@
+//file:noinspection GroovyAssignabilityCheck
 buildscript {
     repositories {
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
@@ -127,6 +128,9 @@ dependencies {
 
     implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20")
     implementation fg.deobf("io.github.kosmx.bendy-lib:bendy-lib-forge:4.0.0")
+
+//    implementation fg.deobf("curse.maven:cloth-config-348521:5729105")
+//    implementation fg.deobf("curse.maven:better-combat-by-daedelus-639842:5625757")
 //    implementation fg.deobf("curse.maven:freecam-by-zergatul-618947:5402097")
 }
 
