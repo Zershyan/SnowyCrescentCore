@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.eventbus.api.IEventBus;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,6 +72,7 @@ public class AnimationUtils {
         return ANIMATION_RUNNER.testLoadedAndCall(() -> {
             if(isAnimationLayerPresent(layer) && (animation == null || isAnimationPresent(animation))) {
                 if(player instanceof ServerPlayer serverPlayer) {
+                    if(serverPlayer instanceof FakePlayer) return false;
                     return AnimationPlayer.serverPlayAnimation(serverPlayer, layer, animation);
                 }else if(player == null || player instanceof AbstractClientPlayer) {
                     AnimationPlayer.requestAnimationToServer((AbstractClientPlayer) player, layer, animation);
@@ -119,10 +121,10 @@ public class AnimationUtils {
                 Animation anim = AnimationUtils.getAnimation(animation);
                 if(anim != null && anim.getRide() == null) return false;
                 if(serverPlayer != null) {
+                    if(serverPlayer instanceof FakePlayer) return false;
                     if(serverPlayer.getVehicle() != null && force) serverPlayer.unRide();
                     else if(serverPlayer.getVehicle() != null) return false;
                     return AnimationPlayer.playAnimationWithRide(serverPlayer, layer, animation, true);
-
                 } else {
                     AnimationPlayer.requestAnimationRideToServer(layer, animation, force);
                     return true;
