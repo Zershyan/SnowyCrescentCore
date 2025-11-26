@@ -1,7 +1,7 @@
 package com.linearpast.sccore.mixin;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.AnimationUtils;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import net.minecraftforge.fml.ModList;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -27,7 +27,7 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
             return "runData".equals(System.getProperty("gradle.task"));
         }
         if (mixinClassName.startsWith("com\\.linearpast\\." + SnowyCrescentCore.MODID + "\\.mixin\\.animation")) {
-            return ModList.get().isLoaded(AnimationUtils.AnimModId);
+            return ModList.get().isLoaded(AnimationHelper.AnimModId);
         }
         return true;
     }

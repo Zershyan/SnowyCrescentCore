@@ -1,5 +1,7 @@
 package com.linearpast.sccore.capability.network;
 
+import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.capability.CapabilityUtils;
 import com.linearpast.sccore.capability.data.ICapabilitySync;
 import com.linearpast.sccore.capability.data.entity.SimpleEntityCapabilitySync;
 import com.linearpast.sccore.capability.data.player.SimplePlayerCapabilitySync;
@@ -7,18 +9,26 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
 
-public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapabilityPacket<T> {
+public class SimpleCapabilityPacket<T extends Entity> implements ICapabilityPacket<T> {
+    private final ResourceLocation key;
     private final CompoundTag data;
 
     /**
      * Constructor
      * @param data data tag
      */
-    public SimpleCapabilityPacket(CompoundTag data) {
+    public SimpleCapabilityPacket(ResourceLocation key, CompoundTag data) {
+        this.key = key;
         this.data = data;
+    }
+
+    public SimpleCapabilityPacket(ICapabilitySync<T> packet) {
+        this.key = packet.getKey();
+        this.data = packet.serializeNBT();
     }
 
     /**
@@ -26,6 +36,7 @@ public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapab
      * @param buf buf
      */
     public SimpleCapabilityPacket(FriendlyByteBuf buf) {
+        this.key = buf.readResourceLocation();
         this.data = buf.readNbt();
     }
 
@@ -35,6 +46,7 @@ public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapab
      */
     @Override
     public void encode(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(key);
         buf.writeNbt(data);
     }
 
@@ -42,7 +54,6 @@ public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapab
      * Default network packet handle, generally sufficient for use
      * @param context NetworkEvent.Context
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void handler(NetworkEvent.Context context) {
         context.setPacketHandled(true);
@@ -59,7 +70,11 @@ public abstract class SimpleCapabilityPacket<T extends Entity> implements ICapab
         }
         if(entity == null) return;
         try {
-            ICapabilitySync<?> data = getCapability((T) entity);
+            ICapabilitySync<?> data = CapabilityUtils.getCapability(entity, key);
+            if(data == null) {
+                SnowyCrescentCore.log.error("key {} not found when sync capability on entity {}", key, entity);
+                return;
+            }
             syncData(nbt, data);
         }catch (Exception ignored) {}
     }

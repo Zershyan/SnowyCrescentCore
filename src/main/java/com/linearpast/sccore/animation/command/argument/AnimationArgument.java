@@ -1,7 +1,8 @@
 package com.linearpast.sccore.animation.command.argument;
 
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
+import com.linearpast.sccore.animation.register.RawAnimationRegistry;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -13,6 +14,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -28,13 +32,22 @@ public class AnimationArgument implements ArgumentType<String> {
             animation -> Component.literal("Unknow animation : " + animation.toString())
     );
 
-    private final Supplier<Set<String>> animationNames;
+    private static Supplier<Set<String>> animationNames;
     public AnimationArgument() {
-        this.animationNames = AnimationArgument::getAnimationNames;
+        resetAnimationNames();
+    }
+
+    public static void resetAnimationNames() {
+        Set<String> set = new HashSet<>(getAnimationNames());
+        Set<String> strings = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () ->
+                AnimationArgument::getAnimationNamesClient
+        );
+        if (strings != null && !strings.isEmpty()) set.addAll(strings);
+        animationNames = () -> set;
     }
 
     private static Set<String> getAnimationNames(){
-        HashSet<String> set = new HashSet<>();
+        Set<String> set = new HashSet<>();
         AnimationRegistry.getAnimations().forEach((key, value) -> {
             String name = value.getName();
             if(name != null && !set.contains(name)) {
@@ -44,13 +57,22 @@ public class AnimationArgument implements ArgumentType<String> {
         return set;
     }
 
+    @OnlyIn(Dist.CLIENT)
+    private static Set<String> getAnimationNamesClient() {
+        Set<String> set = new HashSet<>();
+        RawAnimationRegistry.getAnimations().keySet().forEach(location ->
+                set.add(location.toString())
+        );
+        return set;
+    }
+
     public static AnimationArgument animation() {
         return new AnimationArgument();
     }
 
     @Nullable
     private static ResourceLocation getAnimationByName(String name) {
-        for (Animation animation : AnimationRegistry.getAnimations().values()) {
+        for (GenericAnimationData animation : AnimationRegistry.getAnimations().values()) {
             if (Objects.equals(animation.getName(), name)) {
                 return animation.getKey();
             }

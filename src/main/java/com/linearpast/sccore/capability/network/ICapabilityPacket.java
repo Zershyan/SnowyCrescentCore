@@ -5,7 +5,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -31,12 +30,6 @@ public interface ICapabilityPacket<T extends Entity> {
      */
     void handler(NetworkEvent.Context context);
 
-    /**
-     * Retrieve the corresponding capability from the network packet, usually executed after {@link ICapabilityPacket#syncData}
-     * @param entity Target
-     * @return capability
-     */
-    @Nullable ICapabilitySync<?> getCapability(T entity);
 
     /**
      * Get tag

@@ -3,6 +3,7 @@ package com.linearpast.sccore.capability.data;
 import com.linearpast.sccore.capability.network.SimpleCapabilityPacket;
 import com.linearpast.sccore.core.ModChannel;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -15,6 +16,8 @@ public interface ICapabilitySync<T extends Entity> extends INBTSerializable<Comp
     void setDirty(boolean dirty);
 
     boolean isDirty();
+
+    ResourceLocation getKey();
 
     /**
      * When this method is overridden, the super method should be called at the end

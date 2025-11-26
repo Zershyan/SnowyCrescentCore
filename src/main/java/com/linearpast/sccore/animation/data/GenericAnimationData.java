@@ -3,28 +3,28 @@ package com.linearpast.sccore.animation.data;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
-public class Animation {
+public class GenericAnimationData extends AnimationData {
     private @Nullable String name;
-    private final ResourceLocation key;
-    private KeyframeAnimation animation;
     private float heightModifier = 1.0f;
     private float camYaw;
     private float camPitch;
     private float camRoll;
     private float camY;
-    private @Nullable Animation.LyingType lyingType;
-    private @Nullable Ride ride;
+    private @Nullable GenericAnimationData.LyingType lyingType;
 
-    Animation(ResourceLocation key) {
+    GenericAnimationData(ResourceLocation key) {
         this.key = key;
     }
+    public GenericAnimationData(){}
 
-    public static Animation create(ResourceLocation name) {
-        return new Animation(name);
+    public static GenericAnimationData create(ResourceLocation name) {
+        return new GenericAnimationData(name);
     }
 
     public enum LyingType {
@@ -52,7 +52,7 @@ public class Animation {
         }
     }
 
-    public Animation withLyingType(@Nullable Animation.LyingType lyingType) {
+    public GenericAnimationData withLyingType(@Nullable GenericAnimationData.LyingType lyingType) {
         this.lyingType = lyingType;
         if(lyingType == null) return this;
         this.camY = -1.3f;
@@ -72,37 +72,37 @@ public class Animation {
         return this;
     }
 
-    public Animation withHeightModifier(float heightModifier) {
+    public GenericAnimationData withHeightModifier(float heightModifier) {
         this.heightModifier = heightModifier;
         return this;
     }
 
-    public Animation withCamYaw(float camYaw) {
+    public GenericAnimationData withCamYaw(float camYaw) {
         this.camYaw = camYaw;
         return this;
     }
 
-    public Animation withCamPitch(float camPitch) {
+    public GenericAnimationData withCamPitch(float camPitch) {
         this.camPitch = camPitch;
         return this;
     }
 
-    public Animation withCamRoll(float camRoll) {
+    public GenericAnimationData withCamRoll(float camRoll) {
         this.camRoll = camRoll;
         return this;
     }
 
-    public Animation withCamY(float camY) {
+    public GenericAnimationData withCamY(float camY) {
         this.camY = camY;
         return this;
     }
 
-    public Animation withRide(Ride ride) {
+    public GenericAnimationData withRide(Ride ride) {
         this.ride = ride;
         return this;
     }
 
-    public Animation withName(String name) {
+    public GenericAnimationData withName(String name) {
         String regex = "^[a-zA-Z0-9_-]+$";
         Pattern pattern = Pattern.compile(regex);
         if (!pattern.matcher(name).matches()) {
@@ -131,11 +131,12 @@ public class Animation {
     }
 
     @Nullable
+    @OnlyIn(Dist.CLIENT)
     public KeyframeAnimation getAnimation() {
         return PlayerAnimationRegistry.getAnimation(key);
     }
 
-    public @Nullable Animation.LyingType getLyingType() {
+    public @Nullable GenericAnimationData.LyingType getLyingType() {
         return lyingType;
     }
 
@@ -145,14 +146,6 @@ public class Animation {
 
     public float getHeightModifier() {
         return heightModifier;
-    }
-
-    public @Nullable Ride getRide() {
-        return ride;
-    }
-
-    public ResourceLocation getKey() {
-        return key;
     }
 
     public @Nullable String getName() {

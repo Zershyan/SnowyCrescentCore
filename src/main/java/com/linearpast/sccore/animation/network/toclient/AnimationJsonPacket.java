@@ -2,7 +2,7 @@ package com.linearpast.sccore.animation.network.toclient;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.util.AnimJson;
 import com.linearpast.sccore.animation.data.util.AnimLayerJson;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
@@ -31,7 +31,7 @@ public record AnimationJsonPacket(String json, boolean isLayer) {
                 Map<ResourceLocation, Integer> parse = AnimLayerJson.Reader.stream(element).parse();
                 parse.forEach(AnimationRegistry.ClientCache::cacheAddAnimationLayer);
             } else {
-                Animation animation = AnimJson.Reader.stream(element).parse();
+                GenericAnimationData animation = AnimJson.Reader.stream(element).parse();
                 AnimationRegistry.ClientCache.cacheAddAnimation(animation.getKey(), animation);
             }
         });

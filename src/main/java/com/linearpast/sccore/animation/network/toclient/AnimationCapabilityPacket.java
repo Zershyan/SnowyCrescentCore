@@ -1,8 +1,9 @@
 package com.linearpast.sccore.animation.network.toclient;
 
-import com.linearpast.sccore.animation.AnimationPlayer;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
+import com.linearpast.sccore.animation.utils.AnimationUtils;
+import com.linearpast.sccore.capability.data.ICapabilitySync;
 import com.linearpast.sccore.capability.data.player.SimplePlayerCapabilitySync;
 import com.linearpast.sccore.capability.network.SimpleCapabilityPacket;
 import net.minecraft.client.Minecraft;
@@ -13,15 +14,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
-    public AnimationCapabilityPacket(CompoundTag data) {
-        super(data);
+    public AnimationCapabilityPacket(ICapabilitySync<Player> packet) {
+        super(packet);
     }
 
     public AnimationCapabilityPacket(FriendlyByteBuf buf) {
@@ -36,16 +36,12 @@ public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
         if (level == null) return;
         CompoundTag nbt = getData();
         Player player = level.getPlayerByUUID(nbt.getUUID(SimplePlayerCapabilitySync.OwnerUUID));
+        if(player == null) return;
         try {
-            IAnimationCapability data = getCapability(player);
+            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
             testPlayAnimations((AbstractClientPlayer) player, nbt, data);
             syncData(nbt, data);
         }catch (Exception ignored) {}
-    }
-
-    @Override
-    public @Nullable IAnimationCapability getCapability(Player player) {
-        return AnimationDataCapability.getCapability(player).orElse(null);
     }
 
     private void testPlayAnimations(AbstractClientPlayer player, CompoundTag tag, IAnimationCapability data) {
@@ -56,8 +52,8 @@ public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
         if(!Objects.equals(oldRiderAnimLayer, newRiderAnimLayer)) {
             String riderAnimationString = tag.getString(AnimationDataCapability.RideAnimation);
             ResourceLocation newRiderAnimation = riderAnimationString.isEmpty() ? null : new ResourceLocation(riderAnimationString);
-            if(oldRiderAnimLayer != null) AnimationPlayer.playAnimation(player, oldRiderAnimLayer, null);
-            if(newRiderAnimLayer != null) AnimationPlayer.playAnimation(player, newRiderAnimLayer, newRiderAnimation);
+            if(oldRiderAnimLayer != null) AnimationUtils.playAnimation(player, oldRiderAnimLayer, null);
+            if(newRiderAnimLayer != null) AnimationUtils.playAnimation(player, newRiderAnimLayer, newRiderAnimation);
         }
 
         Set<ResourceLocation> oldLayerSet = new HashSet<>(data.getAnimations().keySet());
@@ -68,15 +64,12 @@ public class AnimationCapabilityPacket extends SimpleCapabilityPacket<Player> {
             ResourceLocation newAnimLocation = newAnimString.isEmpty() ? null : new ResourceLocation(newAnimString);
             ResourceLocation oldAnimLocation = data.getAnimation(newLayerLocation);
             if (!Objects.equals(newAnimLocation, oldAnimLocation)) {
-                AnimationPlayer.playAnimation(player, newLayerLocation, newAnimLocation);
+                AnimationUtils.playAnimation(player, newLayerLocation, newAnimLocation);
             }
             oldLayerSet.remove(newLayerLocation);
         }
         for (ResourceLocation oldLayerLocation : oldLayerSet) {
-            AnimationPlayer.playAnimation(player, oldLayerLocation, null);
+            AnimationUtils.playAnimation(player, oldLayerLocation, null);
         }
-
-
-
     }
 }

@@ -30,7 +30,7 @@ public abstract class ModLazyRun {
         try {
             if(isModLoaded()) return callable.call();
             else return elseCall.call();
-        }catch(Exception e) {
+        }catch(Exception ignored) {
             return null;
         }
     }

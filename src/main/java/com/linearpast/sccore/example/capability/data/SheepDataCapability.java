@@ -10,7 +10,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Sheep;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -76,18 +75,30 @@ public class SheepDataCapability extends SimpleEntityCapabilitySync<Sheep> imple
      * @see SimpleCapabilityPacket
      */
     public static class SheepCapabilityPacket extends SimpleCapabilityPacket<Sheep> {
-        public SheepCapabilityPacket(CompoundTag data) {
-            super(data);
-        }
-
+        /**
+         * You must override the constructor of FriendlyByteBuf
+         * @param buf FriendlyByteBuf
+         */
         public SheepCapabilityPacket(FriendlyByteBuf buf) {
             super(buf);
         }
 
-        @Override
-        public @Nullable SheepDataCapability getCapability(Sheep entity) {
-            return SheepDataCapability.getCapability(entity).orElse(null);
+        /**
+         * More, you must override a constructor to help you create an instance
+         * @param data Cap data
+         */
+        public SheepCapabilityPacket(SheepDataCapability data) {
+            super(data);
         }
+    }
+
+    /**
+     * Return the capability key
+     * @return The capability key
+     */
+    @Override
+    public ResourceLocation getKey() {
+        return new ResourceLocation(SnowyCrescentCore.MODID, "sheep_data");
     }
 
     /**
@@ -97,7 +108,7 @@ public class SheepDataCapability extends SimpleEntityCapabilitySync<Sheep> imple
      */
     @Override
     public SimpleCapabilityPacket<Sheep> getDefaultPacket() {
-        return new SheepCapabilityPacket(serializeNBT());
+        return new SheepCapabilityPacket(this);
     }
 
     /**

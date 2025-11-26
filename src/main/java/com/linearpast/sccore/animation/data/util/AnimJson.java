@@ -2,7 +2,7 @@ package com.linearpast.sccore.animation.data.util;
 
 import com.google.gson.*;
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
@@ -53,16 +53,16 @@ public class AnimJson {
             return new Reader(jsonElement);
         }
 
-        public Animation parse() {
+        public GenericAnimationData parse() {
             return fromJson();
         }
 
-        public Animation fromJson() {
+        public GenericAnimationData fromJson() {
             try {
                 JsonObject json = originElement.getAsJsonObject();
-                Animation animation = Animation.create(new ResourceLocation(json.get(Key).getAsString()));
+                GenericAnimationData animation = GenericAnimationData.create(new ResourceLocation(json.get(Key).getAsString()));
                 if(json.has(Name)) animation.withName(json.get(Name).getAsString());
-                if(json.has(LyingType)) animation.withLyingType(Animation.LyingType.valueOf(json.get(LyingType).getAsString()));
+                if(json.has(LyingType)) animation.withLyingType(GenericAnimationData.LyingType.valueOf(json.get(LyingType).getAsString()));
                 animation.withHeightModifier(json.get(HeightModifier).getAsFloat())
                         .withCamY(json.get(CamY).getAsFloat())
                         .withCamPitch(json.get(CamPitch).getAsFloat())
@@ -100,25 +100,25 @@ public class AnimJson {
     public static class Writer {
         private static final String example = "example";
         private final @Nullable Path file;
-        private final Animation animation;
-        Writer(@Nullable Path file, Animation animation) {
+        private final GenericAnimationData animation;
+        Writer(@Nullable Path file, GenericAnimationData animation) {
             this.animation = animation;
             this.file = file;
         }
 
-        public static Writer stream(Path path, Animation animation) {
+        public static Writer stream(Path path, GenericAnimationData animation) {
             return new Writer(path, animation);
         }
 
-        public static Writer stream(Animation animation) {
+        public static Writer stream(GenericAnimationData animation) {
             return new Writer(null, animation);
         }
 
         public static Path syntaxExample(Path directory) throws Exception {
             ResourceLocation exampleLocation = new ResourceLocation(SnowyCrescentCore.MODID, Writer.example);
-            Animation example = Animation.create(exampleLocation)
+            GenericAnimationData example = GenericAnimationData.create(exampleLocation)
                     .withName(Writer.example)
-                    .withLyingType(Animation.LyingType.RIGHT)
+                    .withLyingType(GenericAnimationData.LyingType.RIGHT)
                     .withHeightModifier(0.3f)
                     .withCamY(-1.3f)
                     .withCamPitch(-90.0f)

@@ -1,7 +1,7 @@
 package com.linearpast.sccore;
 
 
-import com.linearpast.sccore.animation.AnimationUtils;
+import com.linearpast.sccore.animation.helper.IAnimationHelper;
 import com.linearpast.sccore.capability.CapabilityUtils;
 import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.core.ModCommands;
@@ -34,7 +34,7 @@ public class SnowyCrescentCore {
 
         CapabilityUtils.registerHandler(forgeBus);
         ModChannel.register();
-        AnimationUtils.register(forgeBus, modBus);
+        IAnimationHelper.register(forgeBus, modBus);
         ModCommands.registerCommands(forgeBus, modBus);
 
         if(!FMLEnvironment.production || Boolean.getBoolean(ENABLE_EXAMPLES_PROPERTY_KEY)) {

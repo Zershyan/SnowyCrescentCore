@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.network.toclient;
 
-import com.linearpast.sccore.animation.AnimationPlayer;
-import com.linearpast.sccore.animation.event.client.ClientPlayerTick;
+import com.linearpast.sccore.animation.event.client.ClientPlayerEvent;
+import com.linearpast.sccore.animation.utils.AnimationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -39,8 +39,8 @@ public class SyncAnimationPacket {
             if(level == null) return;
             AbstractClientPlayer player = (AbstractClientPlayer) level.getPlayerByUUID(playerUUID);
             AbstractClientPlayer target = (AbstractClientPlayer) level.getPlayerByUUID(targetUUID);
-            ClientPlayerTick.runs.put(
-                    () -> AnimationPlayer.syncAnimation(player, target),
+            ClientPlayerEvent.runs.put(
+                    () -> AnimationUtils.syncAnimation(player, target),
                     new AbstractMap.SimpleEntry<>(5, 0)
             );
 

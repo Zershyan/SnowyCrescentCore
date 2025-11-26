@@ -1,8 +1,8 @@
 package com.linearpast.sccore.animation.capability;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.animation.network.toclient.AnimationCapabilityPacket;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.linearpast.sccore.capability.CapabilityUtils;
@@ -35,7 +35,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     public void mergeAnimations(Map<ResourceLocation, ResourceLocation> animations) {
         animations.forEach((key, value) -> {
             if (AnimationRegistry.getLayers().containsKey(key)) {
-                if (AnimationUtils.isAnimationPresent(value)) {
+                if (AnimationHelper.INSTANCE.isAnimationPresent(value)) {
                     if(Objects.equals(rideAnimLayer, key)) {
                         removeRiderAnimation();
                     }
@@ -49,7 +49,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     @Override
     public boolean mergeAnimation(ResourceLocation layer, ResourceLocation animation) {
         if (AnimationRegistry.getLayers().containsKey(layer)) {
-            if (AnimationUtils.isAnimationPresent(animation)) {
+            if (AnimationHelper.INSTANCE.isAnimationPresent(animation)) {
                 if(Objects.equals(rideAnimLayer, layer)) {
                     removeRiderAnimation();
                 }
@@ -74,12 +74,12 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     @Nullable
     @Override
     public ResourceLocation getAnimation(ResourceLocation layer) {
-        return animMap.get(layer);
+        return animMap.getOrDefault(layer, null);
     }
 
     @Override
     public Map<ResourceLocation, ResourceLocation> getAnimations() {
-        return animMap;
+        return Map.copyOf(animMap);
     }
 
     @Override
@@ -105,8 +105,8 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
 
     @Override
     public void setRiderAnimation(@NotNull ResourceLocation layer, @NotNull ResourceLocation animation) {
-        if(AnimationUtils.isAnimationLayerPresent(layer)) {
-            if(AnimationUtils.isAnimationPresent(animation)) {
+        if(AnimationHelper.INSTANCE.isAnimationLayerPresent(layer)) {
+            if(AnimationHelper.INSTANCE.isAnimationPresent(animation)) {
                 this.rideAnimLayer = layer;
                 this.rideAnimation = animation;
                 if(animMap.get(layer) != null) {
@@ -164,18 +164,23 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     }
 
     @Override
+    public ResourceLocation getKey() {
+        return key;
+    }
+
+    @Override
     public SimpleCapabilityPacket<Player> getDefaultPacket() {
-        return new AnimationCapabilityPacket(serializeNBT());
+        return new AnimationCapabilityPacket(this);
     }
 
     @Override
     public void attachInit(Player player) {
         Map<ResourceLocation, ResourceLocation> map = new HashMap<>(this.animMap);
         map.forEach((key, value) -> {
-            if(!AnimationUtils.isAnimationLayerPresent(key)) this.animMap.remove(key);
-            if(!AnimationUtils.isAnimationPresent(value)) this.animMap.remove(key);
+            if(!AnimationHelper.INSTANCE.isAnimationLayerPresent(key)) this.animMap.remove(key);
+            if(!AnimationHelper.INSTANCE.isAnimationPresent(value)) this.animMap.remove(key);
         });
-        if(rideAnimLayer != null && !AnimationUtils.isAnimationLayerPresent(rideAnimLayer)) {
+        if(rideAnimLayer != null && !AnimationHelper.INSTANCE.isAnimationLayerPresent(rideAnimLayer)) {
             removeRiderAnimation();
         }
     }

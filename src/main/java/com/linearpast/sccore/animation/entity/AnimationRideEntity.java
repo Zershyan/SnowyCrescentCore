@@ -1,23 +1,21 @@
 package com.linearpast.sccore.animation.entity;
 
-import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.animation.register.AnimationEntities;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -28,16 +26,12 @@ public class AnimationRideEntity extends Entity {
         this.noPhysics = true;
     }
 
-    private static final String Animation = "Animation";
-    private static final String PlayerUUID = "PlayerUUID";
-    private static final String Layer = "Layer";
-
     private final Set<ServerPlayer> players = new HashSet<>();
     private final Map<ResourceLocation, UUID> animationPair = new HashMap<>();
-    private Animation animation;
+    private GenericAnimationData animation;
     private ServerPlayer player;
     private ResourceLocation layer;
-    public AnimationRideEntity(ServerPlayer pPlayer, ResourceLocation layer, Animation animation) {
+    public AnimationRideEntity(ServerPlayer pPlayer, ResourceLocation layer, GenericAnimationData animation) {
         this(pPlayer.level());
         this.player = pPlayer;
         this.layer = layer;
@@ -63,7 +57,7 @@ public class AnimationRideEntity extends Entity {
         return player;
     }
 
-    public Animation getAnimation() {
+    public GenericAnimationData getAnimation() {
         return animation;
     }
 
@@ -71,36 +65,10 @@ public class AnimationRideEntity extends Entity {
     protected void defineSynchedData() {}
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag pCompound) {
-        String string = pCompound.getString(Animation);
-        if(!string.isEmpty()) {
-            ResourceLocation rl = new ResourceLocation(string);
-            Animation anim = AnimationUtils.getAnimation(rl);
-            if(anim != null) {
-                this.animation = anim;
-            }
-        }
-
-        if(pCompound.contains(PlayerUUID)) {
-            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-            if(server != null) {
-                this.player = server.getPlayerList().getPlayer(pCompound.getUUID(PlayerUUID));
-            }
-        }
-
-        if(pCompound.contains(Layer)) {
-            this.layer = new ResourceLocation(pCompound.getString(Layer));
-        }
-    }
+    protected void readAdditionalSaveData(@NotNull CompoundTag pCompound) {}
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag pCompound) {
-        pCompound.putUUID(PlayerUUID, player.getUUID());
-        pCompound.putString(Layer, layer.toString());
-        if(animation != null) {
-            pCompound.putString(Animation, animation.getKey().toString());
-        }
-    }
+    protected void addAdditionalSaveData(@NotNull CompoundTag pCompound) {}
 
     @Override
     public void tick() {
@@ -134,7 +102,7 @@ public class AnimationRideEntity extends Entity {
     }
 
     public static boolean create(ServerPlayer pPlayer, ResourceLocation layer, ResourceLocation animation, boolean force) {
-        Animation anim = AnimationUtils.getAnimation(animation);
+        GenericAnimationData anim = AnimationHelper.INSTANCE.getAnimation(animation);
         if(anim == null) return false;
         if(anim.getRide() == null) return false;
         IAnimationCapability data = AnimationDataCapability.getCapability(pPlayer).orElse(null);
@@ -195,7 +163,7 @@ public class AnimationRideEntity extends Entity {
             IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
             if(data == null) return;
             data.setRiderAnimation(layer, animLocation);
-            AnimationUtils.syncAnimation(serverPlayer, player);
+            AnimationHelper.INSTANCE.syncAnimation(serverPlayer, player);
             players.add(serverPlayer);
         }
     }
@@ -204,16 +172,16 @@ public class AnimationRideEntity extends Entity {
     protected void removePassenger(@NotNull Entity entity) {
         super.removePassenger(entity);
         if(entity instanceof ServerPlayer serverPlayer) {
-            AnimationUtils.removeAnimation(serverPlayer, layer);
+            AnimationHelper.INSTANCE.removeAnimation(serverPlayer, layer);
             players.remove(serverPlayer);
             new HashMap<>(animationPair).forEach((key, value) -> {
                 if(Objects.equals(value, serverPlayer.getUUID())) {
                     animationPair.put(key, null);
                 }
             });
-            IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
-            if(data == null) return;
-            data.removeRiderAnimation();
+            AnimationDataCapability.getCapability(serverPlayer).ifPresent(
+                    IAnimationCapability::removeRiderAnimation
+            );
         }
     }
 

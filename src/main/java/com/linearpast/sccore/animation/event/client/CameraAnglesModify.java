@@ -1,15 +1,16 @@
 package com.linearpast.sccore.animation.event.client;
 
-import com.linearpast.sccore.animation.AnimationUtils;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import dev.kosmx.playerAnim.core.util.MathHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Comparator;
 
@@ -22,6 +23,7 @@ public class CameraAnglesModify {
     private static float currentPitch = 0.0F;
     private static float currentRoll = 0.0F;
 
+    @SubscribeEvent
     public static void changeCameraView(ViewportEvent.ComputeCameraAngles event){
         Minecraft minecraft = Minecraft.getInstance();
 
@@ -30,10 +32,10 @@ public class CameraAnglesModify {
             if (player != null) {
                 IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
                 if(data == null) return;
-                Animation animation = null;
+                GenericAnimationData animation = null;
                 try {
                     animation = data.getAnimations().values().stream()
-                            .map(AnimationUtils::getAnimation)
+                            .map(AnimationHelper.INSTANCE::getAnimation)
                             .min(Comparator.comparingDouble(anim -> {
                                 if (anim == null) return 1.0f;
                                 return anim.getHeightModifier();

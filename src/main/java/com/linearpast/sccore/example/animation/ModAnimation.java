@@ -1,12 +1,10 @@
 package com.linearpast.sccore.example.animation;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.AnimationUtils;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.RawAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
-import com.linearpast.sccore.animation.event.create.AnimationLayerRegisterEvent;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
-import com.linearpast.sccore.example.animation.event.ExampleCommandEvent;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.example.animation.event.ExamplePlayerAttackEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,7 +12,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
- * @see AnimationUtils
+ * @see AnimationHelper
  */
 public class ModAnimation {
     /**
@@ -38,7 +36,7 @@ public class ModAnimation {
      * See wiki (If I'm done.)
      * @param event event
      */
-    public static void onLayerRegister(AnimationLayerRegisterEvent event) {
+    public static void onLayerRegister(AnimationRegisterEvent.Layer event) {
         event.registerLayer(normalLayers, 42);
     }
 
@@ -47,23 +45,34 @@ public class ModAnimation {
      * See wiki (If I'm done.)
      * @param event event
      */
-    public static void onAnimationRegister(AnimationRegisterEvent event) {
+    public static void onAnimationRegister(AnimationRegisterEvent.Animation event) {
         //You must define corresponding Animation to invite
-        Animation amLTRL = Animation.create(AmLyingToRightLying)
-                .withLyingType(Animation.LyingType.RIGHT)
-                .withName("Lying-to-Right-Lying");
-        Animation amSTL = Animation.create(AmStandToLying)
-                .withName("Stand-to-Lying")
-                .withLyingType(Animation.LyingType.FRONT);
-        Animation waltzGentleman = Animation.create(WaltzGentleman)
-                .withName("Waltz-Gentleman")
-                .withRide(Ride.create().addComponentAnimation(WaltzLady));
-        Animation waltzLady = Animation.create(WaltzLady)
-                .withName("Waltz-Lady")
-                .withCamYaw(180)
-                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
+//        Animation amLTRL = Animation.create(AmLyingToRightLying)
+//                .withLyingType(Animation.LyingType.RIGHT)
+//                .withName("Lying-to-Right-Lying");
+//        Animation amSTL = Animation.create(AmStandToLying)
+//                .withName("Stand-to-Lying")
+//                .withLyingType(Animation.LyingType.FRONT);
+//        Animation waltzGentleman = Animation.create(WaltzGentleman)
+//                .withName("Waltz-Gentleman")
+//                .withRide(Ride.create().addComponentAnimation(WaltzLady));
+//        Animation waltzLady = Animation.create(WaltzLady)
+//                .withName("Waltz-Lady")
+//                .withCamYaw(180)
+//                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
+//
+//        //You can use it to invite an Animation
+//        event.registerAnimation(AmLyingToRightLying, amLTRL);
+//        event.registerAnimation(AmStandToLying, amSTL);
+//        event.registerAnimation(WaltzGentleman, waltzGentleman);
+//        event.registerAnimation(WaltzLady, waltzLady);
+    }
 
-        //You can use it to invite an Animation
+    public static void onRawAnimationRegister(AnimationRegisterEvent.RawAnimation event) {
+        RawAnimationData amSTL = RawAnimationData.create(AmStandToLying).withRide(Ride.create().withExistTick(100));
+        RawAnimationData amLTRL = RawAnimationData.create(AmLyingToRightLying).withRide(Ride.create().withExistTick(100));
+        RawAnimationData waltzGentleman = RawAnimationData.create(WaltzGentleman).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzLady));
+        RawAnimationData waltzLady = RawAnimationData.create(WaltzLady).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzGentleman));
         event.registerAnimation(AmLyingToRightLying, amLTRL);
         event.registerAnimation(AmStandToLying, amSTL);
         event.registerAnimation(WaltzGentleman, waltzGentleman);
@@ -77,10 +86,11 @@ public class ModAnimation {
         forgeBus.addListener(ModAnimation::onAnimationRegister);
 
         //Try to play animation
-        forgeBus.addListener(ExamplePlayerAttackEvent::onPlayerAttack);
-        forgeBus.addListener(ExampleCommandEvent::inviteDance);
+//        forgeBus.addListener(ExamplePlayerAttackEvent::onPlayerAttack);
+        forgeBus.addListener(ExamplePlayerAttackEvent::rawAnimationAttack);
         if(FMLEnvironment.dist == Dist.CLIENT){
-            forgeBus.addListener(ExamplePlayerAttackEvent::onInputEvent);
+//            forgeBus.addListener(ExamplePlayerAttackEvent::onInputEvent);
+            forgeBus.addListener(ModAnimation::onRawAnimationRegister);
         }
     }
 }

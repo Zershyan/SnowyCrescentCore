@@ -1,24 +1,50 @@
 package com.linearpast.sccore.animation.event.create;
 
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
+import com.linearpast.sccore.animation.data.RawAnimationData;
+import com.linearpast.sccore.animation.register.RawAnimationRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * You can listen this event to invite an animation <br>
- * It is only useful in server
- */
 public class AnimationRegisterEvent extends Event {
-    private final Map<ResourceLocation, Animation> animations = new HashMap<>();
+    public static class Layer extends AnimationRegisterEvent {
+        private final Map<ResourceLocation, Integer> layers = new HashMap<>();
 
-    public Map<ResourceLocation, Animation> getAnimations() {
-        return new HashMap<>(animations);
+        public Map<ResourceLocation, Integer> getLayers() {
+            return layers;
+        }
+
+        public void registerLayer(ResourceLocation key, Integer value) {
+            layers.put(key, value);
+        }
     }
 
-    public void registerAnimation(ResourceLocation location, Animation animation) {
-        animations.put(location, animation);
+    public static class Animation extends AnimationRegisterEvent {
+        private final Map<ResourceLocation, GenericAnimationData> animations = new HashMap<>();
+
+        public Map<ResourceLocation, GenericAnimationData> getAnimations() {
+            return new HashMap<>(animations);
+        }
+
+        public void registerAnimation(ResourceLocation location, GenericAnimationData animation) {
+            animations.put(location, animation);
+        }
+    }
+
+    public static class RawAnimation extends AnimationRegisterEvent {
+        private final Map<ResourceLocation, RawAnimationData> animations = new HashMap<>();
+
+        public Map<ResourceLocation, RawAnimationData> getAnimations() {
+            return new HashMap<>(animations);
+        }
+
+        public void registerAnimation(ResourceLocation location, RawAnimationData animation) {
+            if (RawAnimationRegistry.validateLocation(location)) {
+                animations.put(location, animation);
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.command.client;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.AnimationUtils;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.core.datagen.ModLang;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -16,9 +16,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import static net.minecraft.commands.Commands.literal;
 
 @OnlyIn(Dist.CLIENT)
-public class RefreshAnimCommand {
+public class RefreshCommand {
     public static void register(LiteralArgumentBuilder<CommandSourceStack> animCommand){
-        animCommand.then(literal("refresh").executes(RefreshAnimCommand::refresh));
+        animCommand.then(literal("refresh").executes(RefreshCommand::refresh));
     }
 
     private static int refresh(CommandContext<CommandSourceStack> ctx){
@@ -27,7 +27,7 @@ public class RefreshAnimCommand {
             Minecraft instance = Minecraft.getInstance();
             LocalPlayer player = instance.player;
             if(player == null) throw new RuntimeException();
-            AnimationUtils.refreshAnimation(player);
+            AnimationHelper.INSTANCE.refreshAnimation(player);
             source.sendSuccess(() -> Component.translatable(
                     ModLang.TranslatableMessage.REFRESH_ANIMATIONS.getKey()
             ).withStyle(ChatFormatting.GREEN), true);

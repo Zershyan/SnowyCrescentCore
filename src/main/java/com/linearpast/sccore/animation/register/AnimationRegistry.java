@@ -3,21 +3,26 @@ package com.linearpast.sccore.animation.register;
 import com.google.gson.JsonElement;
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
+import com.linearpast.sccore.animation.capability.RawAnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.data.Animation;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
+import com.linearpast.sccore.animation.data.RawAnimationData;
 import com.linearpast.sccore.animation.data.util.AnimJson;
 import com.linearpast.sccore.animation.data.util.AnimLayerJson;
-import com.linearpast.sccore.animation.event.create.AnimationLayerRegisterEvent;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
+import com.linearpast.sccore.animation.helper.RawAnimationHelper;
 import com.linearpast.sccore.animation.mixin.IMixinPlayerAnimationFactoryHolder;
 import com.linearpast.sccore.animation.network.toclient.AnimationClientStatusPacket;
 import com.linearpast.sccore.animation.network.toclient.AnimationJsonPacket;
 import com.linearpast.sccore.core.ModChannel;
+import com.linearpast.sccore.utils.ModuleAccess;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
+import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
+import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Pair;
 import dev.kosmx.playerAnim.impl.animation.AnimationApplier;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
@@ -35,6 +40,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,10 +59,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class AnimationRegistry {
-    private static final Map<ResourceLocation, Animation> animations = new HashMap<>();
+    private static final Map<ResourceLocation, GenericAnimationData> animations = new HashMap<>();
     private static final Map<ResourceLocation, Integer> layers = new HashMap<>();
 
-    public static Map<ResourceLocation, Animation> getAnimations() {
+    public static Map<ResourceLocation, GenericAnimationData> getAnimations() {
         return Map.copyOf(animations);
     }
 
@@ -65,7 +71,7 @@ public class AnimationRegistry {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void registerAnimations(Map<ResourceLocation, Animation> animationMap) {
+    public static void registerAnimations(Map<ResourceLocation, GenericAnimationData> animationMap) {
         animations.clear();
         animations.putAll(animationMap);
     }
@@ -76,6 +82,7 @@ public class AnimationRegistry {
         layers.putAll(layerMap);
     }
 
+    @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         Path dataPackPath = event.getServer().getWorldPath(LevelResource.DATAPACK_DIR);
         Path animationPath = dataPackPath.resolve("animation");
@@ -109,12 +116,12 @@ public class AnimationRegistry {
                 dataPackPath.resolve("animation"),
                 path -> path.getFileName().toString().equals("animation.layer.json")
         );
-        Set<Animation> animationsSet = new HashSet<>();
+        Set<GenericAnimationData> animationsSet = new HashSet<>();
         Map<ResourceLocation, Integer> layersMap = new HashMap<>();
         for (Path path : animPaths) {
             try {
                 AnimJson.Reader reader = AnimJson.Reader.stream(path);
-                Animation anim = reader.parse();
+                GenericAnimationData anim = reader.parse();
                 animationsSet.add(anim);
             } catch (Exception ignored) {
                 SnowyCrescentCore.log.error("Failed to parse animation JSON: {}", path.toString());
@@ -131,20 +138,21 @@ public class AnimationRegistry {
         }
 
         animations.clear();
-        AnimationRegisterEvent animationRegisterEvent = new AnimationRegisterEvent();
+        AnimationRegisterEvent.Animation animationRegisterEvent = new AnimationRegisterEvent.Animation();
         MinecraftForge.EVENT_BUS.post(animationRegisterEvent);
-        Map<ResourceLocation, Animation> animationMap = animationRegisterEvent.getAnimations();
+        Map<ResourceLocation, GenericAnimationData> animationMap = animationRegisterEvent.getAnimations();
         animations.putAll(animationMap);
-        animations.putAll(animationsSet.stream().collect(Collectors.toMap(Animation::getKey, animation -> animation)));
+        animations.putAll(animationsSet.stream().collect(Collectors.toMap(GenericAnimationData::getKey, animation -> animation)));
 
         layers.clear();
-        AnimationLayerRegisterEvent layerRegisterEvent = new AnimationLayerRegisterEvent();
+        AnimationRegisterEvent.Layer layerRegisterEvent = new AnimationRegisterEvent.Layer();
         MinecraftForge.EVENT_BUS.post(layerRegisterEvent);
         Map<ResourceLocation, Integer> layerMap = layerRegisterEvent.getLayers();
         layers.putAll(layerMap);
         layers.putAll(layersMap);
     }
 
+    @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             MinecraftServer server = serverPlayer.getServer();
@@ -156,7 +164,7 @@ public class AnimationRegistry {
                 catch (IOException e) { return; }
             }
             ModChannel.sendToPlayer(new AnimationClientStatusPacket(AnimationClientStatusPacket.Status.ANIM_CACHE_CLEAR), serverPlayer);
-            for (Animation value : animations.values()) {
+            for (GenericAnimationData value : animations.values()) {
                 JsonElement json = AnimJson.Writer.stream(value).toJson();
                 String string = json.toString();
                 ModChannel.sendToPlayer(new AnimationJsonPacket(string, false), serverPlayer);
@@ -213,10 +221,11 @@ public class AnimationRegistry {
 
     @OnlyIn(Dist.CLIENT)
     public static class ClientCache {
-        private static final Map<ResourceLocation, Animation> animationsCache = new HashMap<>();
+        public static boolean isAnimationRegistered = false;
+        private static final Map<ResourceLocation, GenericAnimationData> animationsCache = new HashMap<>();
         private static final Map<ResourceLocation, Integer> layersCache = new HashMap<>();
 
-        public static void cacheAddAnimation(ResourceLocation location, Animation animation) {
+        public static void cacheAddAnimation(ResourceLocation location, GenericAnimationData animation) {
             animationsCache.put(location, animation);
         }
 
@@ -233,7 +242,11 @@ public class AnimationRegistry {
                             .sccore$clearAnimations();
                     layersCache.clear();
                 }
-                case ANIM_REGISTER -> registerAnimations(animationsCache);
+                case ANIM_REGISTER -> {
+                    isAnimationRegistered = true;
+                    registerAnimations(animationsCache);
+                    RawAnimationRegistry.triggerRegistry();
+                }
                 case LAYER_REGISTER -> {
                     registerLayers(layersCache);
                     layersCache.forEach((key, value) ->
@@ -246,47 +259,71 @@ public class AnimationRegistry {
                         SnowyCrescentCore.log.error("{} : Level is null", ClientCache.class.getName());
                         return;
                     }
-                    for (AbstractClientPlayer player : level.players()) {
-                        try {
-                            if (player == null) throw new Exception("player is null");
-                            Class<?> playerClass = Player.class;
-                            Field animationStackField = playerClass.getDeclaredField("animationStack");
-                            animationStackField.setAccessible(true);
-                            Method createAnimationStack = playerClass.getDeclaredMethod("createAnimationStack");
-                            createAnimationStack.setAccessible(true);
-                            AnimationStack newAnimationStack = (AnimationStack) createAnimationStack.invoke(player);
-                            AnimationStack oldAnimationStack = (AnimationStack) animationStackField.get(player);
-                            Field layersField = AnimationStack.class.getDeclaredField("layers");
-                            layersField.setAccessible(true);
-                            ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
-                            ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
-                            ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
-                            result.addAll(oldArrayList);
-                            result.addAll(newArrayList);
-                            layersField.set(newAnimationStack, result);
-                            animationStackField.set(player, newAnimationStack);
-                            Field animationApplierField = playerClass.getDeclaredField("animationApplier");
-                            animationApplierField.setAccessible(true);
-                            animationApplierField.set(player, new AnimationApplier(newAnimationStack));
-                            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-                            if(data == null) return;
-                            Map<ResourceLocation, ResourceLocation> dataAnimations = data.getAnimations();
-                            ResourceLocation riderAnimLayer = data.getRiderAnimLayer();
-                            if(riderAnimLayer != null) {
-                                dataAnimations.put(riderAnimLayer, data.getRiderAnimation());
+                    try {
+                        ModuleAccess.open(
+                                Player.class.getModule(),
+                                Player.class.getPackageName(),
+                                AnimationRegistry.class.getModule()
+                        );
+                        for (AbstractClientPlayer player : level.players()) {
+                            try {
+                                Class<?> playerClass = Player.class;
+                                Field animationStackField = playerClass.getDeclaredField("animationStack");
+                                animationStackField.setAccessible(true);
+                                Method createAnimationStack = playerClass.getDeclaredMethod("createAnimationStack");
+                                createAnimationStack.setAccessible(true);
+                                AnimationStack newAnimationStack = (AnimationStack) createAnimationStack.invoke(player);
+                                AnimationStack oldAnimationStack = (AnimationStack) animationStackField.get(player);
+                                Field layersField = AnimationStack.class.getDeclaredField("layers");
+                                layersField.setAccessible(true);
+                                ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
+                                ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
+                                ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
+                                result.addAll(oldArrayList);
+                                result.addAll(newArrayList);
+                                layersField.set(newAnimationStack, result);
+                                animationStackField.set(player, newAnimationStack);
+                                Field animationApplierField = playerClass.getDeclaredField("animationApplier");
+                                animationApplierField.setAccessible(true);
+                                animationApplierField.set(player, new AnimationApplier(newAnimationStack));
+                                IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+                                if(data == null) continue;
+                                RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+                                if(rawData == null) continue;
+                                Map<ResourceLocation, ResourceLocation> dataAnimations = new HashMap<>();
+                                dataAnimations.putAll(data.getAnimations());
+                                dataAnimations.putAll(rawData.getAnimations());
+                                ResourceLocation riderAnimLayer = data.getRiderAnimLayer();
+                                if(riderAnimLayer != null) {
+                                    dataAnimations.put(riderAnimLayer, data.getRiderAnimation());
+                                }
+                                ResourceLocation rawRiderAnimLayer = rawData.getRiderAnimLayer();
+                                if(rawRiderAnimLayer != null) {
+                                    dataAnimations.put(rawRiderAnimLayer, rawData.getRiderAnimation());
+                                }
+                                for (ResourceLocation location : dataAnimations.keySet()) {
+                                    ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                                            .getPlayerAssociatedData(player).get(location);
+                                    if(modifierLayer == null) continue;
+                                    KeyframeAnimation keyframeAnimation;
+                                    ResourceLocation animationLocation = dataAnimations.get(location);
+                                    GenericAnimationData anim = animations.get(animationLocation);
+                                    if(anim == null) {
+                                        RawAnimationData rawAnim = RawAnimationHelper.INSTANCE.getAnimation(animationLocation);
+                                        if(rawAnim == null) return;
+                                        keyframeAnimation = rawAnim.getAnimation();
+                                    } else keyframeAnimation = anim.getAnimation();
+                                    if(keyframeAnimation == null) continue;
+                                    modifierLayer.replaceAnimationWithFade(
+                                            AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
+                                            new KeyframeAnimationPlayer(keyframeAnimation)
+                                    );
+                                }
+                            }catch (Exception e){
+                                SnowyCrescentCore.log.error("Failed to register on {} animation layer: {}", player, e.getMessage(), e);
                             }
-                            for (ResourceLocation location : dataAnimations.keySet()) {
-                                ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
-                                        .getPlayerAssociatedData(player).get(location);
-                                if(modifierLayer == null) continue;
-                                KeyframeAnimation animation = animations.get(dataAnimations.get(location)).getAnimation();
-                                if(animation == null) continue;
-                                modifierLayer.setAnimation(new KeyframeAnimationPlayer(animation));
-                            }
-                        }catch (Exception e){
-                            SnowyCrescentCore.log.error("Failed to register on {} animation layer: {}", player, e.getMessage(), e);
                         }
-                    }
+                    } catch (Exception ignored) {}
                 }
             }
         }
