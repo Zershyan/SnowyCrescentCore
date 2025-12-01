@@ -1,7 +1,6 @@
 package com.linearpast.sccore.animation.capability;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.network.toclient.RawAnimationCapabilityPacket;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.linearpast.sccore.capability.CapabilityUtils;
@@ -62,7 +61,7 @@ public class RawAnimationDataCapability extends SimplePlayerCapabilitySync {
 
     @Override
     public void copyFrom(ICapabilitySync<?> oldData) {
-        IAnimationCapability data = (IAnimationCapability) oldData;
+        RawAnimationDataCapability data = (RawAnimationDataCapability) oldData;
         this.animMap.clear();
         this.animMap.putAll(data.getAnimations());
     }
