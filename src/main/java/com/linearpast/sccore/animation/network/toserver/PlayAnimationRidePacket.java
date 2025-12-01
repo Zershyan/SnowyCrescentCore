@@ -1,8 +1,8 @@
 package com.linearpast.sccore.animation.network.toserver;
 
 import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.network.HelperGetterPacket;
+import com.linearpast.sccore.animation.network.ServiceGetterPacket;
+import com.linearpast.sccore.animation.service.IAnimationService;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -13,15 +13,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class PlayAnimationRidePacket extends HelperGetterPacket {
+public class PlayAnimationRidePacket extends ServiceGetterPacket {
     private final @Nullable CompoundTag animationTag;
     private final ResourceLocation layer;
     private final ResourceLocation animation;
     private final @Nullable UUID uuid;
     private final boolean force;
 
-    public PlayAnimationRidePacket(AnimationData data, ResourceLocation layer, ResourceLocation animation, @Nullable UUID uuid, boolean force) {
-        this.animationTag = data.serializeNBT();
+    public PlayAnimationRidePacket(@Nullable AnimationData data, ResourceLocation layer, ResourceLocation animation, @Nullable UUID uuid, boolean force) {
+        this.animationTag = data != null ? data.serializeNBT() : null;
         this.layer = layer;
         this.animation = animation;
         this.uuid = uuid;
@@ -54,12 +54,12 @@ public class PlayAnimationRidePacket extends HelperGetterPacket {
             if(this.uuid == null) target = sender;
             else target = sender.getServer().getPlayerList().getPlayer(this.uuid);
             if(target == null) return;
-            IAnimationHelper<?, ?> helper = getHelper();
-            if(helper == null) return;
-            AnimationData data = helper.getAnimation(animationTag);
+            IAnimationService<?, ?> service = getService();
+            if(service == null) return;
+            AnimationData data = service.getAnimation(animationTag);
             if(data == null) return;
-            if(target == sender) helper.playAnimationWithRide(target, layer, data, force);
-            else helper.request(sender, target, layer, data, true);
+            if(target == sender) service.playAnimationWithRide(target, layer, data, force);
+            else service.request(sender, target, layer, data, true);
         });
     }
 

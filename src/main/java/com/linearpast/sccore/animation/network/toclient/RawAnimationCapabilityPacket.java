@@ -45,16 +45,6 @@ public class RawAnimationCapabilityPacket extends SimpleCapabilityPacket<Player>
 
     private void testPlayAnimations(AbstractClientPlayer player, CompoundTag tag, RawAnimationDataCapability data) {
         if(data == null) return;
-        ResourceLocation oldRiderAnimLayer = data.getRiderAnimLayer();
-        String riderAnimLayerString = tag.getString(RawAnimationDataCapability.RideAnimLayer);
-        ResourceLocation newRiderAnimLayer = riderAnimLayerString.isEmpty() ? null : new ResourceLocation(riderAnimLayerString);
-        if(!Objects.equals(oldRiderAnimLayer, newRiderAnimLayer)) {
-            String riderAnimationString = tag.getString(RawAnimationDataCapability.RideAnimation);
-            ResourceLocation newRiderAnimation = riderAnimationString.isEmpty() ? null : new ResourceLocation(riderAnimationString);
-            if(oldRiderAnimLayer != null) AnimationUtils.playAnimation(player, oldRiderAnimLayer, null);
-            if(newRiderAnimLayer != null) AnimationUtils.playAnimation(player, newRiderAnimLayer, newRiderAnimation);
-        }
-
         Set<ResourceLocation> oldLayerSet = new HashSet<>(data.getAnimations().keySet());
         CompoundTag animMap = tag.getCompound(RawAnimationDataCapability.AnimMap);
         for (String newLayerString : animMap.getAllKeys()) {

@@ -1,7 +1,7 @@
 package com.linearpast.sccore.mixin.animation.client;
 
 import com.linearpast.sccore.animation.data.GenericAnimationData;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
 import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.HeadedModel;
@@ -26,7 +26,7 @@ public abstract class MixinHumanoidModel<T extends LivingEntity> extends Ageable
     )
     private void modifyHeadRot(T pEntity, float pLimbSwing, float pLimbSwingAmount, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch, CallbackInfo ci){
         if(pEntity instanceof Player player){
-            GenericAnimationData.LyingType lyingType = AnimationHelper.INSTANCE.getSideView(player);
+            GenericAnimationData.LyingType lyingType = AnimationService.INSTANCE.getSideView(player);
             if(lyingType != null) {
                 float pitch = pHeadPitch - 90.0f;
                 float yaw = pNetHeadYaw * -1.0f;

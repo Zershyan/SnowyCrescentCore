@@ -1,211 +1,253 @@
 package com.linearpast.sccore.animation.helper;
 
-import com.linearpast.sccore.animation.capability.AnimationDataCapability;
-import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.data.GenericAnimationData;
-import com.linearpast.sccore.animation.entity.AnimationRideEntity;
-import com.linearpast.sccore.animation.register.AnimationRegistry;
-import com.linearpast.sccore.animation.utils.AnimationUtils;
+import com.linearpast.sccore.animation.service.IAnimationService;
 import com.linearpast.sccore.animation.utils.ApiBack;
+import com.linearpast.sccore.core.IModLazyRun;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.FakePlayer;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
-/**
- * Animation Util. May be you can call it Api.
- */
-public class AnimationHelper implements IAnimationHelper<GenericAnimationData, IAnimationCapability> {
-    public static final AnimationHelper INSTANCE = new AnimationHelper();
-
-    /**
-     * Get the LyingType when there are animations which playing on player. <br>
-     * And It will return the first which be found.
-     * @param player Target player
-     * @return The first LyingType it find.
-     */
-    @Nullable
-    public GenericAnimationData.LyingType getSideView(Player player) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-            if(data == null) return null;
-            GenericAnimationData.LyingType lyingType = null;
-            for (ResourceLocation value : data.getAnimations().values()) {
-                GenericAnimationData animation = getAnimation(value);
-                if(animation == null) return null;
-                GenericAnimationData.LyingType type = animation.getLyingType();
-                if(type == null) continue;
-                switch (type) {
-                    case FRONT,BACK -> {}
-                    case LEFT,RIGHT -> lyingType = animation.getLyingType();
-                }
-            }
-            return lyingType;
-        });
+public class AnimationHelper {
+    private final Player player;
+    private final AnimationLazyHelper lazyRun;
+    AnimationHelper(Player player) {
+        this.player = player;
+        this.lazyRun = new AnimationLazyHelper(player);
     }
 
-    /**
-     * Get the HeightModifier when there are animations which playing on player. <br>
-     * And It will return the first which be found.
-     * @param player Target player
-     * @return The first HeightModifier it find.
-     */
-    public float getHeightModifier(Player player) {
-        Float result = ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-            if (data == null) return 1.0f;
-            float heightModifier = 1.0f;
-            for (ResourceLocation value : data.getAnimations().values()) {
-                GenericAnimationData animation = getAnimation(value);
-                if (animation == null) continue;
-                float animationHeightModifier = animation.getHeightModifier();
-                heightModifier = Math.min(heightModifier, animationHeightModifier);
-            }
-            return heightModifier;
-        });
-        return result == null ? 1.0f : result;
+    public static AnimationHelper getHelper(Player player) {
+        return new AnimationHelper(player);
     }
 
-
-    @Override
-    public @Nullable GenericAnimationData getAnimation(ResourceLocation location) {
-        return AnimationRegistry.getAnimations().getOrDefault(location, null);
+    public ApiBack playAnimation(ResourceLocation layer, ResourceLocation location) {
+        IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(location).getService();
+        if(service == null) return ApiBack.FAIL;
+        AnimationData data = service.getAnimation(location);
+        if(data == null) return ApiBack.FAIL;
+        return lazyRun.testLoadedAndCall(
+                () -> service.playAnimation(lazyRun.getServerPlayer(), layer, data),
+                () -> service.playAnimation(lazyRun.getClientPlayer(), layer, location)
+        );
     }
 
-    @Override
-    public @Nullable GenericAnimationData getAnimation(CompoundTag tag) {
-        return new GenericAnimationData(){{deserializeNBT(tag);}};
+    public ApiBack playAnimationWithRide(ResourceLocation layer, AnimationData animation, boolean isForce) {
+        IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(animation.getKey()).getService();
+        if(service == null) return ApiBack.FAIL;
+        return lazyRun.testLoadedAndCall(
+                () -> service.playAnimationWithRide(lazyRun.getServerPlayer(), layer, animation, isForce),
+                () -> service.playAnimationWithRide(lazyRun.getClientPlayer(), layer, animation.getKey(), isForce)
+        );
     }
 
-    @Override
-    public @Nullable IAnimationCapability getCapability(Player player) {
-        return AnimationDataCapability.getCapability(player).orElse(null);
+    public void clearAnimation() {
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            lazyRun.testLoadedAndRun(
+                    () -> service.clearAnimations(lazyRun.getServerPlayer()),
+                    () -> service.clearAnimations(lazyRun.getClientPlayer())
+            );
+        }
     }
 
-    @Override
-    public void clearAnimations(ServerPlayer serverPlayer) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> {
-            Optional.ofNullable(getCapability(serverPlayer)).ifPresent(IAnimationCapability::clearAnimations);
-            detachAnimation(serverPlayer);
-        });
+    public ApiBack detachAnimation() {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack back = lazyRun.testLoadedAndCall(() -> service.detachAnimation(lazyRun.getServerPlayer()));
+            if(back == ApiBack.SUCCESS) return back;
+            else result = back;
+        }
+        return result;
     }
 
-    @Override
-    public boolean isAnimationPresent(ResourceLocation location) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> AnimationRegistry.getAnimations().containsKey(location));
+    public ApiBack joinAnimation(Player target, boolean force) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(target instanceof ServerPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                return service.joinAnimation(lazyRun.getServerPlayer(), targetPlayer, force);
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
     }
 
-    @Override
-    public ApiBack detachAnimation(ServerPlayer player) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            if(player.getVehicle() instanceof AnimationRideEntity) {
-                player.stopRiding();
+    public ApiBack syncToAnimation(Player target) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(target instanceof ServerPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                service.syncAnimation(lazyRun.getServerPlayer(), targetPlayer);
                 return ApiBack.SUCCESS;
-            }
-            return ApiBack.UNSUPPORTED;
-        });
+            }, () -> {
+                if(!(target instanceof AbstractClientPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                service.syncAnimation(lazyRun.getClientPlayer(), targetPlayer);
+                return ApiBack.SUCCESS;
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
     }
 
-    @Override
-    public ApiBack joinAnimationServer(ServerPlayer player, ServerPlayer target, boolean force) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            Entity vehicle = target.getVehicle();
-            if(vehicle instanceof AnimationRideEntity) {
-                boolean result = player.startRiding(vehicle, force);
-                return result ? ApiBack.SUCCESS : ApiBack.FAIL;
-            }
-            return ApiBack.UNSUPPORTED;
-        });
-    }
-
-    @Override
     @OnlyIn(Dist.CLIENT)
-    public void refreshAnimation(AbstractClientPlayer clientPlayer) {
-        ANIMATION_RUNNER.testLoadedAndRun(() -> {
-            IAnimationCapability data = getCapability(clientPlayer);
-            if(data == null) return;
-            Set<ResourceLocation> oldLayers = new HashSet<>(data.getAnimations().keySet());
-            for (ResourceLocation layer : Set.copyOf(oldLayers)) {
-                if (AnimationUtils.isClientAnimationStop(clientPlayer, layer)) {
-                    removeAnimation(clientPlayer, layer);
+    public void refreshAnimation() {
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            service.refreshAnimation(lazyRun.getClientPlayer());
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void refreshAnimationUnsafe() {
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            service.refreshAnimationUnsafe(lazyRun.getClientPlayer());
+        }
+    }
+
+    @Nullable
+    public ResourceLocation getAnimationPlaying(@Nullable ResourceLocation layer) {
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ResourceLocation playing = service.getAnimationPlaying(player, layer);
+            if(playing != null) return playing;
+        }
+        return null;
+    }
+
+    public ApiBack removeAnimation(ResourceLocation layer) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(
+                    () -> service.removeAnimation(lazyRun.getServerPlayer(), layer),
+                    () -> service.removeAnimation(lazyRun.getClientPlayer(), layer)
+            );
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
+    }
+
+    public ApiBack inviteAnimation(ResourceLocation layer, ResourceLocation location, Collection<UUID> targets) {
+        IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(location).getService();
+        if(service == null) return ApiBack.FAIL;
+        return lazyRun.testLoadedAndCall(
+                () -> {
+                    AnimationData data = service.getAnimation(location);
+                    if(data == null) return ApiBack.FAIL;
+                    return service.invite(lazyRun.getServerPlayer(), layer, data, targets);
+                },
+                () -> {
+                    ClientLevel level = Minecraft.getInstance().level;
+                    if(level == null) return ApiBack.FAIL;
+                    List<AbstractClientPlayer> list = targets.stream().map(level::getPlayerByUUID)
+                            .filter(Objects::nonNull).map(AbstractClientPlayer.class::cast).toList();
+                    if(list.isEmpty()) return ApiBack.FAIL;
+                    return service.invite(layer, location, list.toArray(new AbstractClientPlayer[]{}));
                 }
-            }
-        });
+        );
     }
 
-    @Override
-    public @Nullable ResourceLocation getAnimationPlaying(Player player, @Nullable ResourceLocation layer) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            IAnimationCapability data = getCapability(player);
-            if(data == null) return null;
-            if(layer == null){
-                for (ResourceLocation value : data.getAnimations().values()) {
-                    if(value != null) return value;
+    public ApiBack applyAnimation(Player target) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(target instanceof ServerPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                return service.apply(lazyRun.getServerPlayer(), targetPlayer);
+            }, () -> {
+                if(!(target instanceof AbstractClientPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                return service.apply(targetPlayer);
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
+    }
+
+    public ApiBack requestAnimation(Player target, ResourceLocation layer, ResourceLocation location, boolean isRide) {
+        IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(location).getService();
+        if(service == null) return ApiBack.FAIL;
+        return lazyRun.testLoadedAndCall(
+                () -> {
+                    AnimationData data = service.getAnimation(location);
+                    if(data == null) return ApiBack.FAIL;
+                    if(!(target instanceof ServerPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                    return service.request(lazyRun.getServerPlayer(), targetPlayer, layer, data, isRide);
+                },
+                () -> {
+                    if(!(target instanceof AbstractClientPlayer targetPlayer)) return ApiBack.UNSUPPORTED;
+                    return service.request(targetPlayer, layer, location);
                 }
-            } else if (isAnimationLayerPresent(layer)) {
-                if(data.isAnimationPresent(layer)){
-                    return data.getAnimation(layer);
-                }
-            }
-            return null;
-        });
+        );
     }
 
-    @Override
-    public ApiBack removeAnimation(@NotNull ServerPlayer serverPlayer, ResourceLocation layer) {
-        boolean result = ANIMATION_RUNNER.testLoadedAndCall(() -> Optional.ofNullable(getCapability(serverPlayer))
-                .map(data -> data.removeAnimation(layer)).orElse(false));
-        return result ? ApiBack.SUCCESS : ApiBack.FAIL;
+    public ApiBack acceptInvite(Player inviter) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(inviter instanceof ServerPlayer inviterPlayer)) return ApiBack.UNSUPPORTED;
+                return service.acceptInvite(lazyRun.getServerPlayer(), inviterPlayer);
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
     }
 
-    @Override
-    public ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            ResourceLocation key = animation.getKey();
-            if(!isAnimationLayerPresent(layer) || !isAnimationPresent(key))
-                return ApiBack.RESOURCE_NOT_FOUND;
-            if(animation.getRide() == null)
-                return ApiBack.RESOURCE_NOT_FOUND;
-            if(player instanceof FakePlayer)
-                return ApiBack.UNSUPPORTED;
-            boolean flag = player.getVehicle() != null;
-            if(flag && force) player.unRide();
-            else if(flag) return ApiBack.UNSUPPORTED;
-            boolean result = AnimationRideEntity.create(player, layer, key, force);
-            return result ? ApiBack.SUCCESS : ApiBack.FAIL;
-        });
+    public ApiBack acceptApply(Player applier) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(applier instanceof ServerPlayer applierPlayer)) return ApiBack.UNSUPPORTED;
+                return service.acceptApply(lazyRun.getServerPlayer(), applierPlayer);
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
     }
 
-    @Override
-    public ApiBack playAnimationServer(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            ResourceLocation key = animation.getKey();
-            if(!isAnimationLayerPresent(layer) || !isAnimationPresent(key))
-                return ApiBack.RESOURCE_NOT_FOUND;
-            if(player instanceof FakePlayer)
-                return ApiBack.UNSUPPORTED;
-            Boolean flag = Optional.ofNullable(getCapability(player)).map(data ->
-                    data.mergeAnimation(layer, key)).orElse(false);
-            return flag ? ApiBack.SUCCESS : ApiBack.FAIL;
-        });
+    public ApiBack acceptRequest(Player requestor) {
+        ApiBack result = ApiBack.FAIL;
+        for (IAnimationService<?, ?> service : AnimationApi.getServiceGetterHelper().getAllServices()) {
+            ApiBack apiBack = lazyRun.testLoadedAndCall(() -> {
+                if(!(requestor instanceof ServerPlayer requestorPlayer)) return ApiBack.UNSUPPORTED;
+                return service.acceptRequest(lazyRun.getServerPlayer(), requestorPlayer);
+            });
+            if(apiBack == ApiBack.SUCCESS) return apiBack;
+            else result = apiBack;
+        }
+        return result;
     }
 
-    public ApiBack playAnimation(@NotNull ServerPlayer player, ResourceLocation layer, ResourceLocation animation) {
-        return playAnimation(player, layer, getAnimation(animation));
-    }
-    public ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, ResourceLocation animation, boolean force) {
-        return playAnimationWithRide(player, layer, getAnimation(animation), force);
+    static class AnimationLazyHelper implements IModLazyRun {
+        private final Player player;
+        AnimationLazyHelper(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public boolean testCondition() {
+            return player instanceof ServerPlayer;
+        }
+
+        public ServerPlayer getServerPlayer() {
+            return (ServerPlayer) player;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        public AbstractClientPlayer getClientPlayer() {
+            return (AbstractClientPlayer) player;
+        }
     }
 }

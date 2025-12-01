@@ -1,9 +1,7 @@
 package com.linearpast.sccore.animation.event;
 
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
-import com.linearpast.sccore.animation.capability.RawAnimationDataCapability;
 import com.linearpast.sccore.animation.entity.AnimationRideEntity;
-import com.linearpast.sccore.animation.entity.RawAnimationRideEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -16,13 +14,6 @@ public class PlayerTickEvent {
                 Player player = event.player;
                 if(!(player.getVehicle() instanceof AnimationRideEntity)){
                     AnimationDataCapability.getCapability(player).ifPresent(capability -> {
-                        if(capability.getRiderAnimLayer() != null) {
-                            capability.removeRiderAnimation();
-                        }
-                    });
-                }
-                if(!(player.getVehicle() instanceof RawAnimationRideEntity)){
-                    RawAnimationDataCapability.getCapability(player).ifPresent(capability -> {
                         if(capability.getRiderAnimLayer() != null) {
                             capability.removeRiderAnimation();
                         }

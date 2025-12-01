@@ -1,7 +1,7 @@
 package com.linearpast.sccore.mixin.animation.client;
 
 import com.linearpast.sccore.animation.data.GenericAnimationData;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -36,7 +36,7 @@ public abstract class MixinEntity {
     private void turnPosePlayer(double pYRot, double pXRot, CallbackInfo ci) {
         Entity self = Entity.class.cast(this);
         if(self instanceof Player player){
-            GenericAnimationData.LyingType lyingType = AnimationHelper.INSTANCE.getSideView(player);
+            GenericAnimationData.LyingType lyingType = AnimationService.INSTANCE.getSideView(player);
             if(lyingType != null && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
                 float f = (float)pXRot * 0.15F;
                 float f1 = (float)pYRot * 0.15F;

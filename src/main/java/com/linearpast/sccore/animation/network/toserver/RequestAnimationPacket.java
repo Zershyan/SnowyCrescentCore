@@ -1,8 +1,8 @@
 package com.linearpast.sccore.animation.network.toserver;
 
 import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.network.HelperGetterPacket;
+import com.linearpast.sccore.animation.network.ServiceGetterPacket;
+import com.linearpast.sccore.animation.service.IAnimationService;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class RequestAnimationPacket extends HelperGetterPacket {
+public class RequestAnimationPacket extends ServiceGetterPacket {
     private final @Nullable CompoundTag animationTag;
     private final ResourceLocation layer;
     private final ResourceLocation animation;
@@ -50,12 +50,12 @@ public class RequestAnimationPacket extends HelperGetterPacket {
             if(this.targetUUID == null) target = sender;
             else target = sender.getServer().getPlayerList().getPlayer(this.targetUUID);
             if(target == null) return;
-            IAnimationHelper<?, ?> helper = getHelper();
-            if(helper == null) return;
-            AnimationData data = helper.getAnimation(animationTag);
+            IAnimationService<?, ?> service = getService();
+            if(service == null) return;
+            AnimationData data = service.getAnimation(animationTag);
             if(data == null) return;
             if(target == sender) return;
-            helper.request(sender, target, layer, data, false);
+            service.request(sender, target, layer, data, false);
         });
     }
 

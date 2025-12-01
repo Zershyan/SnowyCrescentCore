@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.command;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.helper.JsonHelper;
+import com.linearpast.sccore.animation.helper.AnimationJsonHelper;
 import com.linearpast.sccore.core.datagen.ModLang;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -46,7 +46,7 @@ public class JsonCommand {
         CommandSourceStack source = context.getSource();
         try {
             //generate
-            JsonHelper helper = JsonHelper.getHelper(source.getServer());
+            AnimationJsonHelper helper = AnimationJsonHelper.getHelper(source.getServer());
             Path path = helper.generateJson(isLayer, isReset);
 
             if(path == null) throw new Exception();
@@ -75,7 +75,7 @@ public class JsonCommand {
         CommandSourceStack source = context.getSource();
         try {
             //clear path
-            JsonHelper.getHelper(source.getServer()).clearPath();
+            AnimationJsonHelper.getHelper(source.getServer()).clearPath();
         } catch (Exception e) {
             source.sendFailure(Component.translatable(
                     ModLang.TranslatableMessage.COMMAND_RUN_FAIL.getKey()
@@ -90,7 +90,7 @@ public class JsonCommand {
         CommandSourceStack source = context.getSource();
         try {
             //generate
-            JsonHelper helper = JsonHelper.getHelper(source.getServer());
+            AnimationJsonHelper helper = AnimationJsonHelper.getHelper(source.getServer());
             Path path = helper.generateExample();
             if(path == null) throw new Exception();
 

@@ -1,9 +1,8 @@
-package com.linearpast.sccore.animation.helper;
+package com.linearpast.sccore.animation.service;
 
 import com.linearpast.sccore.animation.capability.RawAnimationDataCapability;
 import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.data.RawAnimationData;
-import com.linearpast.sccore.animation.entity.RawAnimationRideEntity;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
 import com.linearpast.sccore.animation.register.RawAnimationRegistry;
 import com.linearpast.sccore.animation.utils.AnimationUtils;
@@ -12,7 +11,6 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -25,8 +23,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class RawAnimationHelper implements IAnimationHelper<RawAnimationData, RawAnimationDataCapability> {
-    public static final RawAnimationHelper INSTANCE = new RawAnimationHelper();
+public class RawAnimationService implements IAnimationService<RawAnimationData, RawAnimationDataCapability> {
+    public static final RawAnimationService INSTANCE = new RawAnimationService();
 
     /**
      * Trigger raw animation registry. <br>
@@ -72,29 +70,6 @@ public class RawAnimationHelper implements IAnimationHelper<RawAnimationData, Ra
     }
 
     @Override
-    public ApiBack detachAnimation(ServerPlayer player) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            if(player.getVehicle() instanceof RawAnimationRideEntity) {
-                player.stopRiding();
-                return ApiBack.SUCCESS;
-            }
-            return ApiBack.UNSUPPORTED;
-        });
-    }
-
-    @Override
-    public ApiBack joinAnimationServer(ServerPlayer player, ServerPlayer target, boolean force) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            Entity vehicle = target.getVehicle();
-            if(vehicle instanceof RawAnimationRideEntity) {
-                boolean result = player.startRiding(vehicle, force);
-                return result ? ApiBack.SUCCESS : ApiBack.FAIL;
-            }
-            return ApiBack.UNSUPPORTED;
-        });
-    }
-
-    @Override
     @OnlyIn(Dist.CLIENT)
     public void refreshAnimation(AbstractClientPlayer clientPlayer) {
         ANIMATION_RUNNER.testLoadedAndRun(() -> {
@@ -132,26 +107,6 @@ public class RawAnimationHelper implements IAnimationHelper<RawAnimationData, Ra
         boolean result = ANIMATION_RUNNER.testLoadedAndCall(() -> Optional.ofNullable(getCapability(serverPlayer))
                 .map(data -> data.removeAnimation(layer)).orElse(false));
         return result ? ApiBack.SUCCESS : ApiBack.FAIL;
-    }
-
-    @Override
-    public ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            if(!isAnimationLayerPresent(layer))
-                return ApiBack.RESOURCE_NOT_FOUND;
-            if(animation.getRide() == null)
-                return ApiBack.RESOURCE_NOT_FOUND;
-            if(player instanceof FakePlayer)
-                return ApiBack.UNSUPPORTED;
-            boolean flag = player.getVehicle() != null;
-            if(flag && force) player.unRide();
-            else if(flag) return ApiBack.UNSUPPORTED;
-            if(!(animation instanceof RawAnimationData data))
-                return ApiBack.UNSUPPORTED;
-            RawAnimationRideEntity rawAnimationRideEntity = RawAnimationRideEntity.create(player, layer, data);
-            boolean result = rawAnimationRideEntity != null;
-            return result ? ApiBack.SUCCESS : ApiBack.FAIL;
-        });
     }
 
     @Override

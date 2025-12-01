@@ -2,10 +2,10 @@ package com.linearpast.sccore.animation.entity;
 
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.data.GenericAnimationData;
+import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.data.Ride;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.animation.register.AnimationEntities;
+import com.linearpast.sccore.animation.service.AnimationService;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -28,10 +29,10 @@ public class AnimationRideEntity extends Entity {
 
     private final Set<ServerPlayer> players = new HashSet<>();
     private final Map<ResourceLocation, UUID> animationPair = new HashMap<>();
-    private GenericAnimationData animation;
+    private AnimationData animation;
     private ServerPlayer player;
     private ResourceLocation layer;
-    public AnimationRideEntity(ServerPlayer pPlayer, ResourceLocation layer, GenericAnimationData animation) {
+    public AnimationRideEntity(ServerPlayer pPlayer, ResourceLocation layer, AnimationData animation) {
         this(pPlayer.level());
         this.player = pPlayer;
         this.layer = layer;
@@ -57,7 +58,7 @@ public class AnimationRideEntity extends Entity {
         return player;
     }
 
-    public GenericAnimationData getAnimation() {
+    public AnimationData getAnimation() {
         return animation;
     }
 
@@ -101,13 +102,13 @@ public class AnimationRideEntity extends Entity {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    public static boolean create(ServerPlayer pPlayer, ResourceLocation layer, ResourceLocation animation, boolean force) {
-        GenericAnimationData anim = AnimationHelper.INSTANCE.getAnimation(animation);
-        if(anim == null) return false;
-        if(anim.getRide() == null) return false;
+    @Nullable
+    public static AnimationRideEntity create(ServerPlayer pPlayer, ResourceLocation layer, AnimationData anim, boolean force) {
+        if(anim == null) return null;
+        if(anim.getRide() == null) return null;
         IAnimationCapability data = AnimationDataCapability.getCapability(pPlayer).orElse(null);
-        if(data == null) return false;
-        data.setRiderAnimation(layer, animation);
+        if(data == null) return null;
+        data.setRiderAnimation(layer, anim.getKey());
         AnimationRideEntity seat = new AnimationRideEntity(pPlayer, layer, anim);
         float xRot = anim.getRide().getXRot();
         float yRot = anim.getRide().getYRot();
@@ -118,7 +119,7 @@ public class AnimationRideEntity extends Entity {
         seat.setPos(pos.x, pos.y + 0.35f, pos.z);
         pPlayer.level().addFreshEntity(seat);
         pPlayer.startRiding(seat, force);
-        return true;
+        return seat;
     }
 
     @Override
@@ -163,7 +164,7 @@ public class AnimationRideEntity extends Entity {
             IAnimationCapability data = AnimationDataCapability.getCapability(serverPlayer).orElse(null);
             if(data == null) return;
             data.setRiderAnimation(layer, animLocation);
-            AnimationHelper.INSTANCE.syncAnimation(serverPlayer, player);
+            AnimationService.INSTANCE.syncAnimation(serverPlayer, player);
             players.add(serverPlayer);
         }
     }
@@ -172,7 +173,7 @@ public class AnimationRideEntity extends Entity {
     protected void removePassenger(@NotNull Entity entity) {
         super.removePassenger(entity);
         if(entity instanceof ServerPlayer serverPlayer) {
-            AnimationHelper.INSTANCE.removeAnimation(serverPlayer, layer);
+            AnimationService.INSTANCE.removeAnimation(serverPlayer, layer);
             players.remove(serverPlayer);
             new HashMap<>(animationPair).forEach((key, value) -> {
                 if(Objects.equals(value, serverPlayer.getUUID())) {

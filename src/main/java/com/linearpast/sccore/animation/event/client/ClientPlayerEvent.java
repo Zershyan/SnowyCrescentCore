@@ -1,6 +1,6 @@
 package com.linearpast.sccore.animation.event.client;
 
-import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,7 +19,7 @@ public class ClientPlayerEvent {
             Player player = event.player;
             if(player.tickCount % 10 != 0) return;
             if (!(player instanceof AbstractClientPlayer clientPlayer)) return;
-            AnimationHelper.INSTANCE.refreshAnimation(clientPlayer);
+            AnimationService.INSTANCE.refreshAnimation(clientPlayer);
         }
     }
 

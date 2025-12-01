@@ -2,9 +2,9 @@ package com.linearpast.sccore.animation.capability;
 
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.animation.network.toclient.AnimationCapabilityPacket;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
+import com.linearpast.sccore.animation.service.AnimationService;
 import com.linearpast.sccore.capability.CapabilityUtils;
 import com.linearpast.sccore.capability.data.ICapabilitySync;
 import com.linearpast.sccore.capability.data.player.SimplePlayerCapabilitySync;
@@ -35,7 +35,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     public void mergeAnimations(Map<ResourceLocation, ResourceLocation> animations) {
         animations.forEach((key, value) -> {
             if (AnimationRegistry.getLayers().containsKey(key)) {
-                if (AnimationHelper.INSTANCE.isAnimationPresent(value)) {
+                if (AnimationService.INSTANCE.isAnimationPresent(value)) {
                     if(Objects.equals(rideAnimLayer, key)) {
                         removeRiderAnimation();
                     }
@@ -49,7 +49,7 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     @Override
     public boolean mergeAnimation(ResourceLocation layer, ResourceLocation animation) {
         if (AnimationRegistry.getLayers().containsKey(layer)) {
-            if (AnimationHelper.INSTANCE.isAnimationPresent(animation)) {
+            if (AnimationService.INSTANCE.isAnimationPresent(animation)) {
                 if(Objects.equals(rideAnimLayer, layer)) {
                     removeRiderAnimation();
                 }
@@ -105,15 +105,13 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
 
     @Override
     public void setRiderAnimation(@NotNull ResourceLocation layer, @NotNull ResourceLocation animation) {
-        if(AnimationHelper.INSTANCE.isAnimationLayerPresent(layer)) {
-            if(AnimationHelper.INSTANCE.isAnimationPresent(animation)) {
-                this.rideAnimLayer = layer;
-                this.rideAnimation = animation;
-                if(animMap.get(layer) != null) {
-                    animMap.remove(layer);
-                }
-                setDirty(true);
+        if(AnimationService.INSTANCE.isAnimationLayerPresent(layer)) {
+            this.rideAnimLayer = layer;
+            this.rideAnimation = animation;
+            if(animMap.get(layer) != null) {
+                animMap.remove(layer);
             }
+            setDirty(true);
         }
     }
 
@@ -177,10 +175,10 @@ public class AnimationDataCapability extends SimplePlayerCapabilitySync implemen
     public void attachInit(Player player) {
         Map<ResourceLocation, ResourceLocation> map = new HashMap<>(this.animMap);
         map.forEach((key, value) -> {
-            if(!AnimationHelper.INSTANCE.isAnimationLayerPresent(key)) this.animMap.remove(key);
-            if(!AnimationHelper.INSTANCE.isAnimationPresent(value)) this.animMap.remove(key);
+            if(!AnimationService.INSTANCE.isAnimationLayerPresent(key)) this.animMap.remove(key);
+            if(!AnimationService.INSTANCE.isAnimationPresent(value)) this.animMap.remove(key);
         });
-        if(rideAnimLayer != null && !AnimationHelper.INSTANCE.isAnimationLayerPresent(rideAnimLayer)) {
+        if(rideAnimLayer != null && !AnimationService.INSTANCE.isAnimationLayerPresent(rideAnimLayer)) {
             removeRiderAnimation();
         }
     }

@@ -1,11 +1,15 @@
 package com.linearpast.sccore.animation.command;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.command.argument.AnimationArgument;
 import com.linearpast.sccore.animation.command.argument.AnimationLayerArgument;
 import com.linearpast.sccore.animation.command.exception.ApiBackException;
 import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.helper.*;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.helper.AnimationServiceGetterHelper;
+import com.linearpast.sccore.animation.service.IAnimationService;
+import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.animation.utils.ApiBack;
 import com.linearpast.sccore.core.datagen.ModLang;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -90,7 +94,7 @@ public class PlayCommand {
             ResourceLocation anim = new ResourceLocation(animString);
 
             //play with players
-            IAnimationHelper<?, ?> helper = HelperGetterFromAnimation.create(anim).getHelper();
+            IAnimationService<?, ?> helper = AnimationServiceGetterHelper.create(anim).getService();
             if (helper == null) throw new ApiBackException(ApiBack.RESOURCE_NOT_FOUND);
             AnimationData animationData = helper.getAnimation(anim);
             if(animationData == null) throw new ApiBackException(ApiBack.RESOURCE_NOT_FOUND);
@@ -134,7 +138,7 @@ public class PlayCommand {
             } else {
                 //play with self
                 ApiBack back;
-                RawAnimationHelper instance = RawAnimationHelper.INSTANCE;
+                RawAnimationService instance = RawAnimationService.INSTANCE;
                 if(withRide) back = instance.playAnimationWithRide(player, layer, animationData, false);
                 else back = instance.playAnimation(player, layer, animationData);
 
@@ -166,11 +170,10 @@ public class PlayCommand {
             ResourceLocation layerLocation = new ResourceLocation(layer);
 
             //remove with players
-            AnimationHelper instance = AnimationHelper.INSTANCE;
             if(!targets.isEmpty()) {
                 Set<ServerPlayer> playerSet = Set.copyOf(targets);
                 playerSet.forEach(p -> {
-                    ApiBack back = instance.removeAnimation(p, layerLocation);
+                    ApiBack back = AnimationApi.getHelper(p).removeAnimation(layerLocation);
                     if (back == ApiBack.SUCCESS) targets.remove(p);
                 });
                 int successNum = playerSet.size() - targets.size();
@@ -196,7 +199,7 @@ public class PlayCommand {
                     ).withStyle(ChatFormatting.RED));
                 }
             } else {
-                ApiBack back = instance.removeAnimation(player, layerLocation);
+                ApiBack back = AnimationApi.getHelper(player).removeAnimation(layerLocation);
                 if (back != ApiBack.SUCCESS) throw new ApiBackException(back);
 
                 source.sendSuccess(() -> Component.translatable(
@@ -221,12 +224,11 @@ public class PlayCommand {
             Collection<ServerPlayer> players;
             try {players = EntityArgument.getPlayers(context, "players");}
             catch (Exception ignored) { players = Set.of(source.getPlayerOrException()); }
-            Set.copyOf(players).forEach(player -> IHelperGetter.HELPERS.forEach(
-                    helper -> {
-                        helper.clearAnimations(player);
-                        helper.detachAnimation(player);
-                    }
-            ));
+            Set.copyOf(players).forEach(player -> {
+                AnimationHelper helper = AnimationApi.getHelper(player);
+                helper.clearAnimation();
+                helper.detachAnimation();
+            });
             source.sendSuccess(() -> Component.translatable(
                     ModLang.TranslatableMessage.CLEAR_ANIMATIONS.getKey()
             ).withStyle(ChatFormatting.GREEN), true);

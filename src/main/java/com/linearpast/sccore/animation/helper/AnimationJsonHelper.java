@@ -13,14 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
-public class JsonHelper {
+public class AnimationJsonHelper {
     private final MinecraftServer server;
-    JsonHelper(MinecraftServer server) {
+    AnimationJsonHelper(MinecraftServer server) {
         this.server = server;
     }
 
-    public static JsonHelper getHelper(MinecraftServer server) {
-        return new JsonHelper(server);
+    public static AnimationJsonHelper getHelper(MinecraftServer server) {
+        return new AnimationJsonHelper(server);
     }
 
     /**

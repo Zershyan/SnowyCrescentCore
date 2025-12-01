@@ -1,33 +1,31 @@
 package com.linearpast.sccore.animation;
 
-import com.linearpast.sccore.animation.helper.*;
+import com.linearpast.sccore.animation.helper.AnimationDataHelper;
+import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.helper.AnimationJsonHelper;
+import com.linearpast.sccore.animation.helper.AnimationServiceGetterHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-
-import java.util.Set;
+import net.minecraft.world.entity.player.Player;
 
 public class AnimationApi {
-    public static AnimationApi getInstance() {
-        return new AnimationApi();
+    public static AnimationJsonHelper getJsonHelper(MinecraftServer server) {
+        return AnimationJsonHelper.getHelper(server);
     }
 
-    public AnimationHelper getAnimationHelper() {
-        return AnimationHelper.INSTANCE;
+    public static AnimationDataHelper getDataHelper() {
+        return AnimationDataHelper.getHelper();
     }
 
-    public RawAnimationHelper getRawAnimationHelper() {
-        return RawAnimationHelper.INSTANCE;
+    public static AnimationServiceGetterHelper getServiceGetterHelper(ResourceLocation location) {
+        return new AnimationServiceGetterHelper(location);
     }
 
-    public JsonHelper getJsonHelper(MinecraftServer server) {
-        return JsonHelper.getHelper(server);
+    public static AnimationServiceGetterHelper getServiceGetterHelper() {
+        return new AnimationServiceGetterHelper();
     }
 
-    public IAnimationHelper<?, ?> getHelperFromAnimKey(ResourceLocation location) {
-        return new HelperGetterFromAnimation(location).getHelper();
-    }
-
-    public Set<IAnimationHelper<?, ?>> getAllHelpers() {
-        return IHelperGetter.HELPERS;
+    public static AnimationHelper getHelper(Player player) {
+        return AnimationHelper.getHelper(player);
     }
 }

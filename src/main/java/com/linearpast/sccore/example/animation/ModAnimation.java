@@ -4,7 +4,7 @@ import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.data.RawAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
 import com.linearpast.sccore.example.animation.event.ExamplePlayerAttackEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,7 +12,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
- * @see AnimationHelper
+ * @see AnimationService
  */
 public class ModAnimation {
     /**

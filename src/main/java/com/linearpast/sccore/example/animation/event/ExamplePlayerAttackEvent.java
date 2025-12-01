@@ -1,7 +1,7 @@
 package com.linearpast.sccore.example.animation.event;
 
-import com.linearpast.sccore.animation.helper.AnimationHelper;
-import com.linearpast.sccore.animation.helper.RawAnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
+import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.example.animation.ModAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -26,11 +26,11 @@ public class ExamplePlayerAttackEvent {
         Player entity = event.getEntity();
         if(entity instanceof ServerPlayer player) {
             if(target instanceof Sheep){
-                ResourceLocation playing = AnimationHelper.INSTANCE.getAnimationPlaying(player, ModAnimation.normalLayers);
+                ResourceLocation playing = AnimationService.INSTANCE.getAnimationPlaying(player, ModAnimation.normalLayers);
                 if(playing == null) {
-                    AnimationHelper.INSTANCE.playAnimation(player, ModAnimation.normalLayers, ModAnimation.AmStandToLying);
+                    AnimationService.INSTANCE.playAnimation(player, ModAnimation.normalLayers, ModAnimation.AmStandToLying);
                 } else {
-                    AnimationHelper.INSTANCE.removeAnimation(player, ModAnimation.normalLayers);
+                    AnimationService.INSTANCE.removeAnimation(player, ModAnimation.normalLayers);
                 }
             }
         }
@@ -41,7 +41,7 @@ public class ExamplePlayerAttackEvent {
         Player entity = event.getEntity();
         if(entity instanceof AbstractClientPlayer player && target instanceof AbstractClientPlayer targetPlayer) {
             if(player == Minecraft.getInstance().player){
-                RawAnimationHelper.INSTANCE.invite(
+                RawAnimationService.INSTANCE.invite(
                         ModAnimation.normalLayers,
                         ModAnimation.WaltzGentleman,
                         targetPlayer
@@ -49,7 +49,7 @@ public class ExamplePlayerAttackEvent {
             }
         }
         if(entity instanceof ServerPlayer player && target instanceof ServerPlayer targetPlayer) {
-            RawAnimationHelper.INSTANCE.acceptInvite(player, targetPlayer);
+            RawAnimationService.INSTANCE.acceptInvite(player, targetPlayer);
         }
     }
 
@@ -63,9 +63,9 @@ public class ExamplePlayerAttackEvent {
         LocalPlayer player = instance.player;
         if (player == null) return;
         if(instance.options.keyCommand.isDown()) {
-            ResourceLocation playing = AnimationHelper.INSTANCE.getAnimationPlaying(player, ModAnimation.normalLayers);
+            ResourceLocation playing = AnimationService.INSTANCE.getAnimationPlaying(player, ModAnimation.normalLayers);
             if(playing == null) {
-                AnimationHelper.INSTANCE.playAnimationWithRide((AbstractClientPlayer) null, ModAnimation.normalLayers, ModAnimation.AmLyingToRightLying, true);
+                AnimationService.INSTANCE.playAnimationWithRide((AbstractClientPlayer) null, ModAnimation.normalLayers, ModAnimation.AmLyingToRightLying, true);
             }
         }
     }

@@ -43,7 +43,6 @@ public class SyncAnimationPacket {
                     () -> AnimationUtils.syncAnimation(player, target),
                     new AbstractMap.SimpleEntry<>(5, 0)
             );
-
         });
     }
 }

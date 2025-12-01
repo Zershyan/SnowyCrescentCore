@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.network.toserver;
 
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.network.HelperGetterPacket;
+import com.linearpast.sccore.animation.network.ServiceGetterPacket;
+import com.linearpast.sccore.animation.service.IAnimationService;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ApplyAnimationPacket extends HelperGetterPacket {
+public class ApplyAnimationPacket extends ServiceGetterPacket {
     private final UUID targetUUID;
 
     public ApplyAnimationPacket(UUID targetUUID) {
@@ -34,15 +34,15 @@ public class ApplyAnimationPacket extends HelperGetterPacket {
             if(this.targetUUID == null) target = sender;
             else target = sender.getServer().getPlayerList().getPlayer(this.targetUUID);
             if(target == null) return;
-            IAnimationHelper<?, ?> helper = getHelper();
-            if(helper == null) return;
+            IAnimationService<?, ?> service = getService();
+            if(service == null) return;
             if(target == sender) return;
-            helper.apply(sender, target);
+            service.apply(sender, target);
         });
     }
 
     @Override
-    public boolean filter(IAnimationHelper<?, ?> helper) {
+    public boolean filter(IAnimationService<?, ?> helper) {
         return true;
     }
 }

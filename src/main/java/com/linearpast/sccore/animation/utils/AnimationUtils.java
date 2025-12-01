@@ -2,14 +2,14 @@ package com.linearpast.sccore.animation.utils;
 
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
-import com.linearpast.sccore.animation.capability.RawAnimationDataCapability;
+import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.RawAnimationData;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.helper.RawAnimationHelper;
 import com.linearpast.sccore.animation.mixin.IMixinKeyframeAnimationPlayer;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
+import com.linearpast.sccore.animation.service.AnimationService;
+import com.linearpast.sccore.animation.service.IAnimationService;
+import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.core.datagen.ModLang;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
@@ -30,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class AnimationUtils {
     /**
@@ -43,7 +42,7 @@ public class AnimationUtils {
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
     public static boolean isClientAnimationNotEnd(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
-        return IAnimationHelper.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
             try {
                 Set<ResourceLocation> resourceLocations = new HashSet<>();
                 if(layer == null) resourceLocations.addAll(AnimationRegistry.getLayers().keySet());
@@ -74,7 +73,7 @@ public class AnimationUtils {
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
     public static boolean isClientAnimationStop(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
-        return IAnimationHelper.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
             try {
                 Set<ResourceLocation> resourceLocations = new HashSet<>();
                 if(layer == null) resourceLocations.addAll(AnimationRegistry.getLayers().keySet());
@@ -102,30 +101,18 @@ public class AnimationUtils {
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
     public static void syncAnimation(AbstractClientPlayer clientPlayer, AbstractClientPlayer target) {
-        AtomicReference<ResourceLocation> clientPlayerLayer = new AtomicReference<>();
-        AtomicReference<ResourceLocation> targetLayer = new AtomicReference<>();
-        clientPlayerLayer.set(null);
-        targetLayer.set(null);
-        AnimationDataCapability.getCapability(clientPlayer).ifPresent(clientPlayerData ->
-                AnimationDataCapability.getCapability(target).ifPresent(targetData -> {
-                    clientPlayerLayer.set(clientPlayerData.getRiderAnimLayer());
-                    targetLayer.set(targetData.getRiderAnimLayer());
-                })
-        );
-        if(clientPlayerLayer.get() == null || targetLayer.get() == null) {
-            RawAnimationDataCapability.getCapability(clientPlayer).ifPresent(clientPlayerData ->
-                    RawAnimationDataCapability.getCapability(target).ifPresent(targetData -> {
-                        clientPlayerLayer.set(clientPlayerData.getRiderAnimLayer());
-                        targetLayer.set(targetData.getRiderAnimLayer());
-                    })
-            );
-        }
+        IAnimationCapability clientPlayerData = AnimationDataCapability.getCapability(clientPlayer).orElse(null);
+        IAnimationCapability targetData = AnimationDataCapability.getCapability(target).orElse(null);
+        if(clientPlayerData == null) return;
+        if(targetData == null) return;
+        ResourceLocation clientPlayerLayer = clientPlayerData.getRiderAnimLayer();
+        ResourceLocation targetLayer = targetData.getRiderAnimLayer();
         try {
-            if(clientPlayerLayer.get() == null || targetLayer.get() == null) return;
+            if(clientPlayerLayer == null || targetLayer == null) return;
             ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
-                    .getPlayerAssociatedData(clientPlayer).get(clientPlayerLayer.get());
+                    .getPlayerAssociatedData(clientPlayer).get(clientPlayerLayer);
             ModifierLayer<IAnimation> targetModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
-                    .getPlayerAssociatedData(target).get(targetLayer.get());
+                    .getPlayerAssociatedData(target).get(targetLayer);
             if(modifierLayer == null || targetModifierLayer == null) return;
             IMixinKeyframeAnimationPlayer animation = (IMixinKeyframeAnimationPlayer) modifierLayer.getAnimation();
             KeyframeAnimationPlayer targetAnimation = (KeyframeAnimationPlayer) targetModifierLayer.getAnimation();
@@ -171,9 +158,9 @@ public class AnimationUtils {
             }
             if(modifierLayer == null) return;
             KeyframeAnimation keyframeAnimation;
-            GenericAnimationData anim = AnimationHelper.INSTANCE.getAnimation(animation);
+            GenericAnimationData anim = AnimationService.INSTANCE.getAnimation(animation);
             if(anim == null) {
-                RawAnimationData rawAnim = RawAnimationHelper.INSTANCE.getAnimation(animation);
+                RawAnimationData rawAnim = RawAnimationService.INSTANCE.getAnimation(animation);
                 if(rawAnim == null) return;
                 keyframeAnimation = rawAnim.getAnimation();
             } else keyframeAnimation = anim.getAnimation();

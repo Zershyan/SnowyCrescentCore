@@ -1,8 +1,8 @@
 package com.linearpast.sccore.animation.network.toserver;
 
 import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.network.HelperGetterPacket;
+import com.linearpast.sccore.animation.network.ServiceGetterPacket;
+import com.linearpast.sccore.animation.service.IAnimationService;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class InviteAnimationPacket extends HelperGetterPacket {
+public class InviteAnimationPacket extends ServiceGetterPacket {
     private final @Nullable CompoundTag animationTag;
     private final ResourceLocation layer;
     private final ResourceLocation animation;
@@ -47,12 +47,12 @@ public class InviteAnimationPacket extends HelperGetterPacket {
             context.setPacketHandled(true);
             ServerPlayer sender = context.getSender();
             if(sender == null) return;
-            IAnimationHelper<?, ?> helper = getHelper();
-            if(helper == null) return;
-            AnimationData data = helper.getAnimation(animationTag);
+            IAnimationService<?, ?> service = getService();
+            if(service == null) return;
+            AnimationData data = service.getAnimation(animationTag);
             if(data == null) return;
-            if(!targets.isEmpty()) helper.invite(sender, layer, data, targets);
-            else helper.playAnimationWithRide(sender, layer, data, false);
+            if(!targets.isEmpty()) service.invite(sender, layer, data, targets);
+            else service.playAnimationWithRide(sender, layer, data, false);
         });
     }
 

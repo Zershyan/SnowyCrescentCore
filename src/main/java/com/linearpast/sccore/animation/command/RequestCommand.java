@@ -1,14 +1,10 @@
 package com.linearpast.sccore.animation.command;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.command.argument.AnimationArgument;
 import com.linearpast.sccore.animation.command.argument.AnimationLayerArgument;
 import com.linearpast.sccore.animation.command.exception.ApiBackException;
-import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.data.RawAnimationData;
-import com.linearpast.sccore.animation.helper.HelperGetterFromAnimation;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.helper.IHelperGetter;
 import com.linearpast.sccore.animation.utils.ApiBack;
 import com.linearpast.sccore.core.configs.ModConfigs;
 import com.linearpast.sccore.core.datagen.ModLang;
@@ -63,13 +59,7 @@ public class RequestCommand {
             ResourceLocation layer = new ResourceLocation(layerString);
             ResourceLocation anim = new ResourceLocation(animString);
 
-            IAnimationHelper<?, ?> helper = HelperGetterFromAnimation.create(anim).getHelper();
-            if (helper == null) throw new ApiBackException(ApiBack.RESOURCE_NOT_FOUND);
-            AnimationData animationData;
-            if(helper.isAnimationPresent(anim)) animationData = helper.getAnimation(anim);
-            else animationData = RawAnimationData.create(anim);
-
-            ApiBack back = helper.request(player, target, layer, animationData, withRide);
+            ApiBack back = AnimationApi.getHelper(player).requestAnimation(target, layer, anim, withRide);
             if(back == ApiBack.COOLDOWN) {
                 int cooldown = ModConfigs.Server.requestCooldown.get();
                 throw ApiBackException.withCooldown(cooldown);
@@ -111,11 +101,7 @@ public class RequestCommand {
             ServerPlayer requestor = EntityArgument.getPlayer(context, "requestor");
 
             //play
-            ApiBack back = ApiBack.RESOURCE_NOT_FOUND;
-            for (IAnimationHelper<?, ?> helper : IHelperGetter.HELPERS) {
-                back = helper.acceptRequest(player, requestor);
-                if(back == ApiBack.SUCCESS) break;
-            }
+            ApiBack back = AnimationApi.getHelper(player).acceptRequest(requestor);
             if(back != ApiBack.SUCCESS) throw new ApiBackException(back);
 
             //send message

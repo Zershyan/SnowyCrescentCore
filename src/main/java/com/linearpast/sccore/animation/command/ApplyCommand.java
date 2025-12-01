@@ -1,10 +1,8 @@
 package com.linearpast.sccore.animation.command;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.command.exception.ApiBackException;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.helper.IHelperGetter;
 import com.linearpast.sccore.animation.utils.ApiBack;
 import com.linearpast.sccore.core.configs.ModConfigs;
 import com.linearpast.sccore.core.datagen.ModLang;
@@ -47,7 +45,7 @@ public class ApplyCommand {
             Entity vehicle = target.getVehicle();
             if(vehicle == null) throw new ApiBackException(ApiBack.UNSUPPORTED);
 
-            ApiBack back = AnimationHelper.INSTANCE.apply(player, target);
+            ApiBack back = AnimationApi.getHelper(player).applyAnimation(target);
             if(back == ApiBack.COOLDOWN) {
                 int cooldown = ModConfigs.Server.applyCooldown.get();
                 throw ApiBackException.withCooldown(cooldown);
@@ -92,11 +90,7 @@ public class ApplyCommand {
             Entity vehicle = player.getVehicle();
             if(vehicle == null) throw new ApiBackException(ApiBack.UNSUPPORTED);
 
-            ApiBack back = ApiBack.RESOURCE_NOT_FOUND;
-            for (IAnimationHelper<?, ?> helper : IHelperGetter.HELPERS) {
-                back = helper.acceptApply(player, applier);
-                if(back == ApiBack.SUCCESS) break;
-            }
+            ApiBack back = AnimationApi.getHelper(player).acceptApply(applier);
             if(back == ApiBack.OUT_RANGE) throw ApiBackException.withOutRange(ModConfigs.Server.applyValidDistance.get());
             if(back != ApiBack.SUCCESS) throw new ApiBackException(back);
 

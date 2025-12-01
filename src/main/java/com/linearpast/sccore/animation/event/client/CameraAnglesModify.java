@@ -3,7 +3,7 @@ package com.linearpast.sccore.animation.event.client;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.GenericAnimationData;
-import com.linearpast.sccore.animation.helper.AnimationHelper;
+import com.linearpast.sccore.animation.service.AnimationService;
 import dev.kosmx.playerAnim.core.util.MathHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -35,7 +35,7 @@ public class CameraAnglesModify {
                 GenericAnimationData animation = null;
                 try {
                     animation = data.getAnimations().values().stream()
-                            .map(AnimationHelper.INSTANCE::getAnimation)
+                            .map(AnimationService.INSTANCE::getAnimation)
                             .min(Comparator.comparingDouble(anim -> {
                                 if (anim == null) return 1.0f;
                                 return anim.getHeightModifier();

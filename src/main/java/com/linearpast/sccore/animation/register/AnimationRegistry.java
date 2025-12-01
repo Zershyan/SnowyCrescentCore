@@ -10,10 +10,10 @@ import com.linearpast.sccore.animation.data.RawAnimationData;
 import com.linearpast.sccore.animation.data.util.AnimJson;
 import com.linearpast.sccore.animation.data.util.AnimLayerJson;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
-import com.linearpast.sccore.animation.helper.RawAnimationHelper;
 import com.linearpast.sccore.animation.mixin.IMixinPlayerAnimationFactoryHolder;
 import com.linearpast.sccore.animation.network.toclient.AnimationClientStatusPacket;
 import com.linearpast.sccore.animation.network.toclient.AnimationJsonPacket;
+import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.utils.ModuleAccess;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
@@ -297,10 +297,6 @@ public class AnimationRegistry {
                                 if(riderAnimLayer != null) {
                                     dataAnimations.put(riderAnimLayer, data.getRiderAnimation());
                                 }
-                                ResourceLocation rawRiderAnimLayer = rawData.getRiderAnimLayer();
-                                if(rawRiderAnimLayer != null) {
-                                    dataAnimations.put(rawRiderAnimLayer, rawData.getRiderAnimation());
-                                }
                                 for (ResourceLocation location : dataAnimations.keySet()) {
                                     ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                                             .getPlayerAssociatedData(player).get(location);
@@ -309,7 +305,7 @@ public class AnimationRegistry {
                                     ResourceLocation animationLocation = dataAnimations.get(location);
                                     GenericAnimationData anim = animations.get(animationLocation);
                                     if(anim == null) {
-                                        RawAnimationData rawAnim = RawAnimationHelper.INSTANCE.getAnimation(animationLocation);
+                                        RawAnimationData rawAnim = RawAnimationService.INSTANCE.getAnimation(animationLocation);
                                         if(rawAnim == null) return;
                                         keyframeAnimation = rawAnim.getAnimation();
                                     } else keyframeAnimation = anim.getAnimation();

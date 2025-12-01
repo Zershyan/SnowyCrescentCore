@@ -1,6 +1,7 @@
-package com.linearpast.sccore.animation.helper;
+package com.linearpast.sccore.animation.service;
 
 import com.linearpast.sccore.animation.data.AnimationData;
+import com.linearpast.sccore.animation.entity.AnimationRideEntity;
 import com.linearpast.sccore.animation.event.PlayerTickEvent;
 import com.linearpast.sccore.animation.event.client.CameraAnglesModify;
 import com.linearpast.sccore.animation.event.client.ClientPlayerEvent;
@@ -16,7 +17,7 @@ import com.linearpast.sccore.animation.utils.AnimationUtils;
 import com.linearpast.sccore.animation.utils.ApiBack;
 import com.linearpast.sccore.capability.data.ICapabilitySync;
 import com.linearpast.sccore.core.ModChannel;
-import com.linearpast.sccore.core.ModLazyRun;
+import com.linearpast.sccore.core.ModCompatRun;
 import com.linearpast.sccore.core.configs.ModConfigs;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
@@ -24,10 +25,12 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
@@ -44,12 +47,12 @@ import java.util.stream.Collectors;
  * @param <C> Capability
  */
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-public interface IAnimationHelper<D extends AnimationData, C extends ICapabilitySync<?>>{
+public interface IAnimationService<D extends AnimationData, C extends ICapabilitySync<?>>{
     String AnimModId = "playeranimator";
     /**
      * Lazy runner
      */
-    ModLazyRun ANIMATION_RUNNER = new ModLazyRun(AnimModId) {
+    ModCompatRun ANIMATION_RUNNER = new ModCompatRun(AnimModId) {
         @Override
         public void addCommonListener(IEventBus forgeBus, IEventBus modBus) {
             AnimationEntities.register(modBus);
@@ -125,14 +128,37 @@ public interface IAnimationHelper<D extends AnimationData, C extends ICapability
         ANIMATION_RUNNER.testLoadedAndAddListener(forgeBus, modBus);
     }
 
+    default void clearAnimations(AbstractClientPlayer player){
+        for (ResourceLocation layer : getLayers()) {
+            AnimationUtils.removeAnimation(player, layer);
+        }
+    }
+
     //clear animations
     void clearAnimations(ServerPlayer serverPlayer);
     //according to location, judge if animation is present
     boolean isAnimationPresent(ResourceLocation location);
     //stop riding
-    ApiBack detachAnimation(ServerPlayer player);
+    default ApiBack detachAnimation(ServerPlayer player){
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            if(player.getVehicle() instanceof AnimationRideEntity) {
+                player.stopRiding();
+                return ApiBack.SUCCESS;
+            }
+            return ApiBack.UNSUPPORTED;
+        });
+    };
     //start ride
-    ApiBack joinAnimationServer(ServerPlayer player, ServerPlayer target, boolean force);
+    default ApiBack joinAnimationServer(ServerPlayer player, ServerPlayer target, boolean force){
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            Entity vehicle = target.getVehicle();
+            if(vehicle instanceof AnimationRideEntity) {
+                boolean result = player.startRiding(vehicle, force);
+                return result ? ApiBack.SUCCESS : ApiBack.FAIL;
+            }
+            return ApiBack.UNSUPPORTED;
+        });
+    };
 
     /**
      * Trigger event and let implementation class handle
@@ -254,7 +280,22 @@ public interface IAnimationHelper<D extends AnimationData, C extends ICapability
             return ApiBack.SUCCESS;
         });
     }
-    ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animationTag, boolean force);
+    default ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force) {
+        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            ResourceLocation key = animation.getKey();
+            if(!isAnimationLayerPresent(layer) || !isAnimationPresent(key))
+                return ApiBack.RESOURCE_NOT_FOUND;
+            if(animation.getRide() == null)
+                return ApiBack.RESOURCE_NOT_FOUND;
+            if(player instanceof FakePlayer)
+                return ApiBack.UNSUPPORTED;
+            boolean flag = player.getVehicle() != null;
+            if(flag && force) player.unRide();
+            else if(flag) return ApiBack.UNSUPPORTED;
+            boolean result = AnimationRideEntity.create(player, layer, animation, force) != null;
+            return result ? ApiBack.SUCCESS : ApiBack.FAIL;
+        });
+    };
 
     /**
      * <pre>
@@ -624,11 +665,13 @@ public interface IAnimationHelper<D extends AnimationData, C extends ICapability
                 }
                 case ALLOW : {
                     //done
-                    playAnimationWithRide(inviter, record.layer(), record.animation(), false);
-                    if(record.targets().isEmpty()) inviteMap.remove(inviter.getUUID());
-                    ApiBack back = joinAnimation(player, inviter, false);
-                    if(back == ApiBack.SUCCESS) record.targets().remove(uuid);
-                    return back;
+                    ApiBack apiBack = playAnimationWithRide(inviter, record.layer(), record.animation(), false);
+                    if(apiBack == ApiBack.SUCCESS) {
+                        if(record.targets().isEmpty()) inviteMap.remove(inviter.getUUID());
+                        ApiBack back = joinAnimation(player, inviter, false);
+                        if(back == ApiBack.SUCCESS) record.targets().remove(uuid);
+                        return back;
+                    } else return apiBack;
                 }
                 default: return ApiBack.UNSUPPORTED;
             }

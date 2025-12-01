@@ -1,14 +1,10 @@
 package com.linearpast.sccore.animation.command;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.command.argument.AnimationArgument;
 import com.linearpast.sccore.animation.command.argument.AnimationLayerArgument;
 import com.linearpast.sccore.animation.command.exception.ApiBackException;
-import com.linearpast.sccore.animation.data.AnimationData;
-import com.linearpast.sccore.animation.data.RawAnimationData;
-import com.linearpast.sccore.animation.helper.HelperGetterFromAnimation;
-import com.linearpast.sccore.animation.helper.IAnimationHelper;
-import com.linearpast.sccore.animation.helper.IHelperGetter;
 import com.linearpast.sccore.animation.utils.ApiBack;
 import com.linearpast.sccore.core.configs.ModConfigs;
 import com.linearpast.sccore.core.datagen.ModLang;
@@ -61,14 +57,8 @@ public class InviteCommand {
             ResourceLocation anim = new ResourceLocation(animString);
 
             //test info present
-            IAnimationHelper<?, ?> helper = HelperGetterFromAnimation.create(anim).getHelper();
-            if (helper == null) throw new ApiBackException(ApiBack.RESOURCE_NOT_FOUND);
-            AnimationData animationData;
-            if(helper.isAnimationPresent(anim)) animationData = helper.getAnimation(anim);
-            else animationData = RawAnimationData.create(anim);
-
             List<UUID> targets = players.stream().map(Entity::getUUID).toList();
-            ApiBack back = helper.invite(player, layer, animationData, targets);
+            ApiBack back = AnimationApi.getHelper(player).inviteAnimation(layer, anim, targets);
             if(back == ApiBack.COOLDOWN) {
                 int cooldown = ModConfigs.Server.inviteCooldown.get();
                 throw ApiBackException.withCooldown(cooldown);
@@ -111,11 +101,7 @@ public class InviteCommand {
             ServerPlayer inviter = EntityArgument.getPlayer(context, "player");
 
             //play animation
-            ApiBack back = ApiBack.RESOURCE_NOT_FOUND;
-            for (IAnimationHelper<?, ?> helper : IHelperGetter.HELPERS) {
-                back = helper.acceptInvite(player, inviter);
-                if(back == ApiBack.SUCCESS) break;
-            }
+            ApiBack back = AnimationApi.getHelper(player).acceptInvite(inviter);
             if(back == ApiBack.OUT_RANGE) throw ApiBackException.withOutRange(ModConfigs.Server.inviteValidDistance.get());
             if(back != ApiBack.SUCCESS) throw new ApiBackException(back);
 
