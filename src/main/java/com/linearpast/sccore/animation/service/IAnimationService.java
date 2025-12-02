@@ -290,7 +290,7 @@ public interface IAnimationService<D extends AnimationData, C extends ICapabilit
             if(player instanceof FakePlayer)
                 return ApiBack.UNSUPPORTED;
             boolean flag = player.getVehicle() != null;
-            if(flag && force) player.unRide();
+            if(flag && force) player.stopRiding();
             else if(flag) return ApiBack.UNSUPPORTED;
             boolean result = AnimationRideEntity.create(player, layer, animation, force) != null;
             return result ? ApiBack.SUCCESS : ApiBack.FAIL;

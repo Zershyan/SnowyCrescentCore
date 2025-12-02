@@ -155,8 +155,8 @@ public class ModLang {
 		)),
 		ANIMATION_RESOURCE_NOT_FOUND(new LangEntity<>(
 				translationString + command + animation + ".animation_resource_not_found",
-				"错误: 资源未找到，请检查资源或操作是否有误。",
-				"Error: Resource not found, please check if there are any errors in the resource or operation."
+				"错误: 资源未找到，请检查资源或操作是否有误: %s",
+				"Error: Resource not found, please check if there are any errors in the resource or operation : %s"
 		)),
 		ANIMATION_OPERATION_CANCELLED(new LangEntity<>(
 				translationString + command + animation + ".animation_operation_cancelled",

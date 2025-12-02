@@ -1,10 +1,6 @@
 package com.linearpast.sccore.animation.data;
 
-import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
-import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
@@ -128,12 +124,6 @@ public class GenericAnimationData extends AnimationData {
 
     public float getCamYaw() {
         return camYaw;
-    }
-
-    @Nullable
-    @OnlyIn(Dist.CLIENT)
-    public KeyframeAnimation getAnimation() {
-        return PlayerAnimationRegistry.getAnimation(key);
     }
 
     public @Nullable GenericAnimationData.LyingType getLyingType() {

@@ -235,6 +235,14 @@ publishing {
                 password = System.getenv('LTDNexusPassword') ?: ''
             }
         }
+        maven {
+            name = 'MafuyuNexus'
+            url = 'https://maven.sighs.cc/repository/maven-releases/'
+            credentials {
+                username = System.getenv('MafuyuNexusUsername') ?: ''
+                password = System.getenv('MafuyuNexusPassword') ?: ''
+            }
+        }
     }
 }
 
