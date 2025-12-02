@@ -1,10 +1,10 @@
 package com.linearpast.sccore.animation.utils;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
-import com.linearpast.sccore.animation.data.GenericAnimationData;
-import com.linearpast.sccore.animation.data.RawAnimationData;
+import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.mixin.IMixinKeyframeAnimationPlayer;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.linearpast.sccore.animation.service.AnimationService;
@@ -157,19 +157,24 @@ public class AnimationUtils {
                 return;
             }
             if(modifierLayer == null) return;
-            KeyframeAnimation keyframeAnimation;
-            GenericAnimationData anim = AnimationService.INSTANCE.getAnimation(animation);
+            AnimationData anim = AnimationService.INSTANCE.getAnimation(animation);
             if(anim == null) {
-                RawAnimationData rawAnim = RawAnimationService.INSTANCE.getAnimation(animation);
-                if(rawAnim == null) return;
-                keyframeAnimation = rawAnim.getAnimation();
-            } else keyframeAnimation = anim.getAnimation();
+                if((anim = RawAnimationService.INSTANCE.getAnimation(animation)) == null)
+                    return;
+            }
+            KeyframeAnimation keyframeAnimation = anim.getAnimation();
             if(keyframeAnimation == null) {
                 if(localPlayer == null) return;
                 localPlayer.sendSystemMessage(Component.translatable(
                         ModLang.TranslatableMessage.ANIMATION_RESOURCE_NOT_FOUND.getKey(),
                         animation.toString()
                 ).withStyle(ChatFormatting.RED));
+                modifierLayer.replaceAnimationWithFade(
+                        AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
+                        null
+                );
+                IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(anim.getKey()).getService();
+                if(service != null) service.removeAnimation(clientPlayer, layer);
                 return;
             }
             modifierLayer.replaceAnimationWithFade(

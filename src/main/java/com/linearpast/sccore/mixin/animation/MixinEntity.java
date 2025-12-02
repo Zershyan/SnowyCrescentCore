@@ -24,16 +24,15 @@ public abstract class MixinEntity {
 
     @Shadow public abstract void setPose(Pose pPose);
 
-    @Inject(
+    @ModifyReturnValue(
             method = "getEyeHeight()F",
-            at = @At(value = "HEAD"),
-            cancellable = true
+            at = @At("RETURN")
     )
-    private void redefinedEyeHeight(CallbackInfoReturnable<Float> cir){
+    private float redefinedEyeHeight(float original){
         Entity self = Entity.class.cast(this);
         if(self instanceof Player player){
             IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-            if(data == null) return;
+            if(data == null) return original;
             Float camYModifier = null;
             for (ResourceLocation value : data.getAnimations().values()) {
                 GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
@@ -43,9 +42,10 @@ public abstract class MixinEntity {
                 camYModifier = Math.min(camYModifier, animationCamY);
             }
             if(camYModifier != null){
-                cir.setReturnValue(this.getEyeHeight(Pose.STANDING) + camYModifier);
+                return this.getEyeHeight(Pose.STANDING) + camYModifier;
             }
         }
+        return original;
     }
 
     @Inject(
