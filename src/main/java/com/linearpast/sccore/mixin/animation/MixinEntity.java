@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity {
-    @Shadow public abstract float getEyeHeight(Pose pPose);
-
     @Shadow private AABB bb;
 
     @Shadow public abstract void setPose(Pose pPose);
@@ -42,7 +40,7 @@ public abstract class MixinEntity {
                 camYModifier = Math.min(camYModifier, animationCamY);
             }
             if(camYModifier != null){
-                return this.getEyeHeight(Pose.STANDING) + camYModifier;
+                return player.getEyeHeight(Pose.STANDING) + camYModifier;
             }
         }
         return original;
