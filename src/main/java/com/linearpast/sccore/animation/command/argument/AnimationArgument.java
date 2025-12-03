@@ -6,13 +6,10 @@ import com.linearpast.sccore.animation.register.RawAnimationRegistry;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -28,9 +25,6 @@ import java.util.function.Supplier;
 
 public class AnimationArgument implements ArgumentType<String> {
     private static final Supplier<Collection<String>> EXAMPLES = AnimationArgument::getAnimationNames;
-    private static final DynamicCommandExceptionType UNKNOWN_TYPE = new DynamicCommandExceptionType(
-            animation -> Component.literal("Unknow animation : " + animation.toString())
-    );
 
     private static Supplier<Set<String>> animationNames;
     public AnimationArgument() {
@@ -96,17 +90,12 @@ public class AnimationArgument implements ArgumentType<String> {
         return EXAMPLES.get();
     }
 
-    public String parse(StringReader reader) throws CommandSyntaxException {
+    public String parse(StringReader reader) {
         int start = reader.getCursor();
         while (reader.canRead() && canRead(reader.peek())) {
             reader.skip();
         }
-        String s = reader.getString().substring(start, reader.getCursor());
-        if (!animationNames.get().contains(s)) {
-            throw UNKNOWN_TYPE.create(s);
-        } else {
-            return s;
-        }
+        return reader.getString().substring(start, reader.getCursor());
     }
 
     private static boolean canRead(char peek) {
