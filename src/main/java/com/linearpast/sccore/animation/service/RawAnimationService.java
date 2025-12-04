@@ -42,7 +42,7 @@ public class RawAnimationService implements IAnimationService<RawAnimationData, 
         if(FMLEnvironment.dist == Dist.CLIENT) {
             return RawAnimationRegistry.getAnimations().getOrDefault(location, null);
         } else {
-            return null;
+            return RawAnimationData.create(location);
         }
     }
 

@@ -224,6 +224,7 @@ public class AnimationRegistry {
         public static boolean isAnimationRegistered = false;
         private static final Map<ResourceLocation, GenericAnimationData> animationsCache = new HashMap<>();
         private static final Map<ResourceLocation, Integer> layersCache = new HashMap<>();
+        private static final Map<ResourceLocation, IAnimation> modifierLayers = new HashMap<>();
 
         public static void cacheAddAnimation(ResourceLocation location, GenericAnimationData animation) {
             animationsCache.put(location, animation);
@@ -249,10 +250,14 @@ public class AnimationRegistry {
                 }
                 case LAYER_REGISTER -> {
                     registerLayers(layersCache);
-                    layersCache.forEach((key, value) ->
-                            PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
-                                    key, value, ClientCache::registerPlayerAnimation
-                            )
+                    layersCache.forEach((key, value) -> PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
+                            key, value, player -> {
+                                Optional<ResourceLocation> optional = modifierLayers.keySet().stream().filter(key::equals).findFirst();
+                                if(optional.isPresent()) return modifierLayers.get(optional.get());
+                                IAnimation iAnimation = ClientCache.registerPlayerAnimation(player);
+                                modifierLayers.put(key, iAnimation);
+                                return iAnimation;
+                            })
                     );
                     ClientLevel level = Minecraft.getInstance().level;
                     if(level == null) {
@@ -279,8 +284,17 @@ public class AnimationRegistry {
                                 ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
                                 ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
                                 ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
+                                for (Pair<Integer, IAnimation> integerIAnimationPair : oldArrayList) {
+                                    for (Pair<Integer, IAnimation> iAnimationPair : List.copyOf(newArrayList)) {
+                                        if(Objects.equals(iAnimationPair.getLeft(), integerIAnimationPair.getLeft())
+                                            && Objects.equals(iAnimationPair.getRight(), integerIAnimationPair.getRight())) {
+                                            newArrayList.remove(iAnimationPair);
+                                        }
+                                    }
+                                }
                                 result.addAll(oldArrayList);
                                 result.addAll(newArrayList);
+
                                 layersField.set(newAnimationStack, result);
                                 animationStackField.set(player, newAnimationStack);
                                 Field animationApplierField = playerClass.getDeclaredField("animationApplier");

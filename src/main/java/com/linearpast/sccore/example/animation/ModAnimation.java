@@ -1,7 +1,7 @@
 package com.linearpast.sccore.example.animation;
 
 import com.linearpast.sccore.SnowyCrescentCore;
-import com.linearpast.sccore.animation.data.RawAnimationData;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
 import com.linearpast.sccore.animation.service.AnimationService;
@@ -47,36 +47,36 @@ public class ModAnimation {
      */
     public static void onAnimationRegister(AnimationRegisterEvent.Animation event) {
         //You must define corresponding Animation to invite
-//        Animation amLTRL = Animation.create(AmLyingToRightLying)
-//                .withLyingType(Animation.LyingType.RIGHT)
-//                .withName("Lying-to-Right-Lying");
-//        Animation amSTL = Animation.create(AmStandToLying)
-//                .withName("Stand-to-Lying")
-//                .withLyingType(Animation.LyingType.FRONT);
-//        Animation waltzGentleman = Animation.create(WaltzGentleman)
-//                .withName("Waltz-Gentleman")
-//                .withRide(Ride.create().addComponentAnimation(WaltzLady));
-//        Animation waltzLady = Animation.create(WaltzLady)
-//                .withName("Waltz-Lady")
-//                .withCamYaw(180)
-//                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
-//
-//        //You can use it to invite an Animation
-//        event.registerAnimation(AmLyingToRightLying, amLTRL);
-//        event.registerAnimation(AmStandToLying, amSTL);
-//        event.registerAnimation(WaltzGentleman, waltzGentleman);
-//        event.registerAnimation(WaltzLady, waltzLady);
-    }
+        GenericAnimationData amLTRL = GenericAnimationData.create(AmLyingToRightLying)
+                .withLyingType(GenericAnimationData.LyingType.RIGHT)
+                .withName("Lying-to-Right-Lying");
+        GenericAnimationData amSTL = GenericAnimationData.create(AmStandToLying)
+                .withName("Stand-to-Lying")
+                .withLyingType(GenericAnimationData.LyingType.FRONT);
+        GenericAnimationData waltzGentleman = GenericAnimationData.create(WaltzGentleman)
+                .withName("Waltz-Gentleman")
+                .withRide(Ride.create().addComponentAnimation(WaltzLady));
+        GenericAnimationData waltzLady = GenericAnimationData.create(WaltzLady)
+                .withName("Waltz-Lady")
+                .withCamYaw(180)
+                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
 
-    public static void onRawAnimationRegister(AnimationRegisterEvent.RawAnimation event) {
-        RawAnimationData amSTL = RawAnimationData.create(AmStandToLying).withRide(Ride.create().withExistTick(100));
-        RawAnimationData amLTRL = RawAnimationData.create(AmLyingToRightLying).withRide(Ride.create().withExistTick(100));
-        RawAnimationData waltzGentleman = RawAnimationData.create(WaltzGentleman).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzLady));
-        RawAnimationData waltzLady = RawAnimationData.create(WaltzLady).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzGentleman));
+        //You can use it to invite an Animation
         event.registerAnimation(AmLyingToRightLying, amLTRL);
         event.registerAnimation(AmStandToLying, amSTL);
         event.registerAnimation(WaltzGentleman, waltzGentleman);
         event.registerAnimation(WaltzLady, waltzLady);
+    }
+
+    public static void onRawAnimationRegister(AnimationRegisterEvent.RawAnimation event) {
+//        RawAnimationData amSTL = RawAnimationData.create(AmStandToLying).withRide(Ride.create().withExistTick(100));
+//        RawAnimationData amLTRL = RawAnimationData.create(AmLyingToRightLying).withRide(Ride.create().withExistTick(100));
+//        RawAnimationData waltzGentleman = RawAnimationData.create(WaltzGentleman).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzLady));
+//        RawAnimationData waltzLady = RawAnimationData.create(WaltzLady).withRide(Ride.create().withExistTick(100).addComponentAnimation(WaltzGentleman));
+//        event.registerAnimation(AmLyingToRightLying, amLTRL);
+//        event.registerAnimation(AmStandToLying, amSTL);
+//        event.registerAnimation(WaltzGentleman, waltzGentleman);
+//        event.registerAnimation(WaltzLady, waltzLady);
     }
 
     public static void register(IEventBus forgeBus, IEventBus modBus) {
