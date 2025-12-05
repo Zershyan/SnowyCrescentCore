@@ -224,7 +224,7 @@ public class AnimationRegistry {
         public static boolean isAnimationRegistered = false;
         private static final Map<ResourceLocation, GenericAnimationData> animationsCache = new HashMap<>();
         private static final Map<ResourceLocation, Integer> layersCache = new HashMap<>();
-        private static final Map<ResourceLocation, IAnimation> modifierLayers = new HashMap<>();
+        private static final Map<UUID, Map<ResourceLocation, IAnimation>> modifierLayers = new HashMap<>();
 
         public static void cacheAddAnimation(ResourceLocation location, GenericAnimationData animation) {
             animationsCache.put(location, animation);
@@ -252,10 +252,12 @@ public class AnimationRegistry {
                     registerLayers(layersCache);
                     layersCache.forEach((key, value) -> PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                             key, value, player -> {
-                                Optional<ResourceLocation> optional = modifierLayers.keySet().stream().filter(key::equals).findFirst();
-                                if(optional.isPresent()) return modifierLayers.get(optional.get());
+                                Map<ResourceLocation, IAnimation> animationMap = modifierLayers.getOrDefault(player.getUUID(), new HashMap<>());
+                                Optional<ResourceLocation> optional = animationMap.keySet().stream().filter(key::equals).findFirst();
+                                if(optional.isPresent()) return animationMap.get(optional.get());
                                 IAnimation iAnimation = ClientCache.registerPlayerAnimation(player);
-                                modifierLayers.put(key, iAnimation);
+                                animationMap.put(key, iAnimation);
+                                modifierLayers.put(player.getUUID(), animationMap);
                                 return iAnimation;
                             })
                     );
