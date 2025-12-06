@@ -14,6 +14,7 @@ import com.linearpast.sccore.animation.mixin.IMixinPlayerAnimationFactoryHolder;
 import com.linearpast.sccore.animation.network.toclient.AnimationClientStatusPacket;
 import com.linearpast.sccore.animation.network.toclient.AnimationJsonPacket;
 import com.linearpast.sccore.animation.service.RawAnimationService;
+import com.linearpast.sccore.animation.utils.FileUtils;
 import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.utils.ModuleAccess;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
@@ -43,20 +44,12 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class AnimationRegistry {
     private static final Map<ResourceLocation, GenericAnimationData> animations = new HashMap<>();
@@ -92,27 +85,27 @@ public class AnimationRegistry {
             } catch (IOException e) { return; }
         }
 
-        safeUnzip(dataPackPath.resolve("animation.zip").toString(), animationPath.toAbsolutePath().toString());
-        Set<Path> animZipPaths = getAllFile(
+        FileUtils.safeUnzip(dataPackPath.resolve("animation.zip").toString(), animationPath.toAbsolutePath().toString());
+        Set<Path> animZipPaths = FileUtils.getAllFile(
                 dataPackPath.resolve("animation"),
                 path -> path.toString().endsWith(".anim.zip")
         );
-        Set<Path> layerZipPaths = getAllFile(
+        Set<Path> layerZipPaths = FileUtils.getAllFile(
                 dataPackPath.resolve("animation"),
                 path -> path.toString().endsWith(".layer.zip")
         );
         for (Path zipPath : animZipPaths) {
-            safeUnzip(zipPath.toString(), animationPath.toAbsolutePath().toString());
+            FileUtils.safeUnzip(zipPath.toString(), animationPath.toAbsolutePath().toString());
         }
         for (Path zipPath : layerZipPaths) {
-            safeUnzip(zipPath.toString(), animationPath.toAbsolutePath().toString());
+            FileUtils.safeUnzip(zipPath.toString(), animationPath.toAbsolutePath().toString());
         }
 
-        Set<Path> animPaths = getAllFile(
+        Set<Path> animPaths = FileUtils.getAllFile(
                 dataPackPath.resolve("animation"),
                 path -> path.toString().endsWith(".anim.json")
         );
-        Set<Path> layerPaths = getAllFile(
+        Set<Path> layerPaths = FileUtils.getAllFile(
                 dataPackPath.resolve("animation"),
                 path -> path.getFileName().toString().equals("animation.layer.json")
         );
@@ -178,44 +171,6 @@ public class AnimationRegistry {
             ModChannel.sendToPlayer(new AnimationClientStatusPacket(AnimationClientStatusPacket.Status.LAYER_REGISTER), serverPlayer);
         }
 
-    }
-
-    private static Set<Path> getAllFile(Path directory, Predicate<Path> filter) {
-        try (Stream<Path> walk = Files.walk(directory)) {
-            return walk.filter(Files::isRegularFile)
-                    .filter(filter)
-                    .collect(Collectors.toSet());
-        } catch (Exception ignored) {
-            return Collections.emptySet();
-        }
-    }
-
-    private static void safeUnzip(String zipFile, String destDir) {
-        Path destPath = Paths.get(destDir).toAbsolutePath();
-
-        try (ZipFile zip = new ZipFile(zipFile)) {
-            Files.createDirectories(destPath);
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                Path entryPath = destPath.resolve(entry.getName()).normalize();
-
-                if (entry.isDirectory()) {
-                    Files.createDirectories(entryPath);
-                } else {
-                    Files.createDirectories(entryPath.getParent());
-                    try (InputStream in = zip.getInputStream(entry);
-                         OutputStream out = Files.newOutputStream(entryPath, StandardOpenOption.CREATE)) {
-                        byte[] buffer = new byte[8192];
-                        int bytesRead;
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            out.write(buffer, 0, bytesRead);
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
     }
 
 

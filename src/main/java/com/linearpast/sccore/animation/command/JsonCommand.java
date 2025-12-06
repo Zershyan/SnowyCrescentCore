@@ -103,6 +103,7 @@ public class JsonCommand {
                     ModLang.TranslatableMessage.ANIMATION_JSON_PATH.getKey(),
                     path.toString()
             ));
+            source.sendSuccess(() -> component, true);
         } catch (Exception e) {
             source.sendFailure(Component.translatable(
                     ModLang.TranslatableMessage.COMMAND_RUN_FAIL.getKey()

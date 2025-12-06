@@ -3,14 +3,21 @@ package com.linearpast.sccore.animation.register;
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.command.argument.AnimationArgument;
 import com.linearpast.sccore.animation.data.RawAnimationData;
+import com.linearpast.sccore.animation.data.util.RawAnimJson;
 import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
+import com.linearpast.sccore.animation.utils.FileUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class RawAnimationRegistry {
@@ -41,7 +48,38 @@ public class RawAnimationRegistry {
         resetAnimations();
         AnimationRegisterEvent.RawAnimation event = new AnimationRegisterEvent.RawAnimation();
         MinecraftForge.EVENT_BUS.post(event);
-        registerAnimations(event.getAnimations());
+        Map<ResourceLocation, RawAnimationData> animationDataMap = new HashMap<>(event.getAnimations());
+        Minecraft instance = Minecraft.getInstance();
+        Path dataPackPath = instance.getResourcePackDirectory();
+        Path animationPath = dataPackPath.resolve("animation");
+        if (!Files.exists(animationPath)) {
+            try {
+                Files.createDirectories(animationPath);
+            } catch (IOException e) { return; }
+        }
+        FileUtils.safeUnzip(dataPackPath.resolve("animation.zip").toString(), animationPath.toAbsolutePath().toString());
+        Set<Path> animZipPaths = FileUtils.getAllFile(
+                dataPackPath.resolve("animation"),
+                path -> path.toString().endsWith(".anim.zip")
+        );
+        for (Path zipPath : animZipPaths) {
+            FileUtils.safeUnzip(zipPath.toString(), animationPath.toAbsolutePath().toString());
+        }
+        Set<Path> animPaths = FileUtils.getAllFile(
+                dataPackPath.resolve("animation"),
+                path -> path.toString().endsWith(".anim.json")
+        );
+
+        for (Path path : animPaths) {
+            try {
+                RawAnimJson.Reader reader = RawAnimJson.Reader.stream(path);
+                RawAnimationData anim = reader.parse();
+                animationDataMap.put(anim.getKey(), anim);
+            } catch (Exception ignored) {
+                SnowyCrescentCore.log.error("Failed to parse raw animation JSON: {}", path.toString());
+            }
+        }
+        registerAnimations(animationDataMap);
     }
 
     private static void resetAnimations() {

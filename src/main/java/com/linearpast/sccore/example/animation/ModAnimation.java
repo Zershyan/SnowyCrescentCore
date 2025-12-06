@@ -47,12 +47,12 @@ public class ModAnimation {
      */
     public static void onAnimationRegister(AnimationRegisterEvent.Animation event) {
         //You must define corresponding Animation to invite
-        GenericAnimationData amLTRL = GenericAnimationData.create(AmLyingToRightLying)
-                .withLyingType(GenericAnimationData.LyingType.RIGHT)
-                .withName("Lying-to-Right-Lying");
-        GenericAnimationData amSTL = GenericAnimationData.create(AmStandToLying)
-                .withName("Stand-to-Lying")
-                .withLyingType(GenericAnimationData.LyingType.FRONT);
+//        GenericAnimationData amLTRL = GenericAnimationData.create(AmLyingToRightLying)
+//                .withLyingType(GenericAnimationData.LyingType.RIGHT)
+//                .withName("Lying-to-Right-Lying");
+//        GenericAnimationData amSTL = GenericAnimationData.create(AmStandToLying)
+//                .withName("Stand-to-Lying")
+//                .withLyingType(GenericAnimationData.LyingType.FRONT);
         GenericAnimationData waltzGentleman = GenericAnimationData.create(WaltzGentleman)
                 .withName("Waltz-Gentleman")
                 .withRide(Ride.create().addComponentAnimation(WaltzLady));
@@ -62,8 +62,8 @@ public class ModAnimation {
                 .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
 
         //You can use it to invite an Animation
-        event.registerAnimation(AmLyingToRightLying, amLTRL);
-        event.registerAnimation(AmStandToLying, amSTL);
+//        event.registerAnimation(AmLyingToRightLying, amLTRL);
+//        event.registerAnimation(AmStandToLying, amSTL);
         event.registerAnimation(WaltzGentleman, waltzGentleman);
         event.registerAnimation(WaltzLady, waltzLady);
     }
