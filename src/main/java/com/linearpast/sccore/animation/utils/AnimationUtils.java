@@ -3,8 +3,10 @@ package com.linearpast.sccore.animation.utils;
 import com.linearpast.sccore.SnowyCrescentCore;
 import com.linearpast.sccore.animation.AnimationApi;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
+import com.linearpast.sccore.animation.capability.RawAnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.AnimationData;
+import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.mixin.IMixinKeyframeAnimationPlayer;
 import com.linearpast.sccore.animation.register.AnimationRegistry;
 import com.linearpast.sccore.animation.service.AnimationService;
@@ -24,12 +26,13 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class AnimationUtils {
     /**
@@ -184,5 +187,66 @@ public class AnimationUtils {
         }catch (Exception e) {
             SnowyCrescentCore.log.error("Failed to play animation : {}", animation, e);
         }
+    }
+
+    /**
+     * Get the LyingType when there are animations which playing on player. <br>
+     * And It will return the first which be found.
+     * @param player Target player
+     * @return The first LyingType it find.
+     */
+    @Nullable
+    public static GenericAnimationData.LyingType getSideView(Player player) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+            RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+            if(data == null) return null;
+            if(rawData == null) return null;
+
+            Map.Entry<Integer, AnimationData.LyingType> animations = null;
+            ArrayList<ResourceLocation> resourceLocations = new ArrayList<>();
+            resourceLocations.addAll(data.getAnimations().values());
+            resourceLocations.addAll(rawData.getAnimations().values());
+            for (ResourceLocation value : resourceLocations) {
+                AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+                if(animation == null) return null;
+                AnimationData.LyingType type = animation.getLyingType();
+                if(type == null) continue;
+                switch (type) {
+                    case FRONT,BACK -> {}
+                    case LEFT,RIGHT -> {
+                        if(animations == null || animations.getKey() < animation.getCamComputePriority()) {
+                            animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), type);
+                        }
+                    }
+                }
+            }
+            return animations == null ? null : animations.getValue();
+        });
+    }
+
+    @Nullable
+    @OnlyIn(Dist.CLIENT)
+    public static AnimationData getPredicateAnimationData(Predicate<AnimationData> predicate) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if(player == null) return null;
+            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+            RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+            if(data == null) return null;
+            if(rawData == null) return null;
+
+            Map.Entry<Integer, AnimationData> animations = null;
+            ArrayList<ResourceLocation> resourceLocations = new ArrayList<>();
+            resourceLocations.addAll(data.getAnimations().values());
+            resourceLocations.addAll(rawData.getAnimations().values());
+            for (ResourceLocation value : resourceLocations) {
+                AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+                if(animation == null) return null;
+                if(!predicate.test(animation)) continue;
+                animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), animation);
+            }
+            return animations == null ? null : animations.getValue();
+        });
     }
 }

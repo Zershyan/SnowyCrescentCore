@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Ride {
     private final List<ResourceLocation> componentAnimations = new ArrayList<>();
-    private Vec3 offset = Vec3.ZERO;
+    private Vec3 offset = new Vec3(0.0D, 0.0D, 0.0D);
     private int existTick;
     private float xRot;
     private float yRot;

@@ -3,7 +3,7 @@ package com.linearpast.sccore.animation.service;
 import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.entity.AnimationRideEntity;
 import com.linearpast.sccore.animation.event.PlayerTickEvent;
-import com.linearpast.sccore.animation.event.client.CameraAnglesModify;
+import com.linearpast.sccore.animation.event.client.CameraModify;
 import com.linearpast.sccore.animation.event.client.ClientPlayerEvent;
 import com.linearpast.sccore.animation.event.client.EntityRendererRegisterEvent;
 import com.linearpast.sccore.animation.event.create.AnimationEvent;
@@ -63,7 +63,7 @@ public interface IAnimationService<D extends AnimationData, C extends ICapabilit
         @Override
         public void addClientListener(IEventBus forgeBus, IEventBus modBus) {
             modBus.register(EntityRendererRegisterEvent.class);
-            forgeBus.register(CameraAnglesModify.class);
+            forgeBus.register(CameraModify.class);
             forgeBus.register(ClientPlayerEvent.class);
         }
     };

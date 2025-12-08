@@ -35,7 +35,7 @@ public abstract class MixinEntity {
             for (ResourceLocation value : data.getAnimations().values()) {
                 GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
                 if(animation == null) continue;
-                float animationCamY = animation.getCamY();
+                float animationCamY = (float) animation.getCamPosOffset().y;
                 if(camYModifier == null) camYModifier = animationCamY;
                 camYModifier = Math.min(camYModifier, animationCamY);
             }

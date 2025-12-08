@@ -2,6 +2,7 @@ package com.linearpast.sccore.animation.data.util;
 
 import com.google.gson.*;
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.data.Ride;
 import net.minecraft.resources.ResourceLocation;
@@ -20,10 +21,12 @@ public class AnimJson {
     private static final String Name = "name";
     private static final String LyingType = "lyingType";
     private static final String HeightModifier = "heightModifier";
-    private static final String CamY = "camY";
     private static final String CamPitch = "camPitch";
     private static final String CamRoll = "camRoll";
     private static final String CamYaw = "camYaw";
+    private static final String CamPosOffset = "camPosOffset";
+    private static final String Relative = "relative";
+    private static final String Priority = "priority";
     private static final String WithRide = "withRide";
     private static final String Offset = "offset";
     private static final String XRot = "xRot";
@@ -62,9 +65,16 @@ public class AnimJson {
                 JsonObject json = originElement.getAsJsonObject();
                 GenericAnimationData animation = GenericAnimationData.create(new ResourceLocation(json.get(Key).getAsString()));
                 if(json.has(Name)) animation.withName(json.get(Name).getAsString());
-                if(json.has(LyingType)) animation.withLyingType(GenericAnimationData.LyingType.valueOf(json.get(LyingType).getAsString()));
+                if(json.has(LyingType)) animation.withLyingType(AnimationData.LyingType.valueOf(json.get(LyingType).getAsString()));
+                JsonObject camOffset = json.get(CamPosOffset).getAsJsonObject();
                 animation.withHeightModifier(json.get(HeightModifier).getAsFloat())
-                        .withCamY(json.get(CamY).getAsFloat())
+                        .withCamComputePriority(json.get(Priority).getAsInt())
+                        .setCamPosOffset(new Vec3(
+                                camOffset.get("x").getAsDouble(),
+                                camOffset.get("y").getAsDouble(),
+                                camOffset.get("z").getAsDouble()
+                        ))
+                        .withCamPosOffsetRelative(camOffset.get(Relative).getAsBoolean())
                         .withCamPitch(json.get(CamPitch).getAsFloat())
                         .withCamRoll(json.get(CamRoll).getAsFloat())
                         .withCamYaw(json.get(CamYaw).getAsFloat());
@@ -116,11 +126,14 @@ public class AnimJson {
 
         public static Path syntaxExample(Path directory) throws Exception {
             ResourceLocation exampleLocation = new ResourceLocation(SnowyCrescentCore.MODID, Writer.example);
-            GenericAnimationData example = GenericAnimationData.create(exampleLocation)
+            GenericAnimationData example = (GenericAnimationData) GenericAnimationData
+                    .create(exampleLocation)
                     .withName(Writer.example)
                     .withLyingType(GenericAnimationData.LyingType.RIGHT)
                     .withHeightModifier(0.3f)
-                    .withCamY(-1.3f)
+                    .setCamPosOffset(new Vec3(0.0f, -1.3f, 0.0f))
+                    .withCamComputePriority(0)
+                    .withCamPosOffsetRelative(false)
                     .withCamPitch(-90.0f)
                     .withCamRoll(90.0f)
                     .withCamYaw(90.0f)
@@ -160,9 +173,15 @@ public class AnimJson {
             ResourceLocation key = animation.getKey();
             json.addProperty(Key, key.toString());
             if (animation.getName() != null) json.addProperty(Name, animation.getName());
+            json.addProperty(Priority, animation.getCamComputePriority());
             if (animation.getLyingType() != null) json.addProperty(LyingType, animation.getLyingType().getName());
             json.addProperty(HeightModifier, animation.getHeightModifier());
-            json.addProperty(CamY, animation.getCamY());
+            JsonObject camOffset = new JsonObject();
+            camOffset.addProperty("x", animation.getCamPosOffset().x);
+            camOffset.addProperty("y", animation.getCamPosOffset().y);
+            camOffset.addProperty("z", animation.getCamPosOffset().z);
+            camOffset.addProperty(Relative, animation.isCamPosOffsetRelative());
+            json.add(CamPosOffset, camOffset);
             json.addProperty(CamPitch, animation.getCamPitch());
             json.addProperty(CamRoll, animation.getCamRoll());
             json.addProperty(CamYaw, animation.getCamYaw());

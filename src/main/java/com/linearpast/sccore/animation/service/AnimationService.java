@@ -29,32 +29,6 @@ public class AnimationService implements IAnimationService<GenericAnimationData,
     public static final AnimationService INSTANCE = new AnimationService();
 
     /**
-     * Get the LyingType when there are animations which playing on player. <br>
-     * And It will return the first which be found.
-     * @param player Target player
-     * @return The first LyingType it find.
-     */
-    @Nullable
-    public GenericAnimationData.LyingType getSideView(Player player) {
-        return ANIMATION_RUNNER.testLoadedAndCall(() -> {
-            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-            if(data == null) return null;
-            GenericAnimationData.LyingType lyingType = null;
-            for (ResourceLocation value : data.getAnimations().values()) {
-                GenericAnimationData animation = getAnimation(value);
-                if(animation == null) return null;
-                GenericAnimationData.LyingType type = animation.getLyingType();
-                if(type == null) continue;
-                switch (type) {
-                    case FRONT,BACK -> {}
-                    case LEFT,RIGHT -> lyingType = animation.getLyingType();
-                }
-            }
-            return lyingType;
-        });
-    }
-
-    /**
      * Get the HeightModifier when there are animations which playing on player. <br>
      * And It will return the first which be found.
      * @param player Target player

@@ -7,6 +7,7 @@ import com.linearpast.sccore.animation.event.create.AnimationRegisterEvent;
 import com.linearpast.sccore.animation.service.AnimationService;
 import com.linearpast.sccore.example.animation.event.ExamplePlayerAttackEvent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -53,10 +54,14 @@ public class ModAnimation {
 //        GenericAnimationData amSTL = GenericAnimationData.create(AmStandToLying)
 //                .withName("Stand-to-Lying")
 //                .withLyingType(GenericAnimationData.LyingType.FRONT);
-        GenericAnimationData waltzGentleman = GenericAnimationData.create(WaltzGentleman)
+        GenericAnimationData waltzGentleman = (GenericAnimationData) GenericAnimationData
+                .create(WaltzGentleman)
                 .withName("Waltz-Gentleman")
+                .addCamPosOffset(new Vec3(0.0,0.0,1.0))
+                .withCamPosOffsetRelative(true)
                 .withRide(Ride.create().addComponentAnimation(WaltzLady));
-        GenericAnimationData waltzLady = GenericAnimationData.create(WaltzLady)
+        GenericAnimationData waltzLady = (GenericAnimationData) GenericAnimationData
+                .create(WaltzLady)
                 .withName("Waltz-Lady")
                 .withCamYaw(180)
                 .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
