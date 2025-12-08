@@ -16,7 +16,6 @@ import com.linearpast.sccore.animation.network.toclient.AnimationJsonPacket;
 import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.animation.utils.FileUtils;
 import com.linearpast.sccore.core.ModChannel;
-import com.linearpast.sccore.utils.ModuleAccess;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
@@ -222,11 +221,6 @@ public class AnimationRegistry {
                         return;
                     }
                     try {
-                        ModuleAccess.open(
-                                Player.class.getModule(),
-                                Player.class.getPackageName(),
-                                AnimationRegistry.class.getModule()
-                        );
                         for (AbstractClientPlayer player : level.players()) {
                             try {
                                 Class<?> playerClass = Player.class;
