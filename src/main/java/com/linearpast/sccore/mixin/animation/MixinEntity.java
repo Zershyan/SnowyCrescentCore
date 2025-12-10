@@ -16,7 +16,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Mixin(Entity.class)
@@ -35,7 +37,9 @@ public abstract class MixinEntity {
             IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
             if(data == null) return original;
             Map.Entry<Float, Integer> entry = null;
-            for (ResourceLocation value : data.getAnimations().values()) {
+            List<ResourceLocation> values = new ArrayList<>(data.getAnimations().values());
+            values.add(data.getRiderAnimation());
+            for (ResourceLocation value : values) {
                 GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
                 if(animation == null) continue;
                 float animationCamY = (float) animation.getCamPosOffset().y;
