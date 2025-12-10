@@ -146,7 +146,7 @@ public class AnimationData implements INBTSerializable<CompoundTag> {
     public AnimationData withLyingType(@Nullable AnimationData.LyingType lyingType) {
         this.lyingType = lyingType;
         if(lyingType == null) return this;
-        this.camPosOffset.add(0, -1.3f, 0);
+        this.camPosOffset = new Vec3(0, -1.3f, 0);
         this.camPitch = -90.0f;
         switch (lyingType) {
             case RIGHT -> {

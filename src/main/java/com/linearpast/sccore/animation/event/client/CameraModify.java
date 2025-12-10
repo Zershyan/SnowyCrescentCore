@@ -66,6 +66,9 @@ public class CameraModify {
         }
     }
 
+    private static Vec3 targetOffset = Vec3.ZERO;
+    private static Vec3 currentOffset = Vec3.ZERO;
+
     @SubscribeEvent
     public static void changeCameraPos(ViewportEvent.ComputeCameraAngles event) {
         Camera camera = event.getCamera();
@@ -77,8 +80,15 @@ public class CameraModify {
             AnimationData animation = AnimationUtils.getPredicateAnimationData(animationData ->
                     !animationData.getCamPosOffset().multiply(1,0,1).equals(Vec3.ZERO)
             );
+            float var3 = Minecraft.getInstance().getDeltaFrameTime();
+            float var4 = var3 / 5.0F;
+            if (var4 == 0.0F) {
+                var4 = 0.0022857143F;
+            }
+
+            targetOffset = Vec3.ZERO;
             if(animation != null) {
-                Vec3 camPosOffset = animation.getCamPosOffset();
+                Vec3 camPosOffset = animation.getCamPosOffset().multiply(1,0,1);
                 if(animation.isCamPosOffsetRelative()) {
                     float yRot = player.yBodyRotO + (player.yBodyRot - player.yBodyRotO) * minecraft.getPartialTick();
                     float bodyAngel = -(yRot + 90) * ((float)Math.PI / 180F);
@@ -86,17 +96,26 @@ public class CameraModify {
                     double sin = Math.sin(bodyAngel);
                     double x = camPosOffset.x;
                     double z = camPosOffset.z;
-                    camera.position = player.getEyePosition(minecraft.getPartialTick()).add(
+                    targetOffset = new Vec3(
                             sin * x + cos * z,
                             camPosOffset.y,
                             cos * x - sin * z
                     );
                 } else {
                     if(camPosOffset.distanceToSqr(Vec3.ZERO) <= 10.0 * 10.0 * 10.0) {
-                        camera.position = player.getEyePosition(minecraft.getPartialTick())
-                                .add(camPosOffset);
+                        targetOffset = camPosOffset;
                     }
                 }
+            }
+
+            currentOffset = new Vec3(
+                    MathHelper.lerp(var4, currentOffset.x, targetOffset.x),
+                    MathHelper.lerp(var4, currentOffset.y, targetOffset.y),
+                    MathHelper.lerp(var4, currentOffset.z, targetOffset.z)
+            );
+            if(!currentOffset.equals(Vec3.ZERO)) {
+                camera.position = player.getEyePosition(minecraft.getPartialTick())
+                        .add(currentOffset);
             }
         }
     }

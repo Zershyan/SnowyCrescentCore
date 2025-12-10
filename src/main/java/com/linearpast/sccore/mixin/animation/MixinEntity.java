@@ -16,6 +16,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Mixin(Entity.class)
 public abstract class MixinEntity {
     @Shadow private AABB bb;
@@ -31,16 +34,19 @@ public abstract class MixinEntity {
         if(self instanceof Player player){
             IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
             if(data == null) return original;
-            Float camYModifier = null;
+            Map.Entry<Float, Integer> entry = null;
             for (ResourceLocation value : data.getAnimations().values()) {
                 GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
                 if(animation == null) continue;
                 float animationCamY = (float) animation.getCamPosOffset().y;
-                if(camYModifier == null) camYModifier = animationCamY;
-                camYModifier = Math.min(camYModifier, animationCamY);
+                int priority = animation.getCamComputePriority();
+                if((entry == null && animationCamY != 0)
+                        || (entry != null && priority > entry.getValue())) {
+                    entry = new HashMap.SimpleEntry<>(animationCamY, priority);
+                }
             }
-            if(camYModifier != null){
-                return player.getEyeHeight(Pose.STANDING) + camYModifier;
+            if(entry != null){
+                return player.getEyeHeight(Pose.STANDING) + entry.getKey();
             }
         }
         return original;
