@@ -1,5 +1,6 @@
 package com.linearpast.sccore.animation.register;
 
+import com.linearpast.sccore.animation.network.toclient.AnimationClearPacket;
 import com.linearpast.sccore.animation.network.toclient.AnimationClientStatusPacket;
 import com.linearpast.sccore.animation.network.toclient.AnimationJsonPacket;
 import com.linearpast.sccore.animation.network.toclient.SyncAnimationPacket;
@@ -23,6 +24,11 @@ public class AnimationChannels {
                 .decoder(AnimationClientStatusPacket::new)
                 .encoder(AnimationClientStatusPacket::encode)
                 .consumerMainThread(AnimationClientStatusPacket::handle)
+                .add();
+        ModChannel.INSTANCE.messageBuilder(AnimationClearPacket.class, cid(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(AnimationClearPacket::new)
+                .encoder(AnimationClearPacket::encode)
+                .consumerMainThread(AnimationClearPacket::handle)
                 .add();
 
         //To server

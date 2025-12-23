@@ -38,7 +38,7 @@ public abstract class MixinEntity {
             if(data == null) return original;
             Map.Entry<Float, Integer> entry = null;
             List<ResourceLocation> values = new ArrayList<>(data.getAnimations().values());
-            values.add(data.getRiderAnimation());
+            if(data.getRiderAnimation() != null) values.add(data.getRiderAnimation());
             for (ResourceLocation value : values) {
                 GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
                 if(animation == null) continue;

@@ -8,9 +8,11 @@ import com.linearpast.sccore.animation.command.exception.ApiBackException;
 import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.helper.AnimationHelper;
 import com.linearpast.sccore.animation.helper.AnimationServiceGetterHelper;
+import com.linearpast.sccore.animation.network.toclient.AnimationClearPacket;
 import com.linearpast.sccore.animation.service.IAnimationService;
 import com.linearpast.sccore.animation.service.RawAnimationService;
 import com.linearpast.sccore.animation.utils.ApiBack;
+import com.linearpast.sccore.core.ModChannel;
 import com.linearpast.sccore.core.datagen.ModLang;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -228,6 +230,7 @@ public class PlayCommand {
                 AnimationHelper helper = AnimationApi.getHelper(player);
                 helper.clearAnimation();
                 helper.detachAnimation();
+                ModChannel.sendToPlayer(new AnimationClearPacket((ResourceLocation) null), player);
             });
             source.sendSuccess(() -> Component.translatable(
                     ModLang.TranslatableMessage.CLEAR_ANIMATIONS.getKey()

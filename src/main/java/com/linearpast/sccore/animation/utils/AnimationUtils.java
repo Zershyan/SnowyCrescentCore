@@ -240,7 +240,7 @@ public class AnimationUtils {
             ArrayList<ResourceLocation> resourceLocations = new ArrayList<>();
             resourceLocations.addAll(data.getAnimations().values());
             resourceLocations.addAll(rawData.getAnimations().values());
-            resourceLocations.add(data.getRiderAnimation());
+            if(data.getRiderAnimation() != null) resourceLocations.add(data.getRiderAnimation());
             for (ResourceLocation value : resourceLocations) {
                 AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
                 if(animation == null) return null;
