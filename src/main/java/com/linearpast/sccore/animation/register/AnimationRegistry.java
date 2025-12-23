@@ -232,10 +232,10 @@ public class AnimationRegistry {
                                 AnimationStack oldAnimationStack = (AnimationStack) animationStackField.get(player);
                                 Field layersField = AnimationStack.class.getDeclaredField("layers");
                                 layersField.setAccessible(true);
-                                ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
-                                ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
+                                ArrayList<Pair<Integer, IAnimation>> oldArrayList = new ArrayList<>((ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack));
+                                ArrayList<Pair<Integer, IAnimation>> newArrayList = new ArrayList<>((ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack));
                                 ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
-                                for (Pair<Integer, IAnimation> oldAnimationPair : oldArrayList) {
+                                for (Pair<Integer, IAnimation> oldAnimationPair : List.copyOf(oldArrayList)) {
                                     for (Pair<Integer, IAnimation> newAnimationPair : List.copyOf(newArrayList)) {
                                         if(Objects.equals(oldAnimationPair.getLeft(), newAnimationPair.getLeft())) {
                                             KeyframeAnimation oldData = Optional.ofNullable((KeyframeAnimationPlayer) ((ModifierLayer<?>) oldAnimationPair.getRight()).getAnimation())
