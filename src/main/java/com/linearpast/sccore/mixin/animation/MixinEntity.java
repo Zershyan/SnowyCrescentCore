@@ -1,11 +1,10 @@
 package com.linearpast.sccore.mixin.animation;
 
-import com.linearpast.sccore.animation.capability.AnimationDataCapability;
-import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
+import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.data.GenericAnimationData;
 import com.linearpast.sccore.animation.service.AnimationService;
+import com.linearpast.sccore.animation.utils.AnimationUtils;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -15,11 +14,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity {
@@ -34,23 +28,9 @@ public abstract class MixinEntity {
     private float redefinedEyeHeight(float original){
         Entity self = Entity.class.cast(this);
         if(self instanceof Player player){
-            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
-            if(data == null) return original;
-            Map.Entry<Float, Integer> entry = null;
-            List<ResourceLocation> values = new ArrayList<>(data.getAnimations().values());
-            if(data.getRiderAnimation() != null) values.add(data.getRiderAnimation());
-            for (ResourceLocation value : values) {
-                GenericAnimationData animation = AnimationService.INSTANCE.getAnimation(value);
-                if(animation == null) continue;
-                float animationCamY = (float) animation.getCamPosOffset().y;
-                int priority = animation.getCamComputePriority();
-                if((entry == null && animationCamY != 0)
-                        || (entry != null && priority > entry.getValue())) {
-                    entry = new HashMap.SimpleEntry<>(animationCamY, priority);
-                }
-            }
-            if(entry != null){
-                return player.getEyeHeight(Pose.STANDING) + entry.getKey();
+            AnimationData data = AnimationUtils.getEyeModifierAnimationData(player);
+            if(data instanceof GenericAnimationData){
+                return player.getEyeHeight(Pose.STANDING) + (float) data.getCamPosOffset().y;
             }
         }
         return original;

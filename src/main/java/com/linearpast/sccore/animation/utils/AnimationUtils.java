@@ -243,11 +243,37 @@ public class AnimationUtils {
             if(data.getRiderAnimation() != null) resourceLocations.add(data.getRiderAnimation());
             for (ResourceLocation value : resourceLocations) {
                 AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
-                if(animation == null) return null;
+                if(animation == null) continue;
                 if(!predicate.test(animation)) continue;
-                animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), animation);
+                if(animations == null || animations.getKey() < animation.getCamComputePriority()) {
+                    animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), animation);
+                }
             }
             return animations == null ? null : animations.getValue();
         });
+    }
+
+    @Nullable
+    public static AnimationData getEyeModifierAnimationData(Player player) {
+        IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+        RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+        if(data == null) return null;
+        if(rawData == null) return null;
+        Map.Entry<AnimationData, Integer> entry = null;
+        List<ResourceLocation> values = new ArrayList<>();
+        if(data.getRiderAnimation() != null) values.add(data.getRiderAnimation());
+        values.addAll(data.getAnimations().values());
+        values.addAll(rawData.getAnimations().values());
+        for (ResourceLocation value : values) {
+            AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+            if(animation == null) continue;
+            float animationCamY = (float) animation.getCamPosOffset().y;
+            int priority = animation.getCamComputePriority();
+            if((entry == null && animationCamY != 0)
+                    || (entry != null && priority > entry.getValue())) {
+                entry = new HashMap.SimpleEntry<>(animation, priority);
+            }
+        }
+        return entry == null ? null : entry.getKey();
     }
 }

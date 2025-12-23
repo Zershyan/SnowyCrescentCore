@@ -3,6 +3,7 @@ package com.linearpast.sccore.animation.event.client;
 import com.linearpast.sccore.animation.capability.AnimationDataCapability;
 import com.linearpast.sccore.animation.capability.inter.IAnimationCapability;
 import com.linearpast.sccore.animation.data.AnimationData;
+import com.linearpast.sccore.animation.data.RawAnimationData;
 import com.linearpast.sccore.animation.utils.AnimationUtils;
 import dev.kosmx.playerAnim.core.util.MathHelper;
 import net.minecraft.client.Camera;
@@ -89,6 +90,10 @@ public class CameraModify {
             targetOffset = Vec3.ZERO;
             if(animation != null) {
                 Vec3 camPosOffset = animation.getCamPosOffset().multiply(1,0,1);
+                AnimationData data = AnimationUtils.getEyeModifierAnimationData(player);
+                if(data instanceof RawAnimationData) {
+                    camPosOffset = camPosOffset.add(0, data.getCamPosOffset().y, 0);
+                }
                 if(animation.isCamPosOffsetRelative()) {
                     float yRot = player.yBodyRotO + (player.yBodyRot - player.yBodyRotO) * minecraft.getPartialTick();
                     float bodyAngel = -(yRot + 90) * ((float)Math.PI / 180F);

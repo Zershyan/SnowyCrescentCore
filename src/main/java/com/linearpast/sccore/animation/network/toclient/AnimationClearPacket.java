@@ -1,7 +1,7 @@
 package com.linearpast.sccore.animation.network.toclient;
 
 import com.linearpast.sccore.animation.register.AnimationRegistry;
-import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
+import com.linearpast.sccore.animation.utils.AnimationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -31,9 +31,7 @@ public record AnimationClearPacket(@Nullable ResourceLocation layer) {
             List<ResourceLocation> layers = new ArrayList<>();
             if(layer != null) layers.add(layer);
             else layers.addAll(AnimationRegistry.getLayers().keySet());
-            layers.forEach(layer -> PlayerAnimationAccess
-                    .getPlayerAssociatedData(player).set(layer, null)
-            );
+            layers.forEach(layer -> AnimationUtils.playAnimation(player, layer, null));
         });
     }
 }

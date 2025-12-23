@@ -25,7 +25,7 @@ public class AnimationChannels {
                 .encoder(AnimationClientStatusPacket::encode)
                 .consumerMainThread(AnimationClientStatusPacket::handle)
                 .add();
-        ModChannel.INSTANCE.messageBuilder(AnimationClearPacket.class, cid(), NetworkDirection.PLAY_TO_SERVER)
+        ModChannel.INSTANCE.messageBuilder(AnimationClearPacket.class, cid(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(AnimationClearPacket::new)
                 .encoder(AnimationClearPacket::encode)
                 .consumerMainThread(AnimationClearPacket::handle)

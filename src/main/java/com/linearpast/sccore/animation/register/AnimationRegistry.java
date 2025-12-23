@@ -206,9 +206,9 @@ public class AnimationRegistry {
                     registerLayers(layersCache);
                     layersCache.forEach((key, value) -> PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                             key, value, player -> {
+                                if(Minecraft.getInstance().player == null) return ClientCache.registerPlayerAnimation(player);
                                 Map<ResourceLocation, IAnimation> animationMap = modifierLayers.getOrDefault(player.getUUID(), new HashMap<>());
-                                Optional<ResourceLocation> optional = animationMap.keySet().stream().filter(key::equals).findFirst();
-                                if(optional.isPresent()) return animationMap.get(optional.get());
+                                if(animationMap.containsKey(key)) return animationMap.get(key);
                                 IAnimation iAnimation = ClientCache.registerPlayerAnimation(player);
                                 animationMap.put(key, iAnimation);
                                 modifierLayers.put(player.getUUID(), animationMap);
@@ -235,11 +235,14 @@ public class AnimationRegistry {
                                 ArrayList<Pair<Integer, IAnimation>> oldArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(oldAnimationStack);
                                 ArrayList<Pair<Integer, IAnimation>> newArrayList = (ArrayList<Pair<Integer, IAnimation>>) layersField.get(newAnimationStack);
                                 ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
-                                for (Pair<Integer, IAnimation> integerIAnimationPair : oldArrayList) {
-                                    for (Pair<Integer, IAnimation> iAnimationPair : List.copyOf(newArrayList)) {
-                                        if(Objects.equals(iAnimationPair.getLeft(), integerIAnimationPair.getLeft())
-                                            && Objects.equals(iAnimationPair.getRight(), integerIAnimationPair.getRight())) {
-                                            newArrayList.remove(iAnimationPair);
+                                for (Pair<Integer, IAnimation> oldAnimationPair : oldArrayList) {
+                                    for (Pair<Integer, IAnimation> newAnimationPair : List.copyOf(newArrayList)) {
+                                        if(Objects.equals(oldAnimationPair.getLeft(), newAnimationPair.getLeft())) {
+                                            KeyframeAnimation oldData = Optional.ofNullable((KeyframeAnimationPlayer) ((ModifierLayer<?>) oldAnimationPair.getRight()).getAnimation())
+                                                    .map(KeyframeAnimationPlayer::getData).orElse(null);
+                                            KeyframeAnimation newData = Optional.ofNullable((KeyframeAnimationPlayer) ((ModifierLayer<?>) newAnimationPair.getRight()).getAnimation())
+                                                    .map(KeyframeAnimationPlayer::getData).orElse(null);
+                                            if(Objects.equals(oldData, newData)) oldArrayList.remove(oldAnimationPair);
                                         }
                                     }
                                 }
