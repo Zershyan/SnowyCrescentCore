@@ -6,6 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,12 +29,17 @@ public record AnimationClearPacket(@Nullable ResourceLocation layer) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             context.setPacketHandled(true);
-            LocalPlayer player = Minecraft.getInstance().player;
-            if(player == null) return;
-            List<ResourceLocation> layers = new ArrayList<>();
-            if(layer != null) layers.add(layer);
-            else layers.addAll(AnimationRegistry.getLayers().keySet());
-            layers.forEach(layer -> AnimationUtils.playAnimation(player, layer, null));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::handle);
         });
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void handle(){
+        LocalPlayer player = Minecraft.getInstance().player;
+        if(player == null) return;
+        List<ResourceLocation> layers = new ArrayList<>();
+        if(layer != null) layers.add(layer);
+        else layers.addAll(AnimationRegistry.getLayers().keySet());
+        layers.forEach(layer -> AnimationUtils.playAnimation(player, layer, null));
     }
 }

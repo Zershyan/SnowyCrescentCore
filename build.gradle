@@ -173,6 +173,7 @@ tasks.named('jar', Jar).configure {
         ])
     }
 
+    archiveFileName = "${mod_id}-${mod_version}-origin.jar"
     finalizedBy 'reobfJar'
 }
 
@@ -251,8 +252,12 @@ publishing {
 gradle.buildFinished {
     def javadocJar = file("build/libs/${mod_id}-${mod_version}-javadoc.jar")
     def sourcesJar = file("build/libs/${mod_id}-${mod_version}-sources.jar")
+    def allJarsJar = file("build/libs/${mod_id}-${mod_version}-all.jar")
     if (javadocJar.exists()) ant.delete(file: javadocJar)
     if (sourcesJar.exists()) ant.delete(file: sourcesJar)
+    if (allJarsJar.exists()) {
+        ant.move(file: allJarsJar, tofile: file("build/libs/${mod_id}-${mod_version}.jar"))
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
