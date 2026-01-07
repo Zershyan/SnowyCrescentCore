@@ -6,6 +6,7 @@ import com.linearpast.sccore.animation.data.AnimationData;
 import com.linearpast.sccore.animation.data.Ride;
 import com.linearpast.sccore.animation.register.AnimationEntities;
 import com.linearpast.sccore.animation.service.AnimationService;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -103,7 +104,7 @@ public class AnimationRideEntity extends Entity {
     }
 
     @Nullable
-    public static AnimationRideEntity create(ServerPlayer pPlayer, ResourceLocation layer, AnimationData anim, boolean force) {
+    public static AnimationRideEntity create(ServerPlayer pPlayer, ResourceLocation layer, AnimationData anim, boolean force, Vec3 pos) {
         if(anim == null) return null;
         if(anim.getRide() == null) return null;
         IAnimationCapability data = AnimationDataCapability.getCapability(pPlayer).orElse(null);
@@ -114,12 +115,21 @@ public class AnimationRideEntity extends Entity {
         float yRot = anim.getRide().getYRot();
         if(xRot == 0 && yRot == 0) seat.setRot(pPlayer.getXRot(), pPlayer.getYRot());
         else seat.setRot(yRot, xRot);
-        Vec3 pos = pPlayer.position();
         pos.add(anim.getRide().getOffset());
         seat.setPos(pos.x, pos.y + 0.35f, pos.z);
         pPlayer.level().addFreshEntity(seat);
         pPlayer.startRiding(seat, force);
         return seat;
+    }
+
+    @Nullable
+    public static AnimationRideEntity create(ServerPlayer pPlayer, ResourceLocation layer, AnimationData anim, boolean force) {
+        return create(pPlayer, layer, anim, force, pPlayer.position());
+    }
+
+    @Nullable
+    public static AnimationRideEntity create(ServerPlayer pPlayer, ResourceLocation layer, AnimationData anim, boolean force, BlockPos pos) {
+        return create(pPlayer, layer, anim, force, pos.getCenter());
     }
 
     @Override

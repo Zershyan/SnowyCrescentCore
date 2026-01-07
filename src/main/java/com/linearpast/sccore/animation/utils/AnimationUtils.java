@@ -81,16 +81,18 @@ public class AnimationUtils {
                 Set<ResourceLocation> resourceLocations = new HashSet<>();
                 if(layer == null) resourceLocations.addAll(AnimationRegistry.getLayers().keySet());
                 else resourceLocations.add(layer);
+                boolean isNoneAnimation = true;
                 for (ResourceLocation location : resourceLocations) {
                     ModifierLayer<IAnimation> animationModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                             .getPlayerAssociatedData(player).get(location);
                     if(animationModifierLayer == null) continue;
                     KeyframeAnimationPlayer animation = (KeyframeAnimationPlayer) animationModifierLayer.getAnimation();
-                    if(animation == null) return false;
+                    if(animation == null) continue;
                     int currentTick = animation.getCurrentTick();
                     int stopTick = animation.getStopTick();
-                    return currentTick > stopTick;
+                    if(currentTick < stopTick) isNoneAnimation = false;
                 }
+                return isNoneAnimation;
             } catch (Exception ignored) {}
             return true;
         });

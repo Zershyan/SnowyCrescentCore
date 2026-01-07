@@ -21,12 +21,15 @@ import com.linearpast.sccore.core.ModCompatRun;
 import com.linearpast.sccore.core.configs.ModConfigs;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -251,6 +254,10 @@ public interface IAnimationService<D extends AnimationData, C extends ICapabilit
     default ApiBack removeAnimation(@Nullable AbstractClientPlayer player, ResourceLocation layer) {
         return ANIMATION_RUNNER.testLoadedAndCall(() -> {
             AnimationUtils.removeAnimation(player, layer);
+            LocalPlayer self = Minecraft.getInstance().player;
+            if(self != null && player != null && Objects.equals(self.getUUID(), player.getUUID())) {
+                ModChannel.INSTANCE.sendToServer(new StopAnimationPacket(layer));
+            }
             return ApiBack.SUCCESS;
         });
     }
@@ -280,7 +287,7 @@ public interface IAnimationService<D extends AnimationData, C extends ICapabilit
             return ApiBack.SUCCESS;
         });
     }
-    default ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force) {
+    default ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force, Vec3 pos) {
         return ANIMATION_RUNNER.testLoadedAndCall(() -> {
             ResourceLocation key = animation.getKey();
             if(!isAnimationLayerPresent(layer) || !isAnimationPresent(key))
@@ -292,10 +299,13 @@ public interface IAnimationService<D extends AnimationData, C extends ICapabilit
             boolean flag = player.getVehicle() != null;
             if(flag && force) player.stopRiding();
             else if(flag) return ApiBack.UNSUPPORTED;
-            boolean result = AnimationRideEntity.create(player, layer, animation, force) != null;
+            boolean result = AnimationRideEntity.create(player, layer, animation, force, pos) != null;
             return result ? ApiBack.SUCCESS : ApiBack.FAIL;
         });
-    };
+    }
+    default ApiBack playAnimationWithRide(@NotNull ServerPlayer player, ResourceLocation layer, AnimationData animation, boolean force) {
+        return playAnimationWithRide(player, layer, animation, force, player.position());
+    }
 
     /**
      * <pre>
