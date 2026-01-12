@@ -1,18 +1,18 @@
 {
 	"required": true,
 	"minVersion": "0.8",
-	"package": "com.linearpast.sccore.mixin",
-	"compatibilityLevel": "JAVA_8",
+	"package": "io.zershyan.sccore.mixin",
+	"compatibilityLevel": "JAVA_17",
 	"refmap": "sccore.refmap.json",
-	"plugin": "com.linearpast.sccore.mixin.SCCoreMixinPlugin",
+	"plugin": "io.zershyan.sccore.mixin.SCCoreMixinPlugin",
 	"mixins": [
-		"animation.MixinEntity",
-		"animation.client.MixinPlayerAnimationFactoryHolder"
+		"animation.MixinEntity"
 	],
 	"client": [
 		"animation.client.MixinEntity",
 		"animation.client.MixinHumanoidModel",
-		"animation.client.MixinKeyframeAnimationPlayer"
+		"animation.client.MixinKeyframeAnimationPlayer",
+		"animation.client.MixinPlayerAnimationFactoryHolder"
 	],
 	"injectors": {
 		"defaultRequire": 1

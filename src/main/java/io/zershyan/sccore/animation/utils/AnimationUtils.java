@@ -1,0 +1,281 @@
+package io.zershyan.sccore.animation.utils;
+
+import dev.kosmx.playerAnim.api.layered.IAnimation;
+import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
+import dev.kosmx.playerAnim.api.layered.ModifierLayer;
+import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
+import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
+import dev.kosmx.playerAnim.core.util.Ease;
+import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
+import io.zershyan.sccore.SnowyCrescentCore;
+import io.zershyan.sccore.animation.AnimationApi;
+import io.zershyan.sccore.animation.capability.AnimationDataCapability;
+import io.zershyan.sccore.animation.capability.RawAnimationDataCapability;
+import io.zershyan.sccore.animation.capability.inter.IAnimationCapability;
+import io.zershyan.sccore.animation.data.AnimationData;
+import io.zershyan.sccore.animation.data.GenericAnimationData;
+import io.zershyan.sccore.animation.mixin.IMixinKeyframeAnimationPlayer;
+import io.zershyan.sccore.animation.register.AnimationRegistry;
+import io.zershyan.sccore.animation.service.AnimationService;
+import io.zershyan.sccore.animation.service.IAnimationService;
+import io.zershyan.sccore.animation.service.RawAnimationService;
+import io.zershyan.sccore.core.datagen.ModLang;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Predicate;
+
+public class AnimationUtils {
+    /**
+     * Test if layer exist animation which is not end. <br>
+     * Only in dist client
+     * @param player Target player
+     * @param layer Target layer
+     * @return True when animation is loop, or currentTick not larger than endTick
+     */
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    public static boolean isClientAnimationNotEnd(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            try {
+                Set<ResourceLocation> resourceLocations = new HashSet<>();
+                if(layer == null) resourceLocations.addAll(AnimationRegistry.getLayers().keySet());
+                else resourceLocations.add(layer);
+                for (ResourceLocation location : resourceLocations) {
+                    ModifierLayer<IAnimation> animationModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                            .getPlayerAssociatedData(player).get(location);
+                    if(animationModifierLayer == null) continue;
+                    KeyframeAnimationPlayer animation = (KeyframeAnimationPlayer) animationModifierLayer.getAnimation();
+                    if(animation == null) return false;
+                    int currentTick = animation.getCurrentTick();
+                    boolean isLoop = animation.getData().isInfinite;
+                    int endTick = animation.getData().endTick;
+                    return isLoop || currentTick <= endTick;
+                }
+            } catch (Exception ignored) {}
+            return false;
+        });
+    }
+
+    /**
+     * Test if layer exist animation which is not stop. <br>
+     * Only in dist client
+     * @param player Target player
+     * @param layer Target layer
+     * @return True when the currentTick not larger than stopTick
+     */
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    public static boolean isClientAnimationStop(AbstractClientPlayer player, @Nullable ResourceLocation layer) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            try {
+                Set<ResourceLocation> resourceLocations = new HashSet<>();
+                if(layer == null) resourceLocations.addAll(AnimationRegistry.getLayers().keySet());
+                else resourceLocations.add(layer);
+                boolean isNoneAnimation = true;
+                for (ResourceLocation location : resourceLocations) {
+                    ModifierLayer<IAnimation> animationModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                            .getPlayerAssociatedData(player).get(location);
+                    if(animationModifierLayer == null) continue;
+                    KeyframeAnimationPlayer animation = (KeyframeAnimationPlayer) animationModifierLayer.getAnimation();
+                    if(animation == null) continue;
+                    int currentTick = animation.getCurrentTick();
+                    int stopTick = animation.getStopTick();
+                    if(currentTick < stopTick) isNoneAnimation = false;
+                }
+                return isNoneAnimation;
+            } catch (Exception ignored) {}
+            return true;
+        });
+    }
+
+    /**
+     * Client sync animation
+     * @param clientPlayer player
+     * @param target target
+     */
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    public static void syncAnimation(AbstractClientPlayer clientPlayer, AbstractClientPlayer target) {
+        IAnimationCapability clientPlayerData = AnimationDataCapability.getCapability(clientPlayer).orElse(null);
+        IAnimationCapability targetData = AnimationDataCapability.getCapability(target).orElse(null);
+        if(clientPlayerData == null) return;
+        if(targetData == null) return;
+        ResourceLocation clientPlayerLayer = clientPlayerData.getRiderAnimLayer();
+        ResourceLocation targetLayer = targetData.getRiderAnimLayer();
+        try {
+            if(clientPlayerLayer == null || targetLayer == null) return;
+            ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                    .getPlayerAssociatedData(clientPlayer).get(clientPlayerLayer);
+            ModifierLayer<IAnimation> targetModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                    .getPlayerAssociatedData(target).get(targetLayer);
+            if(modifierLayer == null || targetModifierLayer == null) return;
+            IMixinKeyframeAnimationPlayer animation = (IMixinKeyframeAnimationPlayer) modifierLayer.getAnimation();
+            KeyframeAnimationPlayer targetAnimation = (KeyframeAnimationPlayer) targetModifierLayer.getAnimation();
+            if(animation == null || targetAnimation == null) return;
+            int currentTick = targetAnimation.getCurrentTick();
+            animation.sccore$setCurrentTick(currentTick);
+        } catch (Exception ignored) {}
+    }
+
+    /**
+     * client remove animation
+     * @param clientPlayer player
+     * @param layer layer
+     */
+    @OnlyIn(Dist.CLIENT)
+    public static void removeAnimation(@Nullable AbstractClientPlayer clientPlayer, ResourceLocation layer) {
+        playAnimation(clientPlayer, layer, null);
+    }
+
+    /**
+     * Client play animation
+     * @param clientPlayer player
+     * @param layer layer
+     * @param animation animation
+     */
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    public static void playAnimation(@Nullable AbstractClientPlayer clientPlayer, ResourceLocation layer, @Nullable ResourceLocation animation) {
+        try {
+            LocalPlayer localPlayer = Minecraft.getInstance().player;
+            if(clientPlayer == null) clientPlayer = localPlayer;
+            if(clientPlayer == null) return;
+            ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+                    .getPlayerAssociatedData(clientPlayer).get(layer);
+            if(animation == null) {
+                if(modifierLayer != null) {
+                    modifierLayer.replaceAnimationWithFade(
+                            AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
+                            null
+                    );
+                }
+                return;
+            }
+            if(modifierLayer == null) return;
+            AnimationData anim = AnimationService.INSTANCE.getAnimation(animation);
+            if(anim == null) {
+                if((anim = RawAnimationService.INSTANCE.getAnimation(animation)) == null)
+                    return;
+            }
+            KeyframeAnimation keyframeAnimation = anim.getAnimation();
+            if(keyframeAnimation == null) {
+                if(localPlayer == null) return;
+                localPlayer.sendSystemMessage(Component.translatable(
+                        ModLang.TranslatableMessage.ANIMATION_RESOURCE_NOT_FOUND.getKey(),
+                        animation.toString()
+                ).withStyle(ChatFormatting.RED));
+                modifierLayer.replaceAnimationWithFade(
+                        AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
+                        null
+                );
+                IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(anim.getKey()).getService();
+                if(service != null) service.removeAnimation(clientPlayer, layer);
+                return;
+            }
+            modifierLayer.replaceAnimationWithFade(
+                    AbstractFadeModifier.standardFadeIn(3, Ease.INOUTSINE),
+                    new KeyframeAnimationPlayer(keyframeAnimation)
+            );
+        }catch (Exception e) {
+            SnowyCrescentCore.log.error("Failed to play animation : {}", animation, e);
+        }
+    }
+
+    /**
+     * Get the LyingType when there are animations which playing on player. <br>
+     * And It will return the first which be found.
+     * @param player Target player
+     * @return The first LyingType it find.
+     */
+    @Nullable
+    public static GenericAnimationData.LyingType getSideView(Player player) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+            RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+            if(data == null) return null;
+            if(rawData == null) return null;
+
+            Map.Entry<Integer, AnimationData.LyingType> animations = null;
+            ArrayList<ResourceLocation> resourceLocations = new ArrayList<>();
+            resourceLocations.addAll(data.getAnimations().values());
+            resourceLocations.addAll(rawData.getAnimations().values());
+            for (ResourceLocation value : resourceLocations) {
+                AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+                if(animation == null) return null;
+                AnimationData.LyingType type = animation.getLyingType();
+                if(type == null) continue;
+                switch (type) {
+                    case FRONT,BACK -> {}
+                    case LEFT,RIGHT -> {
+                        if(animations == null || animations.getKey() < animation.getCamComputePriority()) {
+                            animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), type);
+                        }
+                    }
+                }
+            }
+            return animations == null ? null : animations.getValue();
+        });
+    }
+
+    @Nullable
+    @OnlyIn(Dist.CLIENT)
+    public static AnimationData getPredicateAnimationData(Predicate<AnimationData> predicate) {
+        return IAnimationService.ANIMATION_RUNNER.testLoadedAndCall(() -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if(player == null) return null;
+            IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+            RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+            if(data == null) return null;
+            if(rawData == null) return null;
+
+            Map.Entry<Integer, AnimationData> animations = null;
+            ArrayList<ResourceLocation> resourceLocations = new ArrayList<>();
+            resourceLocations.addAll(data.getAnimations().values());
+            resourceLocations.addAll(rawData.getAnimations().values());
+            if(data.getRiderAnimation() != null) resourceLocations.add(data.getRiderAnimation());
+            for (ResourceLocation value : resourceLocations) {
+                AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+                if(animation == null) continue;
+                if(!predicate.test(animation)) continue;
+                if(animations == null || animations.getKey() < animation.getCamComputePriority()) {
+                    animations = new AbstractMap.SimpleEntry<>(animation.getCamComputePriority(), animation);
+                }
+            }
+            return animations == null ? null : animations.getValue();
+        });
+    }
+
+    @Nullable
+    public static AnimationData getEyeModifierAnimationData(Player player) {
+        IAnimationCapability data = AnimationDataCapability.getCapability(player).orElse(null);
+        RawAnimationDataCapability rawData = RawAnimationDataCapability.getCapability(player).orElse(null);
+        if(data == null) return null;
+        if(rawData == null) return null;
+        Map.Entry<AnimationData, Integer> entry = null;
+        List<ResourceLocation> values = new ArrayList<>();
+        if(data.getRiderAnimation() != null) values.add(data.getRiderAnimation());
+        values.addAll(data.getAnimations().values());
+        values.addAll(rawData.getAnimations().values());
+        for (ResourceLocation value : values) {
+            AnimationData animation = AnimationApi.getDataHelper().getAnimationData(value);
+            if(animation == null) continue;
+            float animationCamY = (float) animation.getCamPosOffset().y;
+            int priority = animation.getCamComputePriority();
+            if((entry == null && animationCamY != 0)
+                    || (entry != null && priority > entry.getValue())) {
+                entry = new HashMap.SimpleEntry<>(animation, priority);
+            }
+        }
+        return entry == null ? null : entry.getKey();
+    }
+}
