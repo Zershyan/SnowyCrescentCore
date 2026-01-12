@@ -59,21 +59,34 @@ public class RawAnimJson {
                 JsonObject json = originElement.getAsJsonObject();
                 RawAnimationData animation = RawAnimationData.create(new ResourceLocation(json.get(Key).getAsString()));
                 if(json.has(LyingType)) animation.withLyingType(AnimationData.LyingType.valueOf(json.get(LyingType).getAsString()));
-                JsonObject camOffset = json.get(CamPosOffset).getAsJsonObject();
-                animation.withCamComputePriority(json.get(Priority).getAsInt())
-                        .setCamPosOffset(new Vec3(
-                                camOffset.get("x").getAsDouble(),
-                                camOffset.get("y").getAsDouble(),
-                                camOffset.get("z").getAsDouble()
-                        ))
-                        .withCamPosOffsetRelative(camOffset.get(Relative).getAsBoolean())
-                        .withCamPitch(json.get(CamPitch).getAsFloat())
-                        .withCamRoll(json.get(CamRoll).getAsFloat())
-                        .withCamYaw(json.get(CamYaw).getAsFloat());
+                if(json.has(Priority)) animation.withCamComputePriority(json.get(Priority).getAsInt());
+                if(json.has(CamPitch)) animation.withCamPitch(json.get(CamPitch).getAsFloat());
+                if(json.has(CamRoll)) animation.withCamRoll(json.get(CamRoll).getAsFloat());
+                if(json.has(CamYaw)) animation.withCamYaw(json.get(CamYaw).getAsFloat());
+                if(json.has(CamPosOffset)) {
+                    JsonObject camOffset = json.get(CamPosOffset).getAsJsonObject();
+                    Vec3 vec3 = Vec3.ZERO;
+                    if(camOffset.has("x")) vec3 = vec3.add(camOffset.get("x").getAsDouble(), 0, 0);
+                    if(camOffset.has("y")) vec3 = vec3.add(0, camOffset.get("y").getAsDouble(), 0);
+                    if(camOffset.has("z")) vec3 = vec3.add(0, 0, camOffset.get("z").getAsDouble());
+                    if(!vec3.equals(Vec3.ZERO)) animation.setCamPosOffset(vec3);
+                    if(camOffset.has(Relative)) animation.withCamPosOffsetRelative(camOffset.get(Relative).getAsBoolean());
+                }
                 if(json.has(WithRide)){
                     Ride ride = Ride.create();
                     JsonObject withRide = json.get(WithRide).getAsJsonObject();
-                    JsonObject offsetJson = withRide.get(Offset).getAsJsonObject();
+                    if(withRide.has(ExistTick)) ride.setExistTick(withRide.get(ExistTick).getAsInt());
+                    if(withRide.has(XRot)) ride.setXRot(withRide.get(XRot).getAsFloat());
+                    if(withRide.has(YRot)) ride.setYRot(withRide.get(YRot).getAsFloat());
+                    if(withRide.has(Offset)) {
+                        JsonObject offsetJson = withRide.get(Offset).getAsJsonObject();
+                        Vec3 offset = new Vec3(
+                                offsetJson.get("x").getAsDouble(),
+                                offsetJson.get("y").getAsDouble(),
+                                offsetJson.get("z").getAsDouble()
+                        );
+                        ride.withOffset(offset);
+                    }
                     if(withRide.has(ComponentsAnimation)){
                         JsonArray elements = withRide.get(ComponentsAnimation).getAsJsonArray();
                         for (JsonElement element : elements) {
@@ -82,14 +95,6 @@ public class RawAnimJson {
                             ride.addComponentAnimation(componentKey);
                         }
                     }
-                    Vec3 offset = new Vec3(
-                            offsetJson.get("x").getAsDouble(),
-                            offsetJson.get("y").getAsDouble(),
-                            offsetJson.get("z").getAsDouble()
-                    );
-                    ride.withOffset(offset).withExistTick(withRide.get(ExistTick).getAsInt())
-                            .withXRot(withRide.get(XRot).getAsFloat())
-                            .withYRot(withRide.get(YRot).getAsFloat());
                     animation.withRide(ride);
                 }
                 return animation;

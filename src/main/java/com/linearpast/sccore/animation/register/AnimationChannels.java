@@ -57,6 +57,11 @@ public class AnimationChannels {
                 .encoder(RequestAnimationPacket::encode)
                 .consumerMainThread(RequestAnimationPacket::handle)
                 .add();
+        ModChannel.INSTANCE.messageBuilder(StopAnimationPacket.class, cid(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(StopAnimationPacket::new)
+                .encoder(StopAnimationPacket::encode)
+                .consumerMainThread(StopAnimationPacket::handle)
+                .add();
     }
 
     private static int cid() {

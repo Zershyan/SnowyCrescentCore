@@ -24,15 +24,17 @@ public record AnimationClearPacket(@Nullable ResourceLocation layer) {
     public void encode(FriendlyByteBuf buf) {
         buf.writeNullable(layer, FriendlyByteBuf::writeResourceLocation);
     }
+
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             context.setPacketHandled(true);
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::handleClient);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::handle);
         });
     }
+
     @OnlyIn(Dist.CLIENT)
-    public void handleClient() {
+    public void handle(){
         LocalPlayer player = Minecraft.getInstance().player;
         if(player == null) return;
         List<ResourceLocation> layers = new ArrayList<>();

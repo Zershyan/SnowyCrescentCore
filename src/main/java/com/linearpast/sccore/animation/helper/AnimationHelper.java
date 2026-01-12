@@ -8,9 +8,11 @@ import com.linearpast.sccore.core.IModLazyRun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +52,17 @@ public class AnimationHelper {
                 () -> service.playAnimationWithRide(lazyRun.getServerPlayer(), layer, animation, isForce),
                 () -> service.playAnimationWithRide(lazyRun.getClientPlayer(), layer, animation.getKey(), isForce)
         );
+    }
+    public ApiBack playAnimationWithRide(ResourceLocation layer, AnimationData animation, boolean isForce, Vec3 pos) {
+        IAnimationService<?, ?> service = AnimationApi.getServiceGetterHelper(animation.getKey()).getService();
+        if(service == null) return ApiBack.FAIL;
+        return lazyRun.testLoadedAndCall(
+                () -> service.playAnimationWithRide(lazyRun.getServerPlayer(), layer, animation, isForce, pos),
+                () -> ApiBack.UNSUPPORTED
+        );
+    }
+    public ApiBack playAnimationWithRide(ResourceLocation layer, AnimationData animation, boolean isForce, BlockPos pos) {
+        return playAnimationWithRide(layer, animation, isForce, pos.getCenter());
     }
 
     public void clearAnimation() {
