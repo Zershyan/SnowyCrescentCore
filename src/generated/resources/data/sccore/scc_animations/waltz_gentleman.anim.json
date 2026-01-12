@@ -1,0 +1,25 @@
+{
+  "camPosOffset": {
+    "relative": true,
+    "x": 0.0,
+    "y": 0.0,
+    "z": 1.0
+  },
+  "heightModifier": 1.0,
+  "key": "sccore:waltz_gentleman",
+  "name": "Waltz-Gentleman",
+  "priority": 0,
+  "withRide": {
+    "componentsAnimation": [
+      "sccore:waltz_lady"
+    ],
+    "existTick": 0,
+    "offset": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "xRot": 0.0,
+    "yRot": 0.0
+  }
+}

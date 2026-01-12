@@ -1,0 +1,20 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.linearpast.sccore.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"refmap": "sccore.refmap.json",
+	"plugin": "com.linearpast.sccore.mixin.SCCoreMixinPlugin",
+	"mixins": [
+		"animation.MixinEntity",
+		"animation.client.MixinPlayerAnimationFactoryHolder"
+	],
+	"client": [
+		"animation.client.MixinEntity",
+		"animation.client.MixinHumanoidModel",
+		"animation.client.MixinKeyframeAnimationPlayer"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -1,0 +1,20 @@
+{
+  "camYaw": 180.0,
+  "heightModifier": 1.0,
+  "key": "sccore:waltz_lady",
+  "name": "Waltz-Lady",
+  "priority": 0,
+  "withRide": {
+    "componentsAnimation": [
+      "sccore:waltz_gentleman"
+    ],
+    "existTick": 0,
+    "offset": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "xRot": 0.0,
+    "yRot": 0.0
+  }
+}

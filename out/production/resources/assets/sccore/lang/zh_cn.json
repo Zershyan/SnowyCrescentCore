@@ -9,7 +9,7 @@
   "translation.sccore.command.animation.animation_operation_cancelled": "异常: 操作被取消。",
   "translation.sccore.command.animation.animation_operation_unsupported": "错误: 不支持这样做。",
   "translation.sccore.command.animation.animation_out_range": "你不能执行该操作: 距离不在%s格以内。",
-  "translation.sccore.command.animation.animation_resource_not_found": "错误: 资源未找到，请检查资源或操作是否有误: %s",
+  "translation.sccore.command.animation.animation_resource_not_found": "错误: 资源未找到，请检查资源或操作是否有误。",
   "translation.sccore.command.animation.animation_to_json": "动画%s已经存储到%s路径：",
   "translation.sccore.command.animation.applied_join_message": "%s§b§l 申请§r加入动画。",
   "translation.sccore.command.animation.apply_join_message": "已发送申请。",

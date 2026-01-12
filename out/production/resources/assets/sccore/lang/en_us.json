@@ -9,7 +9,7 @@
   "translation.sccore.command.animation.animation_operation_cancelled": "Exception: Operation cancelled.",
   "translation.sccore.command.animation.animation_operation_unsupported": "Error: Unsupported operation.",
   "translation.sccore.command.animation.animation_out_range": "You cannot perform this operation: The distance is not within %s blocks.",
-  "translation.sccore.command.animation.animation_resource_not_found": "Error: Resource not found, please check if there are any errors in the resource or operation : %s",
+  "translation.sccore.command.animation.animation_resource_not_found": "Error: Resource not found, please check if there are any errors in the resource or operation.",
   "translation.sccore.command.animation.animation_to_json": "The animation %s has been stored in the path on %s:",
   "translation.sccore.command.animation.applied_join_message": "%S§b§l Apply for §r to join your animation. ",
   "translation.sccore.command.animation.apply_join_message": "Application sent.",

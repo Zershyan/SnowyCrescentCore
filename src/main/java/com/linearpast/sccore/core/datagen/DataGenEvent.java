@@ -1,6 +1,8 @@
 package com.linearpast.sccore.core.datagen;
 
 import com.linearpast.sccore.SnowyCrescentCore;
+import com.linearpast.sccore.core.datagen.provider.ModAnimationLayerProvider;
+import com.linearpast.sccore.core.datagen.provider.ModAnimationProvider;
 import com.linearpast.sccore.core.datagen.provider.ModLangProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -24,5 +26,7 @@ public class DataGenEvent {
 
         generator.addProvider(event.includeClient(), new ModLangProvider(packOutput, ModLangProvider.Lang.EN_US));
         generator.addProvider(event.includeClient(), new ModLangProvider(packOutput, ModLangProvider.Lang.ZH_CN));
+        generator.addProvider(true, new ModAnimationProvider(generator));
+        generator.addProvider(true, new ModAnimationLayerProvider(generator));
     }
 }

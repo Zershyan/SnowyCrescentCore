@@ -38,7 +38,7 @@ public class ModAnimation {
      * @param event event
      */
     public static void onLayerRegister(AnimationRegisterEvent.Layer event) {
-        event.registerLayer(normalLayers, 42);
+//        event.registerLayer(normalLayers, 42);
     }
 
     /**
@@ -54,23 +54,23 @@ public class ModAnimation {
 //        GenericAnimationData amSTL = GenericAnimationData.create(AmStandToLying)
 //                .withName("Stand-to-Lying")
 //                .withLyingType(GenericAnimationData.LyingType.FRONT);
-        GenericAnimationData waltzGentleman = (GenericAnimationData) GenericAnimationData
-                .create(WaltzGentleman)
-                .withName("Waltz-Gentleman")
-                .addCamPosOffset(new Vec3(0.0,0.0,1.0))
-                .withCamPosOffsetRelative(true)
-                .withRide(Ride.create().addComponentAnimation(WaltzLady));
-        GenericAnimationData waltzLady = (GenericAnimationData) GenericAnimationData
-                .create(WaltzLady)
-                .withName("Waltz-Lady")
-                .withCamYaw(180)
-                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
+//        GenericAnimationData waltzGentleman = (GenericAnimationData) GenericAnimationData
+//                .create(WaltzGentleman)
+//                .withName("Waltz-Gentleman")
+//                .addCamPosOffset(new Vec3(0.0,0.0,1.0))
+//                .withCamPosOffsetRelative(true)
+//                .withRide(Ride.create().addComponentAnimation(WaltzLady));
+//        GenericAnimationData waltzLady = (GenericAnimationData) GenericAnimationData
+//                .create(WaltzLady)
+//                .withName("Waltz-Lady")
+//                .withCamYaw(180)
+//                .withRide(Ride.create().addComponentAnimation(WaltzGentleman));
 
         //You can use it to invite an Animation
 //        event.registerAnimation(AmLyingToRightLying, amLTRL);
 //        event.registerAnimation(AmStandToLying, amSTL);
-        event.registerAnimation(WaltzGentleman, waltzGentleman);
-        event.registerAnimation(WaltzLady, waltzLady);
+//        event.registerAnimation(WaltzGentleman, waltzGentleman);
+//        event.registerAnimation(WaltzLady, waltzLady);
     }
 
     public static void onRawAnimationRegister(AnimationRegisterEvent.RawAnimation event) {
