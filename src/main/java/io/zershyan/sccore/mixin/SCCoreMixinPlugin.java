@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class SCCoreMixinPlugin implements IMixinConfigPlugin {
     @Override
-    public void onLoad(String s) {
+    public void onLoad(String mixinPackage) {
 
     }
 
@@ -24,10 +24,7 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (targetClassName.startsWith("runData.")) {
-            return "runData".equals(System.getProperty("gradle.task"));
-        }
-        if (mixinClassName.startsWith("net.zershyan." + SnowyCrescentCore.MODID + ".mixin.animation.")) {
+        if (mixinClassName.startsWith("io.zershyan." + SnowyCrescentCore.MODID + ".mixin.animation.")) {
             return LoadingModList.get().getMods().stream().map(ModInfo::getModId).anyMatch(
                     s -> s.equals(AnimationService.AnimModId)
             );
@@ -36,7 +33,7 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
     }
 
     @Override
-    public void acceptTargets(Set<String> set, Set<String> set1) {
+    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
 
     }
 
@@ -46,12 +43,12 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
     }
 
     @Override
-    public void preApply(String s, ClassNode classNode, String s1, IMixinInfo iMixinInfo) {
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 
     @Override
-    public void postApply(String s, ClassNode classNode, String s1, IMixinInfo iMixinInfo) {
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
 }
