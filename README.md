@@ -31,6 +31,15 @@ repositories {
     }
 }
 ```
+Or you can use :
+```java
+repositories {
+	maven {
+		name = "LTD Maven"
+        url = "https://nexus.bot.leisuretimedock.top/repository/maven-public/"
+    }
+}
+```
 
 ​	**In dependencies:**
 
