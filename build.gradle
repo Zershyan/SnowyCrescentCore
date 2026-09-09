@@ -10,7 +10,7 @@ tasks.named('wrapper', Wrapper).configure {
 }
 
 group = mod_group_id
-version = mod_version
+version = mod_version + "+build" + mod_build_number
 
 sourceSets.main.resources {
     srcDir('src/generated/resources')
@@ -111,25 +111,27 @@ neoForge {
 }
 
 configurations {
-    runtimeClasspath.extendsFrom localRuntime
-}
+    runtimeClasspath.extendsFrom(localRuntime)
+    compileClasspath.extendsFrom(localCompile)
 
-//jarJar.setEnabled(true)
+    runtimeClasspath.extendsFrom(localImpl)
+    compileClasspath.extendsFrom(localImpl)
+}
 
 dependencies {
     //Patchouli
-    implementation "vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE"
+    localImpl "vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE"
 
     //JEI
-    implementation "curse.maven:jei-238222:7420587"
+    localImpl "curse.maven:jei-238222:7420587"
 
     //player animator
-    implementation "dev.kosmx.player-anim:player-animation-lib-forge:2.0.1+1.21.1"
-    implementation "io.github.kosmx.bendy-lib:bendy-lib-forge:5.1"
+    localImpl "dev.kosmx.player-anim:player-animation-lib-forge:2.0.1+1.21.1"
+    localImpl "io.github.kosmx.bendy-lib:bendy-lib-forge:5.1"
 
     if(!project.gradle.startParameter.taskNames.any { "runServer" in it }) {
-        runtimeOnly "curse.maven:freecam-by-zergatul-618947:5591136"
-        runtimeOnly "curse.maven:jade-324717:7545219"
+        localRuntime "curse.maven:freecam-by-zergatul-618947:5591136"
+        localRuntime "curse.maven:jade-324717:7545219"
     }
 }
 
@@ -143,7 +145,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
-            mod_version            : mod_version,
+            mod_version            : version,
             mod_authors            : mod_authors,
             mod_description        : mod_description,
             mod_credits            : mod_credits,
@@ -168,24 +170,8 @@ tasks.withType(Javadoc).configureEach {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            from components.java
+            from(components.java)
             artifactId = mod_id
-            pom {
-                name = mod_id
-                description = mod_description
-                url = mod_url
-                licenses {
-                    license {
-                        name = mod_license
-                    }
-                }
-                developers {
-                    developer {
-                        id = "{mod_id}"
-                        name = mod_authors
-                    }
-                }
-            }
         }
     }
     repositories {

@@ -19,7 +19,11 @@ public class MixinEntity {
             method = "turn",
             at = @At("HEAD")
     )
-    private void rotateTurnByRoll(CallbackInfo ci, @Local(name = "yRot", ordinal = 0, argsOnly = true) LocalDoubleRef yRot, @Local(name = "xRot", ordinal = 1, argsOnly = true) LocalDoubleRef xRot) {
+    private void rotateTurnByRoll(
+            CallbackInfo ci,
+            @Local(name = "yRot", ordinal = 0, argsOnly = true) LocalDoubleRef yRot,
+            @Local(name = "xRot", ordinal = 1, argsOnly = true) LocalDoubleRef xRot
+    ) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) return;
