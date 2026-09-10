@@ -1,7 +1,9 @@
 package io.zershyan.sccore.compat.animation.data;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -56,5 +58,14 @@ public abstract class Animation {
 
     public AABBMovement aabbMovement() {
         return aabbMovement;
+    }
+
+    public Component getDescription() {
+        if(getDescriptionId() == null) return Component.literal(name().orElse("undefined"));
+        return Component.translatable(getDescriptionId());
+    }
+
+    public @Nullable String getDescriptionId() {
+        return animationLocation.toLanguageKey("animation", "name").replace("/", ".");
     }
 }
