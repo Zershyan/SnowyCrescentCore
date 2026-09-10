@@ -1,7 +1,7 @@
 package io.zershyan.sccore.mixin.playeranimator.client;
 
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
-import io.zershyan.sccore.animation.imixin.IMixinKeyframeAnimationPlayer;
+import io.zershyan.sccore.compat.animation.imixin.IMixinKeyframeAnimationPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;

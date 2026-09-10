@@ -17,21 +17,23 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public String getRefMapperConfig() {
-        return null;
+        return "";
     }
 
-    private static final String[] mixinMods = {
-            "playeranimator"
-    };
-
+    /**
+     * mixin软件包下其他Mixin类请严格按照 "modid/modid/.../MixinXXX.class"来命名<br><br>
+     * 程序会遍历软件包名，检查是否加载了modid与软件包名一致的mod<br>若无则不会加载该软件包的所有mixinClass<br><br>
+     * 若遍历到的软件包名为client/server/common中的任意一个<br>其软件包内的所有mixinClass都会生效
+     */
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         List<ModInfo> modInfos = LoadingModList.get().getMods();
         List<String> modList = modInfos.stream().map(ModInfo::getModId).toList();
-        for (String modid : mixinMods) {
-            if (mixinClassName.startsWith(this.getClass().getPackageName() + "." + modid + ".")) {
-                return modList.contains(modid);
-            }
+        String modIds = mixinClassName.replace(this.getClass().getPackageName() + ".", "").replaceAll("^(.*)(\\.).*$", "$1");
+        for (String string : modIds.split("\\.")) {
+            if("client".equals(string) || "server".equals(string) || "common".equals(string)) {
+                return true;
+            } else if (!modList.contains(string)) return false;
         }
         return true;
     }
@@ -43,7 +45,7 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        return null;
+        return List.of();
     }
 
     @Override

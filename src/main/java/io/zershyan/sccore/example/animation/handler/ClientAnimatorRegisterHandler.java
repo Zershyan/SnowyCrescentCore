@@ -1,12 +1,12 @@
 package io.zershyan.sccore.example.animation.handler;
 
 import io.zershyan.sccore.SCCore;
-import io.zershyan.sccore.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.animation.api.events.AnimationRegisterEvent;
-import io.zershyan.sccore.animation.api.events.LayerRegisterEvent;
-import io.zershyan.sccore.animation.data.camera.CameraChange;
-import io.zershyan.sccore.animation.data.camera.CameraData;
-import io.zershyan.sccore.animation.data.camera.EulerAngle;
+import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
+import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
+import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
+import io.zershyan.sccore.compat.animation.data.camera.CameraChange;
+import io.zershyan.sccore.compat.animation.data.camera.CameraData;
+import io.zershyan.sccore.compat.animation.data.camera.EulerAngle;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;

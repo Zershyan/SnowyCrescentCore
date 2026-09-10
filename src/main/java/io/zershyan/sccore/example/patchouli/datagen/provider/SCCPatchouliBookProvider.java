@@ -1,9 +1,9 @@
 package io.zershyan.sccore.example.patchouli.datagen.provider;
 
 import io.zershyan.sccore.SCCore;
-import io.zershyan.sccore.patchouli.datagen.create.PatchouliBookProvider;
-import io.zershyan.sccore.patchouli.datagen.create.data.IPatchouliBookData;
-import io.zershyan.sccore.patchouli.datagen.create.data.format.ItemFormat;
+import io.zershyan.sccore.compat.patchouli.api.datagen.PatchouliBookProvider;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.IPatchouliBookData;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.format.ItemFormat;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;

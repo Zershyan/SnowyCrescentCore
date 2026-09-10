@@ -1,9 +1,9 @@
 package io.zershyan.sccore.mixin.playeranimator.client;
 
-import io.zershyan.sccore.animation.data.camera.CameraData;
-import io.zershyan.sccore.animation.data.camera.EulerAngle;
-import io.zershyan.sccore.animation.data.camera.Vec2;
-import io.zershyan.sccore.animation.handler.client.CameraTransformStateHandler;
+import io.zershyan.sccore.compat.animation.data.camera.CameraData;
+import io.zershyan.sccore.compat.animation.data.camera.EulerAngle;
+import io.zershyan.sccore.compat.animation.data.camera.Vec2;
+import io.zershyan.sccore.compat.animation.handler.client.CameraTransformStateHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;

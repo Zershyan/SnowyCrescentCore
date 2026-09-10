@@ -3,7 +3,7 @@ package io.zershyan.sccore.mixin.playeranimator.client;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationFactory;
-import io.zershyan.sccore.animation.imixin.IMixinFactoryHolder;
+import io.zershyan.sccore.compat.animation.imixin.IMixinFactoryHolder;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;

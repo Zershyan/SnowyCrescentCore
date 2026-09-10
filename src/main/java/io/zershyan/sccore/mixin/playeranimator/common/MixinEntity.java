@@ -1,11 +1,11 @@
 package io.zershyan.sccore.mixin.playeranimator.common;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import io.zershyan.sccore.animation.core.ServerAnimationRegistry;
-import io.zershyan.sccore.animation.data.Animation;
-import io.zershyan.sccore.animation.handler.common.MovementAnimationTickHandler;
-import io.zershyan.sccore.animation.network.data.MovementAnimationTickData;
 import io.zershyan.sccore.api.SCCoreApi;
+import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
+import io.zershyan.sccore.compat.animation.data.Animation;
+import io.zershyan.sccore.compat.animation.handler.common.MovementAnimationTickHandler;
+import io.zershyan.sccore.compat.animation.network.data.MovementAnimationTickData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;

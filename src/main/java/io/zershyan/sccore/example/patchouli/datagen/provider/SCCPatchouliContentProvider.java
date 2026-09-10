@@ -1,14 +1,14 @@
 package io.zershyan.sccore.example.patchouli.datagen.provider;
 
 import io.zershyan.sccore.SCCore;
-import io.zershyan.sccore.patchouli.datagen.create.PatchouliContentProvider;
-import io.zershyan.sccore.patchouli.datagen.create.data.IPatchouliCategoryData;
-import io.zershyan.sccore.patchouli.datagen.create.data.IPatchouliEntryData;
-import io.zershyan.sccore.patchouli.datagen.create.data.IPatchouliTemplateData;
-import io.zershyan.sccore.patchouli.datagen.create.data.component.EntityComponent;
-import io.zershyan.sccore.patchouli.datagen.create.data.component.TextComponent;
-import io.zershyan.sccore.patchouli.datagen.create.data.format.*;
-import io.zershyan.sccore.patchouli.datagen.create.data.page.*;
+import io.zershyan.sccore.compat.patchouli.api.datagen.PatchouliContentProvider;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.IPatchouliCategoryData;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.IPatchouliEntryData;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.IPatchouliTemplateData;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.component.EntityComponent;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.component.TextComponent;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.format.*;
+import io.zershyan.sccore.compat.patchouli.api.datagen.data.page.*;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;

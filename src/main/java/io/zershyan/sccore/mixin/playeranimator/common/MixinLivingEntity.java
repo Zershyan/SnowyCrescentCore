@@ -2,10 +2,10 @@ package io.zershyan.sccore.mixin.playeranimator.common;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import io.zershyan.sccore.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.animation.core.ServerAnimationRegistry;
-import io.zershyan.sccore.animation.data.Animation;
-import io.zershyan.sccore.animation.data.ServerAnimation;
+import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
+import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
+import io.zershyan.sccore.compat.animation.data.Animation;
+import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

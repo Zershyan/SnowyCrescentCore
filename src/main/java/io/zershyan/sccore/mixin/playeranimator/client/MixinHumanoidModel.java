@@ -2,9 +2,9 @@ package io.zershyan.sccore.mixin.playeranimator.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import io.zershyan.sccore.animation.data.camera.CameraData;
-import io.zershyan.sccore.animation.data.camera.EulerAngle;
-import io.zershyan.sccore.animation.handler.client.CameraTransformStateHandler;
+import io.zershyan.sccore.compat.animation.data.camera.CameraData;
+import io.zershyan.sccore.compat.animation.data.camera.EulerAngle;
+import io.zershyan.sccore.compat.animation.handler.client.CameraTransformStateHandler;
 import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.HeadedModel;

@@ -6,7 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 
 public class ExamplePatchouli {
     /**
-     * @see SCCore.Common#Common
+     * @see SCCore#SCCore
      * @param forgeBus
      * @param modBus
      */

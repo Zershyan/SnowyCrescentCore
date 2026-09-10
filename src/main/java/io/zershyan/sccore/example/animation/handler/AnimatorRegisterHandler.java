@@ -1,9 +1,9 @@
 package io.zershyan.sccore.example.animation.handler;
 
 import io.zershyan.sccore.SCCore;
-import io.zershyan.sccore.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.animation.api.events.AnimationRegisterEvent;
-import io.zershyan.sccore.animation.api.events.LayerRegisterEvent;
+import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
+import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
+import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.Cow;

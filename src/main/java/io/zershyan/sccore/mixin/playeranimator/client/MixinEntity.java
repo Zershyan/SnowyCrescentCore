@@ -2,8 +2,8 @@ package io.zershyan.sccore.mixin.playeranimator.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
-import io.zershyan.sccore.animation.data.camera.CameraData;
-import io.zershyan.sccore.animation.handler.client.CameraTransformStateHandler;
+import io.zershyan.sccore.compat.animation.data.camera.CameraData;
+import io.zershyan.sccore.compat.animation.handler.client.CameraTransformStateHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
