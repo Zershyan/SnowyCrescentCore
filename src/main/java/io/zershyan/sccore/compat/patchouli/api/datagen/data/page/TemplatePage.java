@@ -15,7 +15,7 @@ public class TemplatePage extends IPageType {
         super(templateData.getId());
     }
 
-    public TemplatePage addVariable(Variable<?> ... variables) {
+    public TemplatePage addVariable(Variable<?>... variables) {
         for (Variable<?> variable : variables) {
             customVariables.add(Variable.assignment(variable.getName(), variable.getValue()));
         }

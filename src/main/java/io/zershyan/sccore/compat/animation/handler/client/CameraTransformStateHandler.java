@@ -3,7 +3,7 @@ package io.zershyan.sccore.compat.animation.handler.client;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.compat.animation.api.data.AnimationHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationHelper;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import io.zershyan.sccore.compat.animation.data.camera.CameraData;
@@ -51,7 +51,8 @@ public final class CameraTransformStateHandler {
         });
 
         CameraStateSnapShot snapShot = SnapShots.computeIfAbsent(player.getUUID(), uuid -> new CameraStateSnapShot());
-        testValid: {
+        testValid:
+        {
             if (max.isEmpty()) break testValid;
             Map.Entry<ResourceLocation, ResourceLocation> entry = max.get();
             ClientAnimation animation = ClientAnimationRegistry.getAnimation(entry.getValue());

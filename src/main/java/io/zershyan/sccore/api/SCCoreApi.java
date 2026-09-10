@@ -7,7 +7,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public class SCCoreApi {
     public static float tryGetPartialTick(Level level) {
-        if(level.isClientSide()) {
+        if (level.isClientSide()) {
             return clientGetPartialTick();
         } else return 0;
     }

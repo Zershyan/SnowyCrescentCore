@@ -58,11 +58,11 @@ public record CameraData(Vec2 relativeOffset, Vec3 offset, EulerAngle eulerAngle
         double sub = b - a;
         double abs = Math.abs(sub);
         double v = 0.05 / 120;
-        if(abs <= v) return b;
-        if(abs <= 0.05) {
-            if(sub < 0) {
+        if (abs <= v) return b;
+        if (abs <= 0.05) {
+            if (sub < 0) {
                 a -= v;
-            } else if(sub > 0) {
+            } else if (sub > 0) {
                 a += v;
             }
             return a;

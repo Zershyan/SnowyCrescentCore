@@ -58,7 +58,7 @@ public class PatchouliEntryData implements IPatchouliEntryData {
     @Override
     public PatchouliEntryData addExtraRecipeMapping(ItemFormat.Multi itemFormat, IPageType pageType) {
         for (int i = 0; i < pages.size(); i++) {
-            if(pages.get(i) == pageType) {
+            if (pages.get(i) == pageType) {
                 addExtraRecipeMapping(itemFormat, i);
             }
         }
@@ -126,10 +126,10 @@ public class PatchouliEntryData implements IPatchouliEntryData {
         object.addProperty("name", name);
         object.addProperty("category", category.toString());
         object.addProperty("icon", icon.parse());
-        if(pages.isEmpty()) {
+        if (pages.isEmpty()) {
             throw new JsonParseException("pages is empty");
         }
-        if(!(pages.get(0) instanceof TextPage)) {
+        if (!(pages.get(0) instanceof TextPage)) {
             throw new JsonParseException("The first page must be TextPage");
         }
         JsonArray pageArray = new JsonArray();
@@ -159,7 +159,7 @@ public class PatchouliEntryData implements IPatchouliEntryData {
         if (!extraRecipeMappings.isEmpty()) {
             JsonObject extraObject = new JsonObject();
             extraRecipeMappings.forEach((itemFormat, pageIndex) ->
-                extraObject.addProperty(itemFormat.parse(), pageIndex)
+                    extraObject.addProperty(itemFormat.parse(), pageIndex)
             );
             object.add("extra_recipe_mappings", extraObject);
         }

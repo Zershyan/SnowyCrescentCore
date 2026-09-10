@@ -77,16 +77,16 @@ public class PatchouliCategoryData implements IPatchouliCategoryData {
         object.addProperty("name", name);
         object.addProperty("description", description);
         object.addProperty("icon", icon.parse());
-        if(parent != null) {
+        if (parent != null) {
             object.addProperty("parent", parent.toString());
         }
-        if(flag != null) {
+        if (flag != null) {
             object.addProperty("flag", flag.parse());
         }
-        if(sortNum != null) {
+        if (sortNum != null) {
             object.addProperty("sortnum", sortNum);
         }
-        if(secret != null) {
+        if (secret != null) {
             object.addProperty("secret", secret);
         }
         return object;

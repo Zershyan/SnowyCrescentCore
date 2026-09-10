@@ -20,6 +20,7 @@ public abstract class ServerReloadEvent extends Event {
             super(server);
         }
     }
+
     public static class Post extends ServerReloadEvent {
         public Post(MinecraftServer server) {
             super(server);

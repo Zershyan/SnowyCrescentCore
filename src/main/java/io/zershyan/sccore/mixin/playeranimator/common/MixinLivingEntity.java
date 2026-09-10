@@ -26,17 +26,18 @@ public abstract class MixinLivingEntity {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getJumpPower()F")
     )
     public float modifyJumpPower(LivingEntity instance, Operation<Float> original) {
-        modifyJumpPower: {
-            if(!(instance instanceof Player player)) break modifyJumpPower;
+        modifyJumpPower:
+        {
+            if (!(instance instanceof Player player)) break modifyJumpPower;
             Optional<Map.Entry<ResourceLocation, ResourceLocation>> max = SCCAnimationApi.animation(player).getHighestPriorityAnimation(animation -> {
-                if(animation instanceof ServerAnimation serverAnimation) {
+                if (animation instanceof ServerAnimation serverAnimation) {
                     return serverAnimation.jumpModifier() != 1.0f;
-                }else return false;
+                } else return false;
             });
-            if(max.isEmpty()) break modifyJumpPower;
+            if (max.isEmpty()) break modifyJumpPower;
             ResourceLocation value = max.get().getValue();
             Animation animation = ServerAnimationRegistry.commonGetAnimation(value);
-            if(!(animation instanceof ServerAnimation serverAnimation)) break modifyJumpPower;
+            if (!(animation instanceof ServerAnimation serverAnimation)) break modifyJumpPower;
             return getJumpPower(serverAnimation.jumpModifier());
         }
         return original.call(instance);

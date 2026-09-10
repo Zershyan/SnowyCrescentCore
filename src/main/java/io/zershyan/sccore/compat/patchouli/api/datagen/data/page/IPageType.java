@@ -40,13 +40,13 @@ public abstract class IPageType {
     public JsonObject serialize() {
         JsonObject object = new JsonObject();
         object.addProperty("type", type.toString());
-        if(advancement != null) {
+        if (advancement != null) {
             object.addProperty("advancement", advancement.toString());
         }
-        if(flag != null) {
+        if (flag != null) {
             object.addProperty("flag", flag.parse());
         }
-        if(anchor != null) {
+        if (anchor != null) {
             object.addProperty("anchor", anchor);
         }
         return toJson(object);

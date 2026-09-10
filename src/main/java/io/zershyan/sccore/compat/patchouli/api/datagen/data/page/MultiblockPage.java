@@ -33,15 +33,15 @@ public class MultiblockPage extends IPageType {
     public JsonObject toJson(JsonObject object) {
         object.addProperty("name", name);
         String multiblockId = multiblockFormat.parse();
-        if(multiblockId != null) {
+        if (multiblockId != null) {
             object.addProperty("multiblock_id", multiblockId);
         } else {
             object.add("multiblock", multiblockFormat.serialize());
         }
-        if(enableVisualize != null) {
+        if (enableVisualize != null) {
             object.addProperty("enable_visualize", enableVisualize);
         }
-        if(text != null) {
+        if (text != null) {
             object.addProperty("text", text);
         }
         return object;

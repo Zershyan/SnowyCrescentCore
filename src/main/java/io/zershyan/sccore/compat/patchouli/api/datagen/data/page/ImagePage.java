@@ -21,7 +21,7 @@ public class ImagePage extends IPageType {
         super(ResourceLocation.fromNamespaceAndPath("patchouli", "image"));
     }
 
-    public ImagePage addImage(ResourceLocation ... images) {
+    public ImagePage addImage(ResourceLocation... images) {
         this.images.addAll(Arrays.asList(images));
         return this;
     }
@@ -54,7 +54,7 @@ public class ImagePage extends IPageType {
 
     @Override
     public JsonObject toJson(JsonObject object) {
-        if(images.isEmpty()) {
+        if (images.isEmpty()) {
             throw new JsonSyntaxException("images cannot be empty");
         }
         JsonArray array = new JsonArray();
@@ -62,13 +62,13 @@ public class ImagePage extends IPageType {
             array.add(image.toString());
         }
         object.add("images", array);
-        if(title != null) {
+        if (title != null) {
             object.addProperty("title", title);
         }
-        if(text != null) {
+        if (text != null) {
             object.addProperty("text", text);
         }
-        if(border != null) {
+        if (border != null) {
             object.addProperty("border", border);
         }
         return object;

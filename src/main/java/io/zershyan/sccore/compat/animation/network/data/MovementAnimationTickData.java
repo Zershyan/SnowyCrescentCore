@@ -26,7 +26,8 @@ import java.util.UUID;
  * @param animationId 当前动画 ID，为空表示动画已结束
  * @param currentTick 当前 tick
  */
-public record MovementAnimationTickData(UUID playerUUID, Optional<ResourceLocation> animationId, int currentTick) implements CustomPacketPayload {
+public record MovementAnimationTickData(UUID playerUUID, Optional<ResourceLocation> animationId,
+                                        int currentTick) implements CustomPacketPayload {
     public static final Type<@NotNull MovementAnimationTickData> TYPE = new Type<>(SCCore.id("movement_animation_tick"));
 
     public static final StreamCodec<ByteBuf, MovementAnimationTickData> STREAM_CODEC = ByteBufCodecs.fromCodec(RecordCodecBuilder.create(i -> i.group(
@@ -42,13 +43,13 @@ public record MovementAnimationTickData(UUID playerUUID, Optional<ResourceLocati
 
     public void handler(IPayloadContext context) {
         context.enqueueWork(() -> {
-            if(context.player() instanceof Player sender) {
-                if(animationId().isEmpty()) {
+            if (context.player() instanceof Player sender) {
+                if (animationId().isEmpty()) {
                     MovementAnimationTickHandler.removeData(playerUUID());
                 } else {
                     MovementAnimationTickHandler.putData(playerUUID(), this);
                 }
-                if(sender instanceof ServerPlayer) {
+                if (sender instanceof ServerPlayer) {
                     PacketDistributor.sendToAllPlayers(this);
                 }
             }

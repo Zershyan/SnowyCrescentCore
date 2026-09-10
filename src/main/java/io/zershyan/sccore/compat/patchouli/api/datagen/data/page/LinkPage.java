@@ -26,7 +26,7 @@ public class LinkPage extends TextPage {
     public JsonObject toJson(JsonObject object) {
         super.toJson(object);
         object.remove("text");
-        if(text != null) {
+        if (text != null) {
             object.addProperty("text", text);
         }
         object.addProperty("url", url);

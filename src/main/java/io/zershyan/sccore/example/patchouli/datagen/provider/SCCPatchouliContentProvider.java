@@ -31,8 +31,9 @@ public class SCCPatchouliContentProvider extends PatchouliContentProvider {
     /**
      * All the text is lang-key available <br>
      * You can find all the relevant content in this: <a href="https://vazkiimods.github.io/Patchouli/docs/intro">Patchouli WIKI</a>
+     *
      * @param provider provider
-     * @param output pack output
+     * @param output   pack output
      * @see IPatchouliCategoryData
      * @see IPatchouliTemplateData
      * @see IPatchouliEntryData

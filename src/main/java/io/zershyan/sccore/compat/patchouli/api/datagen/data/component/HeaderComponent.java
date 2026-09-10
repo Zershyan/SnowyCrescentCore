@@ -36,13 +36,13 @@ public class HeaderComponent extends ITemplateComponent {
     @Override
     public JsonObject toJson(JsonObject object) {
         object.addProperty("text", text.parseKey());
-        if(color != null) {
+        if (color != null) {
             object.addProperty("color", color.parseKey());
         }
-        if(centered != null) {
+        if (centered != null) {
             object.addProperty("centered", centered);
         }
-        if(scale != null) {
+        if (scale != null) {
             object.addProperty("scale", scale);
         }
         return object;

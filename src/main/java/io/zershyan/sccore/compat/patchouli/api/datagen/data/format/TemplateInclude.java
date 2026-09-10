@@ -32,7 +32,7 @@ public class TemplateInclude implements IFormat {
     }
 
     public TemplateInclude using(String key, String value) {
-        if(using == null) {
+        if (using == null) {
             using = new HashMap<>();
         }
         using.put(key, value);
@@ -40,7 +40,7 @@ public class TemplateInclude implements IFormat {
     }
 
     public <T extends IFormat> TemplateInclude usingVar(Variable<T> variable) {
-        if(using == null) {
+        if (using == null) {
             using = new HashMap<>();
         }
         using.put(variable.getName(), variable.parseKey());
@@ -48,7 +48,7 @@ public class TemplateInclude implements IFormat {
     }
 
     public <T extends IFormat> TemplateInclude usingIns(Variable<T> variable) {
-        if(using == null) {
+        if (using == null) {
             using = new HashMap<>();
         }
         using.put(variable.getName(), variable.getValue().parse());
@@ -69,13 +69,13 @@ public class TemplateInclude implements IFormat {
         JsonObject object = new JsonObject();
         object.addProperty("template", template.toString());
         object.addProperty("as", as);
-        if(x != null) {
+        if (x != null) {
             object.addProperty("x", x);
         }
-        if(y != null) {
+        if (y != null) {
             object.addProperty("y", y);
         }
-        if(using != null) {
+        if (using != null) {
             JsonObject usingObject = new JsonObject();
             using.forEach(usingObject::addProperty);
             object.add("using", usingObject);

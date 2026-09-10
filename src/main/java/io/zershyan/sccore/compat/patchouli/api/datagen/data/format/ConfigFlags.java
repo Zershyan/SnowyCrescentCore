@@ -10,7 +10,9 @@ public class ConfigFlags implements IFormat {
     ConfigFlags(String value) {
         this.value = value;
     }
-    ConfigFlags(){}
+
+    ConfigFlags() {
+    }
 
     public static ConfigFlags debug() {
         return new ConfigFlags("debug");
@@ -72,9 +74,9 @@ public class ConfigFlags implements IFormat {
         @Override
         public String parse() {
             String prefix;
-            if(junction != null) {
+            if (junction != null) {
                 prefix = junction ? "&" : "|";
-            } else if(customPrefix != null) {
+            } else if (customPrefix != null) {
                 prefix = customPrefix;
             } else throw new NullPointerException("Junction or Custom prefix required");
 

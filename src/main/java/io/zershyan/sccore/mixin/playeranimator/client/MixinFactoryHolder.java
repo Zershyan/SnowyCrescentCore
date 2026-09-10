@@ -32,7 +32,7 @@ public class MixinFactoryHolder implements IMixinFactoryHolder {
             cancellable = true
     )
     private void prepareAnimations(AbstractClientPlayer player, AnimationStack playerStack, Map<ResourceLocation, IAnimation> animationMap, CallbackInfo ci) {
-        for (Function<AbstractClientPlayer, DataHolder> factory: sccore$factories) {
+        for (Function<AbstractClientPlayer, DataHolder> factory : sccore$factories) {
             DataHolder dataHolder = factory.apply(player);
             if (dataHolder != null) {
                 playerStack.addAnimLayer(dataHolder.priority(), dataHolder.animation());

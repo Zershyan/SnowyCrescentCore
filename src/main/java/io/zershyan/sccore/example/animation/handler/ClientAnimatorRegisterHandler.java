@@ -19,6 +19,7 @@ import java.util.TreeMap;
 public class ClientAnimatorRegisterHandler {
     private static final ResourceLocation testLayerClient = SCCore.id("test_layer_client");
     private static final ResourceLocation testAnimClient = SCCore.id("test_anim_client");
+
     @SubscribeEvent
     public static void registerLayerClient(LayerRegisterEvent.Client event) {
         event.registerLayer(testLayerClient, 45);
@@ -29,8 +30,8 @@ public class ClientAnimatorRegisterHandler {
         TreeMap<Integer, CameraData> movement = new TreeMap<>();
         movement.put(0, CameraData.ZERO);
         movement.put(40, CameraData.of(
-                new Vec3(0,-1.5,0),
-                new EulerAngle(0f, 90f,90f)
+                new Vec3(0, -1.5, 0),
+                new EulerAngle(0f, 90f, 90f)
         ));
         TreeMap<Integer, CameraData> movement1 = new TreeMap<>();
         movement1.put(0, CameraData.of(
@@ -53,7 +54,7 @@ public class ClientAnimatorRegisterHandler {
 
     @SubscribeEvent
     public static void testPlayer(PlayerInteractEvent.LeftClickEmpty event) {
-        if(event.getSide() == LogicalSide.CLIENT) {
+        if (event.getSide() == LogicalSide.CLIENT) {
             Player player = event.getEntity();
             SCCAnimationApi.animation(player).playAnimation(testLayerClient, testAnimClient);
         }
@@ -61,7 +62,7 @@ public class ClientAnimatorRegisterHandler {
 
     @SubscribeEvent
     public static void testPlayer1(PlayerInteractEvent.LeftClickBlock event) {
-        if(event.getSide() == LogicalSide.CLIENT) {
+        if (event.getSide() == LogicalSide.CLIENT) {
             Player player = event.getEntity();
             SCCAnimationApi.animation(player).removeAnimation(testLayerClient);
         }

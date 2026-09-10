@@ -22,14 +22,18 @@ public class SyncAnimationFactory {
     private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
     private static final Map<ResourceLocation, ClientAnimation> Animations = new HashMap<>();
 
-    /** 重新加载同步层，同时注册到 Player Animator。 */
+    /**
+     * 重新加载同步层，同时注册到 Player Animator。
+     */
     public static void reloadLayers(Map<ResourceLocation, Integer> layers) {
         ClientAnimationRegistry.registerLayers(layers);
         Layers.clear();
         Layers.putAll(layers);
     }
 
-    /** 重新加载同步动画。 */
+    /**
+     * 重新加载同步动画。
+     */
     public static void reloadAnimations(Map<ResourceLocation, ClientAnimation> layers) {
         Animations.clear();
         Animations.putAll(layers);

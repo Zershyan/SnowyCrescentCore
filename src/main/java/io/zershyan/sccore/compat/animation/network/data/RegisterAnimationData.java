@@ -23,7 +23,8 @@ import java.util.function.Function;
  *
  * @param animations 动画 ID → 服务端动画定义的映射
  */
-public record RegisterAnimationData(HashMap<ResourceLocation, ServerAnimation> animations) implements CustomPacketPayload {
+public record RegisterAnimationData(
+        HashMap<ResourceLocation, ServerAnimation> animations) implements CustomPacketPayload {
     public static final Type<@NotNull RegisterAnimationData> TYPE =
             new Type<>(SCCore.id("animator_animations"));
 

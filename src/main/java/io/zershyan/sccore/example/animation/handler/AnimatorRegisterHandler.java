@@ -27,15 +27,15 @@ public class AnimatorRegisterHandler {
         event.createAnimation(testAnim, SCCore.id("waltz_lady"))
                 .rideData(builder -> builder.existTick(50))
                 .addAABBMovement(0, new AABB(Vec3.ZERO, Vec3.ZERO))
-                .addAABBMovement(49, new AABB(Vec3.ZERO.add(0,0,-1), Vec3.ZERO.add(0,0,1)))
+                .addAABBMovement(49, new AABB(Vec3.ZERO.add(0, 0, -1), Vec3.ZERO.add(0, 0, 1)))
                 .defaultThirdPerson(true)
                 .name("华尔兹（女）");
     }
 
     @SubscribeEvent
     public static void testPlay(AttackEntityEvent event) {
-        if(event.getEntity() instanceof ServerPlayer player) {
-            if(event.getTarget() instanceof Sheep) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (event.getTarget() instanceof Sheep) {
                 SCCAnimationApi.animation(player).playAnimation(testLayer, testAnim);
             } else if (event.getTarget() instanceof Cow) {
                 SCCAnimationApi.animation(player).removeAnimation(testLayer);

@@ -21,7 +21,7 @@ public class MixinMinecraftServer {
             method = "reloadResources",
             at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenAcceptAsync(Ljava/util/function/Consumer;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;")
     )
-    public CompletableFuture<Void> reloadResourceFinish(CompletableFuture<Void> instance, Consumer<? extends MinecraftServer.ReloadableResources> action, Executor executor, Operation<CompletableFuture<Void>> original)  {
+    public CompletableFuture<Void> reloadResourceFinish(CompletableFuture<Void> instance, Consumer<? extends MinecraftServer.ReloadableResources> action, Executor executor, Operation<CompletableFuture<Void>> original) {
         Consumer<? extends MinecraftServer.ReloadableResources> consumer = action.andThen(reloadableResources -> NeoForge.EVENT_BUS.post(new ServerReloadEvent.Post(MinecraftServer.class.cast(this))));
         return original.call(instance, consumer, executor);
     }
@@ -33,6 +33,6 @@ public class MixinMinecraftServer {
     )
     public void reloadResourceStart(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         ServerReloadEvent.Pre post = NeoForge.EVENT_BUS.post(new ServerReloadEvent.Pre(MinecraftServer.class.cast(this)));
-        if(post.isCanceled()) cir.setReturnValue(new CompletableFuture<>());
+        if (post.isCanceled()) cir.setReturnValue(new CompletableFuture<>());
     }
 }

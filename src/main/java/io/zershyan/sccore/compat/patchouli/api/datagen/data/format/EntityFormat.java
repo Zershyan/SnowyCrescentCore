@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 public class EntityFormat implements IFormat {
     private final String entity;
     private CompoundTag nbt;
+
     EntityFormat(String entity) {
         this.entity = entity;
     }
@@ -19,7 +20,7 @@ public class EntityFormat implements IFormat {
 
     public static EntityFormat of(EntityType<?> entityType) {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKeyOrNull(entityType);
-        if(key == null) throw new RuntimeException("Entity  " + entityType + " has no key");
+        if (key == null) throw new RuntimeException("Entity  " + entityType + " has no key");
         return of(key);
     }
 
@@ -37,7 +38,7 @@ public class EntityFormat implements IFormat {
 
     public String parse() {
         StringBuilder sb = new StringBuilder(entity);
-        if(nbt != null) sb.append(nbt);
+        if (nbt != null) sb.append(nbt);
         return sb.toString();
     }
 }

@@ -15,6 +15,7 @@ public class BlockStateFormat implements IFormat {
     private final String block;
     private final Map<Property<?>, String> property = new HashMap<>();
     private boolean isTag = false;
+
     BlockStateFormat(String block) {
         this.block = block;
     }
@@ -35,7 +36,7 @@ public class BlockStateFormat implements IFormat {
 
     public static BlockStateFormat of(Block block) {
         ResourceLocation key = BuiltInRegistries.BLOCK.getKeyOrNull(block);
-        if(key == null) throw new RuntimeException("Block  " + block + " has no key");
+        if (key == null) throw new RuntimeException("Block  " + block + " has no key");
         return of(key);
     }
 
@@ -46,7 +47,7 @@ public class BlockStateFormat implements IFormat {
 
     @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) {
-        return property.getName((T)comparable);
+        return property.getName((T) comparable);
     }
 
     public BlockStateFormat property(Map<Property<?>, Comparable<?>> property) {
@@ -63,7 +64,7 @@ public class BlockStateFormat implements IFormat {
     public String parse() {
         StringBuilder sb = new StringBuilder(isTag ? "#" : "");
         sb.append(block);
-        if(!isTag && !property.isEmpty()) {
+        if (!isTag && !property.isEmpty()) {
             sb.append('[');
             sb.append(property.entrySet().stream().map(entry ->
                     entry.getKey().getName() + "=" + entry.getValue()

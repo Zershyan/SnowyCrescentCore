@@ -6,7 +6,8 @@ public interface IFormat {
     default String parse() {
         return "";
     }
-    default JsonObject serialize(){
+
+    default JsonObject serialize() {
         return new JsonObject();
     }
 }

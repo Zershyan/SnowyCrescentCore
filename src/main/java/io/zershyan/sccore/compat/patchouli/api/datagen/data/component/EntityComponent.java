@@ -36,12 +36,12 @@ public class EntityComponent extends ITemplateComponent {
     @Override
     public JsonObject toJson(JsonObject object) {
         object.addProperty("entity", entity.parseKey());
-        if(renderSize != null) {
+        if (renderSize != null) {
             object.addProperty("render_size", renderSize);
         }
-        if(rotate != null) {
+        if (rotate != null) {
             object.addProperty("rotate", rotate);
-            if(!rotate && defaultRotation != null) {
+            if (!rotate && defaultRotation != null) {
                 object.addProperty("default_rotation", defaultRotation);
             }
         }

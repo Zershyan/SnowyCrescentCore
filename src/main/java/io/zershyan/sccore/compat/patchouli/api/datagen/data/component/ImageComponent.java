@@ -60,19 +60,19 @@ public class ImageComponent extends ITemplateComponent {
         object.addProperty("image", image.parseKey());
         object.addProperty("width", width);
         object.addProperty("height", height);
-        if(u != null) {
+        if (u != null) {
             object.addProperty("u", u);
         }
-        if(v != null) {
+        if (v != null) {
             object.addProperty("v", v);
         }
-        if(textureWidth != null) {
+        if (textureWidth != null) {
             object.addProperty("textureWidth", textureWidth);
         }
-        if(textureHeight != null) {
+        if (textureHeight != null) {
             object.addProperty("textureHeight", textureHeight);
         }
-        if(scale != null) {
+        if (scale != null) {
             object.addProperty("scale", scale);
         }
         return object;

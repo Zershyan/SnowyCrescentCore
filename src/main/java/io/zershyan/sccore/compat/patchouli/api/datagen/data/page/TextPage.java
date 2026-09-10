@@ -27,7 +27,7 @@ public class TextPage extends IPageType {
     @Override
     public JsonObject toJson(JsonObject object) {
         object.addProperty("text", text);
-        if(title != null) {
+        if (title != null) {
             object.addProperty("title", title);
         }
         return object;

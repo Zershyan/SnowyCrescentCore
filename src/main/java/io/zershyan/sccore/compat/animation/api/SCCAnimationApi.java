@@ -1,9 +1,12 @@
 package io.zershyan.sccore.compat.animation.api;
 
 import io.zershyan.sccore.compat.SCCCompatFactory;
-import io.zershyan.sccore.compat.animation.api.client.AnimationPlayerHelper;
-import io.zershyan.sccore.compat.animation.api.data.AnimationHelper;
-import io.zershyan.sccore.compat.animation.api.server.AnimationRideHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationPlayerHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationRegistriesHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationRideHelper;
+import io.zershyan.sccore.compat.animation.api.service.impl.AnimationService;
+import io.zershyan.sccore.compat.animation.api.service.impl.ClientAnimationService;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -51,7 +54,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class SCCAnimationApi {
 
     static {
-        if(!SCCCompatFactory.PlayerAnimator.isModLoaded()) {
+        if (!SCCCompatFactory.PlayerAnimator.isModLoaded()) {
             throw new RuntimeException("Use Api with Mod Player Animator Uninstalled");
         }
     }
@@ -61,8 +64,8 @@ public class SCCAnimationApi {
      *
      * <p>返回的 {@link AnimationHelper} 提供动画的播放、移除、骑乘动画控制等操作。
      * 内部根据玩家是否为 {@link ServerPlayer} 自动选择服务端实现
-     * （{@link io.zershyan.sccore.compat.animation.api.data.AnimationService}）或客户端实现
-     * （{@link io.zershyan.sccore.compat.animation.api.data.ClientAnimationService}），
+     * （{@link AnimationService}）或客户端实现
+     * （{@link ClientAnimationService}），
      * 因此同一套 API 可同时工作在双端。</p>
      *
      * @param player 目标玩家，服务端与客户端均可
@@ -102,6 +105,17 @@ public class SCCAnimationApi {
      */
     public static AnimationRideHelper ridePlayer(ServerPlayer player) {
         return AnimationRideHelper.of(player);
+    }
+
+    /**
+     * 获取动画的注册项助手<br>
+     * 返回的{@link AnimationRegistriesHelper}用于读动画及动画层信息，无写权限
+     *
+     * @return 动画的注册项助手
+     * @see AnimationRegistriesHelper
+     */
+    public static AnimationRegistriesHelper registries() {
+        return AnimationRegistriesHelper.getInstance();
     }
 
     /**

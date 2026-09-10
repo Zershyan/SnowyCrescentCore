@@ -1,6 +1,8 @@
-package io.zershyan.sccore.compat.animation.api.data;
+package io.zershyan.sccore.compat.animation.api.service.impl;
 
 import com.mojang.datafixers.util.Either;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationHelper;
+import io.zershyan.sccore.compat.animation.api.service.IAnimationService;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
 import io.zershyan.sccore.compat.animation.data.Animation;
@@ -39,11 +41,13 @@ public class ClientAnimationService implements IAnimationService {
      *
      * @param player 绑定的客户端玩家（会被强转为 {@link AbstractClientPlayer}）
      */
-    protected ClientAnimationService(Player player) {
+    public ClientAnimationService(Player player) {
         this.player = (AbstractClientPlayer) player;
     }
 
-    /** 从客户端缓存的玩家动画数据读取（由 Attachment 同步而来）。 */
+    /**
+     * 从客户端缓存的玩家动画数据读取（由 Attachment 同步而来）。
+     */
     @Override
     public PlayerAnimations getData() {
         return PlayerAnimations.getData(player);
@@ -88,13 +92,13 @@ public class ClientAnimationService implements IAnimationService {
         HashMap<ResourceLocation, ResourceLocation> serverAnimMap = new HashMap<>(data.serverAnimMap());
         data.rideAnim().layer().ifPresent(layer -> serverAnimMap.put(layer, data.rideAnim().animation().orElseThrow()));
         Map.copyOf(serverAnimMap).forEach((key, value) -> {
-            if(!predicate.test(ClientAnimationRegistry.getAnimation(value))) serverAnimMap.remove(key);
+            if (!predicate.test(ClientAnimationRegistry.getAnimation(value))) serverAnimMap.remove(key);
         });
         Optional<Map.Entry<ResourceLocation, ResourceLocation>> max = serverAnimMap.entrySet().stream().max(AnimationHelper.COMPARATOR);
-        if(max.isEmpty()) {
+        if (max.isEmpty()) {
             HashMap<ResourceLocation, ResourceLocation> clientAnimMap = new HashMap<>(data.clientAnimMap());
             Map.copyOf(clientAnimMap).forEach((key, value) -> {
-                if(!predicate.test(ClientAnimationRegistry.getAnimation(value))) clientAnimMap.remove(key);
+                if (!predicate.test(ClientAnimationRegistry.getAnimation(value))) clientAnimMap.remove(key);
             });
             return clientAnimMap.entrySet().stream().max(AnimationHelper.COMPARATOR);
         } else return max;

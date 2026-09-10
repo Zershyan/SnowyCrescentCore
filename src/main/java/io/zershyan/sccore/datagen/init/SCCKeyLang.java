@@ -16,7 +16,7 @@ public class SCCKeyLang extends SCCLang {
     private static final String ModFullName = SCCore.NAME;
     private static final String MessagePrefix = "message." + ModId;
     private static final String CommandPrefix = "command." + ModId + ".";
-    private static final String AnimationPrefix  = "animation.";
+    private static final String AnimationPrefix = "animation.";
     // 指令
     public static final MutableComponent CommandRunFail = entry(AnimationPrefix + CommandPrefix + "fail",
             "命令执行失败。",
@@ -117,5 +117,11 @@ public class SCCKeyLang extends SCCLang {
 
     private static LazyComponent entryLazy(String key, String enUs, String zhCn) {
         return new LazyComponent(entryString(key, enUs, zhCn));
+    }
+
+    @Override
+    protected List<Entry> init(List<Entry> entries) {
+        entries.addAll(TranslatableLang);
+        return entries;
     }
 }

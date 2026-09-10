@@ -23,15 +23,13 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class PatchouliContentProvider implements DataProvider {
 
+    private static final String patchouliDirectory = "patchouli_books";
     private final String modId;
     private final CompletableFuture<HolderLookup.Provider> registries;
     private final PackOutput packOutput;
-
     private final Map<ResourceLocation, IPatchouliCategoryData> categoryBuilders = new HashMap<>();
     private final Map<ResourceLocation, IPatchouliTemplateData> templateBuilders = new HashMap<>();
     private final Map<ResourceLocation, IPatchouliEntryData> entryBuilders = new HashMap<>();
-
-    private static final String patchouliDirectory = "patchouli_books";
 
     public PatchouliContentProvider(String modId, PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         this.modId = modId;
@@ -70,12 +68,12 @@ public abstract class PatchouliContentProvider implements DataProvider {
 
     /**
      * @param categoryDirectory namespace:book name, path:category directory<pre>
-     * e.g. "lexicon:mics/cool_stuff" = "modid/patchouli_books/lexicon<br>
-     *      /en_us/categories/mics/cool_stuff.json"<br>
-     *      The modid is already defined with constructor</pre>
-     * @param name name in game
-     * @param description description
-     * @param icon icon
+     *                          e.g. "lexicon:mics/cool_stuff" = "modid/patchouli_books/lexicon<br>
+     *                               /en_us/categories/mics/cool_stuff.json"<br>
+     *                               The modid is already defined with constructor</pre>
+     * @param name              name in game
+     * @param description       description
+     * @param icon              icon
      * @return data chain
      */
     public final IPatchouliCategoryData createCategory(
@@ -91,9 +89,9 @@ public abstract class PatchouliContentProvider implements DataProvider {
 
     /**
      * @param templateDirectory namespace:book name, path:category directory<pre>
-     * e.g. "lexicon:mics/my_template" = "modid/patchouli_books/lexicon<br>
-     *      /en_us/templates/mics/my_template.json"<br>
-     *      The modid is already defined with constructor</pre>
+     *                          e.g. "lexicon:mics/my_template" = "modid/patchouli_books/lexicon<br>
+     *                               /en_us/templates/mics/my_template.json"<br>
+     *                               The modid is already defined with constructor</pre>
      * @return data chain
      */
     public final IPatchouliTemplateData createTemplate(ResourceLocation templateDirectory) {
@@ -104,9 +102,9 @@ public abstract class PatchouliContentProvider implements DataProvider {
 
     /**
      * @param entryDirectory namespace:book name, path:category directory<pre>
-     * e.g. "lexicon:mics/my_entry" = "modid/patchouli_books/lexicon<br>
-     *      /en_us/entries/mics/my_entry.json"<br>
-     *      The modid is already defined with constructor</pre>
+     *                       e.g. "lexicon:mics/my_entry" = "modid/patchouli_books/lexicon<br>
+     *                            /en_us/entries/mics/my_entry.json"<br>
+     *                            The modid is already defined with constructor</pre>
      * @return data chain
      */
     public final IPatchouliEntryData createEntry(
@@ -126,7 +124,7 @@ public abstract class PatchouliContentProvider implements DataProvider {
             String name,
             String description,
             ItemFormat icon
-    ){
+    ) {
         return createCategory(ResourceLocation.fromNamespaceAndPath(book.toString(), directory), name, description, icon);
     }
 

@@ -25,7 +25,7 @@ public class AnimationEntities {
         return REGISTRY.register(name, () -> builder.build(name));
     }
 
-    public static void register(IEventBus modBus){
+    public static void register(IEventBus modBus) {
         REGISTRY.register(modBus);
         modBus.addListener(AnimationEntities::registerRenderer);
     }

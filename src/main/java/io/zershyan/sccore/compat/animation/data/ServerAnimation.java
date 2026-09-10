@@ -14,7 +14,6 @@ import java.util.Optional;
  * @see ClientAnimation
  */
 public class ServerAnimation extends Animation {
-    private final float jumpModifier;
     public static final Codec<ServerAnimation> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("animationLocation").forGetter(Animation::animationLocation),
             Codec.STRING.optionalFieldOf("name").forGetter(Animation::name),
@@ -32,10 +31,13 @@ public class ServerAnimation extends Animation {
             Codec.BOOL.optionalFieldOf("defaultThirdPerson", false).forGetter(ServerAnimation::defaultThirdPerson),
             AABBMovement.CODEC.optionalFieldOf("aabbMovement", new AABBMovement()).forGetter(Animation::aabbMovement)
     ).apply(i, ServerAnimation::new));
+    private final float jumpModifier;
+
     public ServerAnimation(ResourceLocation animationLocation, Optional<String> name, int priority, Optional<RideData> data, boolean defaultThirdPerson, AABBMovement aabbMovement, float jumpModifier) {
         super(animationLocation, name, priority, data, defaultThirdPerson, aabbMovement);
         this.jumpModifier = jumpModifier;
     }
+
     public ServerAnimation(ResourceLocation animationLocation, Optional<String> name, int priority, Optional<RideData> data, boolean defaultThirdPerson, AABBMovement aabbMovement) {
         this(animationLocation, name, priority, data, defaultThirdPerson, aabbMovement, 1.0f);
     }

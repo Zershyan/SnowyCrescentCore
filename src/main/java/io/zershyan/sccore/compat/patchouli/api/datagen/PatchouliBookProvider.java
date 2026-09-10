@@ -19,12 +19,11 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class PatchouliBookProvider implements DataProvider {
 
+    private static final String patchouliDirectory = "patchouli_books";
     private final String modId;
     private final CompletableFuture<HolderLookup.Provider> registries;
     private final PackOutput packOutput;
     private final Map<String, IPatchouliBookData> bookBuilders = new HashMap<>();
-
-    private static final String patchouliDirectory = "patchouli_books";
 
     public PatchouliBookProvider(String modId, PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         this.modId = modId;

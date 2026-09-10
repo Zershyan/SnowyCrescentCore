@@ -1,4 +1,4 @@
-package io.zershyan.sccore.compat.animation.api.client;
+package io.zershyan.sccore.compat.animation.api.helper;
 
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
@@ -28,7 +28,7 @@ import java.util.Optional;
  *
  * <p>提供基于淡入淡出的播放/移除、按新旧数据 diff 的增量更新、跨玩家动画同步以及获取当前播放器等能力。
  * 该类仅在客户端使用，对应服务端的数据操作请使用
- * {@link io.zershyan.sccore.compat.animation.api.data.AnimationHelper}。</p>
+ * {@link AnimationHelper}。</p>
  *
  * <h3>典型用法</h3>
  * <pre>{@code
@@ -97,18 +97,19 @@ public class AnimationPlayerHelper {
         ResourceLocation playerLayer = playerData.rideAnim().layer().orElse(null);
         ResourceLocation targetLayer = targetData.rideAnim().layer().orElse(null);
         try {
-            if(playerLayer == null || targetLayer == null) return;
+            if (playerLayer == null || targetLayer == null) return;
             ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                     .getPlayerAssociatedData(player).get(playerLayer);
             ModifierLayer<IAnimation> targetModifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                     .getPlayerAssociatedData(target).get(targetLayer);
-            if(modifierLayer == null || targetModifierLayer == null) return;
+            if (modifierLayer == null || targetModifierLayer == null) return;
             IMixinKeyframeAnimationPlayer animation = IMixinKeyframeAnimationPlayer.of(modifierLayer.getAnimation());
             KeyframeAnimationPlayer targetAnimation = (KeyframeAnimationPlayer) targetModifierLayer.getAnimation();
-            if(animation == null || targetAnimation == null) return;
+            if (animation == null || targetAnimation == null) return;
             int currentTick = targetAnimation.getCurrentTick();
             animation.sccore$setCurrentTick(currentTick);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /**
@@ -145,14 +146,14 @@ public class AnimationPlayerHelper {
     public void innerPlayAnimation(int fadeLength, Ease ease, ResourceLocation layer, @Nullable ResourceLocation animation) {
         ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                 .getPlayerAssociatedData(player).get(layer);
-        if(modifierLayer == null) return;
+        if (modifierLayer == null) return;
         KeyframeAnimationPlayer iAnimation = null;
         Minecraft instance = Minecraft.getInstance();
         LocalPlayer localPlayer = instance.player;
-        if(animation != null) {
+        if (animation != null) {
             KeyframeAnimation keyframeAnimation = ClientAnimationRegistry.getKeyframeAnimation(animation);
             iAnimation = keyframeAnimation != null ? new KeyframeAnimationPlayer(keyframeAnimation) : null;
-            if(keyframeAnimation == null && localPlayer != null) {
+            if (keyframeAnimation == null && localPlayer != null) {
                 localPlayer.sendSystemMessage(SCCKeyLang.AnimationResourceNotFound
                         .get(animation.toString()).withStyle(ChatFormatting.RED));
                 SCCAnimationApi.animation(player).operaData(opera -> opera
@@ -163,7 +164,7 @@ public class AnimationPlayerHelper {
             }
         }
         KeyframeAnimationPlayer layerAnimation = (KeyframeAnimationPlayer) modifierLayer.getAnimation();
-        if(layerAnimation != null) layerAnimation.stop();
+        if (layerAnimation != null) layerAnimation.stop();
         modifierLayer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeLength, ease), iAnimation);
     }
 
@@ -177,23 +178,23 @@ public class AnimationPlayerHelper {
      * @param newAnimations 新动画数据
      */
     public void updateAnimation(PlayerAnimations oldAnimations, PlayerAnimations newAnimations) {
-        if(oldAnimations == null || !newAnimations.rideAnim().equals(oldAnimations.rideAnim())) {
+        if (oldAnimations == null || !newAnimations.rideAnim().equals(oldAnimations.rideAnim())) {
             PlayerAnimations.RideAnim newRideAnim = newAnimations.rideAnim();
-            if(oldAnimations != null) oldAnimations.rideAnim().layer().ifPresent(this::removeAnimation);
+            if (oldAnimations != null) oldAnimations.rideAnim().layer().ifPresent(this::removeAnimation);
             Optional<ResourceLocation> layer = newRideAnim.layer();
             Optional<ResourceLocation> animation = newRideAnim.animation();
-            if(layer.isPresent() && animation.isPresent()) playAnimation(layer.get(), animation.get());
+            if (layer.isPresent() && animation.isPresent()) playAnimation(layer.get(), animation.get());
         }
-        if(oldAnimations == null || !newAnimations.clientAnimMapEqual(oldAnimations.clientAnimMap())) {
+        if (oldAnimations == null || !newAnimations.clientAnimMapEqual(oldAnimations.clientAnimMap())) {
             compareAndAct(oldAnimations == null ? null : oldAnimations.clientAnimMap(), newAnimations.clientAnimMap());
         }
-        if(oldAnimations == null || !newAnimations.serverAnimMapEqual(oldAnimations.serverAnimMap())) {
+        if (oldAnimations == null || !newAnimations.serverAnimMapEqual(oldAnimations.serverAnimMap())) {
             compareAndAct(oldAnimations == null ? null : oldAnimations.serverAnimMap(), newAnimations.serverAnimMap());
         }
     }
 
     private void compareAndAct(@Nullable Map<ResourceLocation, ResourceLocation> oldMap, Map<ResourceLocation, ResourceLocation> newMap) {
-        if(oldMap == null) {
+        if (oldMap == null) {
             newMap.forEach(this::playAnimation);
             return;
         }
@@ -224,9 +225,9 @@ public class AnimationPlayerHelper {
     @Nullable
     @SuppressWarnings("unchecked")
     public KeyframeAnimationPlayer getKeyframeAnimationPlayer(ResourceLocation layer) {
-        ModifierLayer<IAnimation> modifierLayer  = (ModifierLayer<IAnimation>) PlayerAnimationAccess
+        ModifierLayer<IAnimation> modifierLayer = (ModifierLayer<IAnimation>) PlayerAnimationAccess
                 .getPlayerAssociatedData(player).get(layer);
-        if(modifierLayer == null) return null;
+        if (modifierLayer == null) return null;
         return (KeyframeAnimationPlayer) modifierLayer.getAnimation();
     }
 }

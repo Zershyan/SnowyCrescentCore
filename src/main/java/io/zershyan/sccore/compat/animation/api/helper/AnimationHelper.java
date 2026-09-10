@@ -1,7 +1,10 @@
-package io.zershyan.sccore.compat.animation.api.data;
+package io.zershyan.sccore.compat.animation.api.helper;
 
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
+import io.zershyan.sccore.compat.animation.api.service.IAnimationService;
+import io.zershyan.sccore.compat.animation.api.service.impl.AnimationService;
+import io.zershyan.sccore.compat.animation.api.service.impl.ClientAnimationService;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
@@ -57,7 +60,7 @@ import java.util.function.Predicate;
  */
 @SuppressWarnings("unused")
 public class AnimationHelper {
-    static final Comparator<Map.Entry<ResourceLocation, ResourceLocation>> COMPARATOR;
+    public static final Comparator<Map.Entry<ResourceLocation, ResourceLocation>> COMPARATOR;
 
     static {
         Comparator<Map.Entry<ResourceLocation, ResourceLocation>> comparingInt = Comparator.comparingInt(entry -> {
@@ -133,7 +136,7 @@ public class AnimationHelper {
      */
     public void playAnimation(ResourceLocation layer, ResourceLocation animationId) {
         try {
-            if(!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
+            if (!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
             operaData(opera -> {
                 if (ServerAnimationRegistry.getAnimations().containsKey(animationId)
                         || SyncAnimationFactory.getAnimations().containsKey(animationId)) {
@@ -153,7 +156,7 @@ public class AnimationHelper {
      * @param isClient {@code true} 移除客户端动画，{@code false} 移除服务端动画
      */
     public void removeAnimation(ResourceLocation layer, boolean isClient) {
-        if(SCCAnimationApi.isLayerExist(layer)) {
+        if (SCCAnimationApi.isLayerExist(layer)) {
             operaData(opera -> {
                 if (isClient) opera.removeClientAnim(layer);
                 else opera.removeServerAnim(layer);
@@ -168,7 +171,7 @@ public class AnimationHelper {
      * @param layer 动画层的资源位置
      */
     public void removeAnimation(ResourceLocation layer) {
-        if(SCCAnimationApi.isLayerExist(layer)) {
+        if (SCCAnimationApi.isLayerExist(layer)) {
             operaData(opera -> opera
                     .removeClientAnim(layer)
                     .removeServerAnim(layer)
@@ -194,7 +197,7 @@ public class AnimationHelper {
     public void playRideAnimation(PlayerAnimations.RideAnim rideAnim) {
         try {
             ResourceLocation layer = rideAnim.layer().orElseThrow();
-            if(!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
+            if (!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
             operaData(opera -> opera.setRideAnim(layer, rideAnim.animation().orElseThrow()).endOpera());
         } catch (Exception e) {
             SCCore.log.warn("Play ride animation error, layer : {}, animation : {}",

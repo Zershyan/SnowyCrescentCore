@@ -236,7 +236,7 @@ public class PatchouliBookData implements IPatchouliBookData {
 
     @Override
     public PatchouliBookData macros(String key, String value) {
-        if(macros == null) {
+        if (macros == null) {
             macros = new HashMap<>();
         }
         macros.put(key, value);
@@ -248,97 +248,97 @@ public class PatchouliBookData implements IPatchouliBookData {
         JsonObject object = new JsonObject();
         object.addProperty("name", name);
         object.addProperty("landing_text", landingText);
-        if(version != null) {
+        if (version != null) {
             object.addProperty("version", version);
         }
-        if(subtitle != null) {
+        if (subtitle != null) {
             object.addProperty("subtitle", subtitle);
         }
-        if(textColor != null) {
+        if (textColor != null) {
             object.addProperty("text_color", textColor);
         }
-        if(headerColor != null) {
+        if (headerColor != null) {
             object.addProperty("header_color", headerColor);
         }
-        if(nameplateColor != null) {
+        if (nameplateColor != null) {
             object.addProperty("nameplate_color", nameplateColor);
         }
-        if(linkColor != null) {
+        if (linkColor != null) {
             object.addProperty("link_color", linkColor);
         }
-        if(linkHoverColor != null) {
+        if (linkHoverColor != null) {
             object.addProperty("link_hover_color", linkHoverColor);
         }
-        if(progressBarColor != null) {
+        if (progressBarColor != null) {
             object.addProperty("progress_bar_color", progressBarColor);
         }
-        if(progressBarBackground != null) {
+        if (progressBarBackground != null) {
             object.addProperty("progress_bar_background", progressBarBackground);
         }
-        if(textOverflowMode != null) {
+        if (textOverflowMode != null) {
             object.addProperty("text_overflow_mode", textOverflowMode);
         }
-        if(indexIcon != null) {
+        if (indexIcon != null) {
             object.addProperty("index_icon", indexIcon.parse());
         }
-        if(dontGenerateBook != null) {
+        if (dontGenerateBook != null) {
             object.addProperty("dont_generate_book", dontGenerateBook);
         }
-        if(useResourcePack != null) {
+        if (useResourcePack != null) {
             object.addProperty("use_resource_pack", useResourcePack);
         }
-        if(i18n != null) {
+        if (i18n != null) {
             object.addProperty("i18n", i18n);
         }
-        if(pamphlet != null) {
+        if (pamphlet != null) {
             object.addProperty("pamphlet", pamphlet);
         }
-        if(showProgress != null) {
+        if (showProgress != null) {
             object.addProperty("show_progress", showProgress);
         }
-        if(showToasts != null) {
+        if (showToasts != null) {
             object.addProperty("show_toasts", showToasts);
         }
-        if(useBlockyFont != null) {
+        if (useBlockyFont != null) {
             object.addProperty("use_blocky_font", useBlockyFont);
         }
-        if(pauseGame != null) {
+        if (pauseGame != null) {
             object.addProperty("pause_game", pauseGame);
         }
-        if(allowExtensions != null) {
+        if (allowExtensions != null) {
             object.addProperty("allow_extensions", allowExtensions);
         }
-        if(extend != null) {
+        if (extend != null) {
             object.addProperty("extend", extend.toString());
         }
-        if(creativeTab != null) {
+        if (creativeTab != null) {
             object.addProperty("creative_tab", creativeTab.toString());
         }
-        if(bookTexture != null) {
+        if (bookTexture != null) {
             object.addProperty("book_texture", bookTexture.toString());
         }
-        if(fillerTexture != null) {
+        if (fillerTexture != null) {
             object.addProperty("filler_texture", fillerTexture.toString());
         }
-        if(craftingTexture != null) {
+        if (craftingTexture != null) {
             object.addProperty("crafting_texture", craftingTexture.toString());
         }
-        if(advancementsTab != null) {
+        if (advancementsTab != null) {
             object.addProperty("advancements_tab", advancementsTab.toString());
         }
-        if(model != null) {
+        if (model != null) {
             object.addProperty("book_model", model.toString());
         }
-        if(openSound != null) {
+        if (openSound != null) {
             object.addProperty("open_sound", openSound.toString());
         }
-        if(flipSound != null) {
+        if (flipSound != null) {
             object.addProperty("flip_sound", flipSound.toString());
         }
-        if(customBookItem != null) {
+        if (customBookItem != null) {
             object.addProperty("custom_book_item", customBookItem.toString());
         }
-        if(macros != null) {
+        if (macros != null) {
             JsonObject macrosObject = new JsonObject();
             macros.forEach(macrosObject::addProperty);
             object.add("macros", macrosObject);

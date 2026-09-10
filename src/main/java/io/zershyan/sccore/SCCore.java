@@ -24,10 +24,6 @@ public class SCCore {
     public static final String MODID = "sccore";
     public static final String NAME = "Snowy Crescent Core";
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
-    }
-
     public SCCore(IEventBus modEventBus, Dist dist, ModContainer modContainer) {
         IEventBus neoEventBus = NeoForge.EVENT_BUS;
 
@@ -37,12 +33,16 @@ public class SCCore {
         SCCCompatFactory.register(neoEventBus, modEventBus);
 
         boolean needExample = !FMLEnvironment.production && StartupConfig.enableExample.get();
-        if(needExample) {
+        if (needExample) {
             ExampleAnimations.register(neoEventBus);
             ExamplePatchouli.register(neoEventBus, modEventBus);
-            if(dist.isClient()) {
+            if (dist.isClient()) {
                 ExampleAnimations.registerClient(neoEventBus);
             }
         }
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

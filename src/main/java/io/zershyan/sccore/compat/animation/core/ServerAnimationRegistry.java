@@ -40,10 +40,10 @@ import java.util.Map;
  * 玩家登录时自动将注册数据同步到客户端。</p>
  */
 public class ServerAnimationRegistry {
-    private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
-    private static final Map<ResourceLocation, ServerAnimation> Animations = new HashMap<>();
     public static final String LAYER_DIR = "animation/layer/";
     public static final String ANIMATION_DIR = "animation/animation/";
+    private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
+    private static final Map<ResourceLocation, ServerAnimation> Animations = new HashMap<>();
 
     @SubscribeEvent
     public static void serverInit(ServerAboutToStartEvent event) {
@@ -77,7 +77,7 @@ public class ServerAnimationRegistry {
                 location.getNamespace().equals(LAYER_DIR) && location.getPath().endsWith(".json")
         );
         for (Resource value : layerResourceMap.values()) {
-            try (BufferedReader reader = value.openAsReader()){
+            try (BufferedReader reader = value.openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 Layers.putAll(SyncAnimationFactory.LAYER_CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
@@ -92,7 +92,7 @@ public class ServerAnimationRegistry {
                 location.getNamespace().equals(ANIMATION_DIR) && location.getPath().endsWith(".json")
         );
         animationResourceMap.forEach((location, resource) -> {
-            try (BufferedReader reader = resource.openAsReader()){
+            try (BufferedReader reader = resource.openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 Animations.put(location, ServerAnimation.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
@@ -114,7 +114,7 @@ public class ServerAnimationRegistry {
      */
     @Nullable
     public static Animation commonGetAnimation(ResourceLocation animationLocation) {
-        if(Animations.containsKey(animationLocation)) return Animations.get(animationLocation);
+        if (Animations.containsKey(animationLocation)) return Animations.get(animationLocation);
         else return SyncAnimationFactory.getAnimation(animationLocation);
     }
 

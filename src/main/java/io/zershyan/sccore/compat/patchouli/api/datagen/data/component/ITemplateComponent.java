@@ -64,25 +64,25 @@ public abstract class ITemplateComponent {
     public JsonObject serialize() {
         JsonObject object = new JsonObject();
         object.addProperty("type", type.toString());
-        if(x != null) {
+        if (x != null) {
             object.addProperty("x", x);
         }
-        if(y != null) {
+        if (y != null) {
             object.addProperty("y", y);
         }
-        if(advancement != null) {
+        if (advancement != null) {
             object.addProperty("advancement", advancement.toString());
         }
-        if(negateAdvancement != null) {
+        if (negateAdvancement != null) {
             object.addProperty("negate_advancement", negateAdvancement.toString());
         }
-        if(guard != null) {
+        if (guard != null) {
             object.addProperty("guard", guard);
         }
-        if(group != null) {
+        if (group != null) {
             object.addProperty("group", group);
         }
-        if(flag != null) {
+        if (flag != null) {
             object.addProperty("flag", flag.parse());
         }
         return toJson(object);

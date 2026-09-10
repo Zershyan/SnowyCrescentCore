@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.compat.animation.api.server.AnimationRideHelper;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationRideHelper;
 import io.zershyan.sccore.compat.animation.data.ClientRideAnimDTO;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -27,7 +27,8 @@ import java.util.Optional;
  * @param layerLoc  骑乘动画层，为空表示清除骑乘
  * @param animation 骑乘动画来源，为空表示清除骑乘
  */
-public record UpdateRideAnimationData(Optional<ResourceLocation> layerLoc, Optional<Either<ResourceLocation, ClientRideAnimDTO>> animation) implements CustomPacketPayload {
+public record UpdateRideAnimationData(Optional<ResourceLocation> layerLoc,
+                                      Optional<Either<ResourceLocation, ClientRideAnimDTO>> animation) implements CustomPacketPayload {
     public static final Type<@NotNull UpdateRideAnimationData> TYPE =
             new Type<>(SCCore.id("animator_ride_animation"));
 
@@ -43,15 +44,15 @@ public record UpdateRideAnimationData(Optional<ResourceLocation> layerLoc, Optio
 
     public void handler(IPayloadContext context) {
         context.enqueueWork(() -> {
-            if(context.player() instanceof ServerPlayer sender) {
+            if (context.player() instanceof ServerPlayer sender) {
                 AnimationRideHelper helper = SCCAnimationApi.ridePlayer(sender);
                 ResourceLocation layer = layerLoc().orElse(null);
-                if(layer != null) {
+                if (layer != null) {
                     Optional<Either<ResourceLocation, ClientRideAnimDTO>> animation = animation();
-                    if(animation.isPresent()) {
+                    if (animation.isPresent()) {
                         Either<ResourceLocation, ClientRideAnimDTO> either = animation.get();
-                        if(either.left().isPresent()) helper.startRide(layer, either.left().get());
-                        else if(either.right().isPresent()) helper.startRide(layer, either.right().get());
+                        if (either.left().isPresent()) helper.startRide(layer, either.left().get());
+                        else if (either.right().isPresent()) helper.startRide(layer, either.right().get());
                     } else SCCore.log.error("Has layer but animation does not exist");
                 } else helper.stopRide();
             }

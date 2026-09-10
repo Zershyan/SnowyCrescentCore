@@ -23,7 +23,8 @@ import java.util.function.Function;
  * @param animations 层 → 动画的映射
  * @param isServer   是否为服务端动画映射（{@code false} 为客户端映射）
  */
-public record UpdateAnimationData(HashMap<ResourceLocation, ResourceLocation> animations, boolean isServer) implements CustomPacketPayload {
+public record UpdateAnimationData(HashMap<ResourceLocation, ResourceLocation> animations,
+                                  boolean isServer) implements CustomPacketPayload {
     public static final Type<@NotNull UpdateAnimationData> TYPE =
             new Type<>(SCCore.id("animator_animation"));
 
@@ -40,9 +41,9 @@ public record UpdateAnimationData(HashMap<ResourceLocation, ResourceLocation> an
 
     public void handler(IPayloadContext context) {
         context.enqueueWork(() -> {
-            if(context.player() instanceof ServerPlayer sender) {
+            if (context.player() instanceof ServerPlayer sender) {
                 SCCAnimationApi.animation(sender).operaData(opera -> {
-                    if(isServer()) opera.newServerAnimMap(animations());
+                    if (isServer()) opera.newServerAnimMap(animations());
                     else opera.newClientAnimMap(animations());
                     return opera.endOpera();
                 });

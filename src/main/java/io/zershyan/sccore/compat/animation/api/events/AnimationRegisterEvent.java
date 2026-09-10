@@ -1,6 +1,6 @@
 package io.zershyan.sccore.compat.animation.api.events;
 
-import io.zershyan.sccore.compat.animation.api.utils.AnimationBuilder;
+import io.zershyan.sccore.compat.animation.api.builder.AnimationBuilder;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import net.minecraft.resources.ResourceLocation;

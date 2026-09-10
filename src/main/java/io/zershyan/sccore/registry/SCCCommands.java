@@ -18,9 +18,11 @@ import static net.minecraft.commands.Commands.literal;
 
 public class SCCCommands {
     static final Set<String> animationCommand = new HashSet<>(Set.of(SCCore.MODID, "sc", "scc"));
+
     public static void addCommandAlias(String alias) {
         animationCommand.add(alias);
     }
+
     public static Set<String> getAnimationCommand() {
         return animationCommand;
     }
@@ -53,6 +55,7 @@ public class SCCCommands {
         public static final DeferredRegister<ArgumentTypeInfo<?, ?>> REGISTRY = DeferredRegister.create(
                 Registries.COMMAND_ARGUMENT_TYPE, SCCore.MODID
         );
+
         public static void register(IEventBus eventBus) {
 
             REGISTRY.register(eventBus);

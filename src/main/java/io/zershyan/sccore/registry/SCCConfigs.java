@@ -12,7 +12,7 @@ public class SCCConfigs {
     public static void register(ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.STARTUP, StartupConfig.SPEC);
-        if(FMLLoader.getDist().isClient()) registerClient(modContainer);
+        if (FMLLoader.getDist().isClient()) registerClient(modContainer);
     }
 
     public static void registerClient(ModContainer modContainer) {

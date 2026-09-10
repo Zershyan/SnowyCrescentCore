@@ -35,13 +35,13 @@ public class ItemFormat implements IFormat {
 
     public static ItemFormat of(Item item) {
         ResourceLocation key = BuiltInRegistries.ITEM.getKeyOrNull(item);
-        if(key == null) throw new RuntimeException("Item " + item + " has no key");
+        if (key == null) throw new RuntimeException("Item " + item + " has no key");
         return new ItemFormat(key.toString());
     }
 
     public static ItemFormat of(ItemStack stack) {
         ResourceLocation key = BuiltInRegistries.ITEM.getKeyOrNull(stack.getItem());
-        if(key == null) throw new RuntimeException("Item " + stack.getItem() + " has no key");
+        if (key == null) throw new RuntimeException("Item " + stack.getItem() + " has no key");
         ItemFormat itemFormat = of(key);
         itemFormat.count = stack.getCount();
         return itemFormat;
@@ -54,22 +54,24 @@ public class ItemFormat implements IFormat {
 
     public String parse() {
         StringBuilder sb = new StringBuilder();
-        if(isTag) {
+        if (isTag) {
             sb.append("tag:");
             sb.append(item);
         } else {
             sb.append(item);
-            if(count > 1) sb.append("#").append(count);
+            if (count > 1) sb.append("#").append(count);
         }
         return sb.toString();
     }
 
     public static class Multi implements IFormat {
         private final List<ItemFormat> itemFormats = new ArrayList<>();
-        Multi(){}
+
+        Multi() {
+        }
 
         @SafeVarargs
-        public static Multi tagOf(TagKey<Item> ... tagKeys) {
+        public static Multi tagOf(TagKey<Item>... tagKeys) {
             Multi itemFormat = new Multi();
             for (TagKey<Item> tagKey : tagKeys) {
                 itemFormat.itemFormats.add(ItemFormat.tagOf(tagKey));
@@ -77,7 +79,7 @@ public class ItemFormat implements IFormat {
             return itemFormat;
         }
 
-        public static Multi tagOf(ResourceLocation ... rls) {
+        public static Multi tagOf(ResourceLocation... rls) {
             Multi itemFormat = new Multi();
             for (ResourceLocation rl : rls) {
                 itemFormat.itemFormats.add(ItemFormat.tagOf(rl));
@@ -85,13 +87,13 @@ public class ItemFormat implements IFormat {
             return itemFormat;
         }
 
-        public static Multi of(ItemFormat ... formats) {
+        public static Multi of(ItemFormat... formats) {
             Multi itemFormat = new Multi();
             itemFormat.itemFormats.addAll(Arrays.asList(formats));
             return itemFormat;
         }
 
-        public static Multi of(ResourceLocation ... rls) {
+        public static Multi of(ResourceLocation... rls) {
             Multi itemFormat = new Multi();
             for (ResourceLocation rl : rls) {
                 itemFormat.itemFormats.add(ItemFormat.of(rl));
@@ -99,7 +101,7 @@ public class ItemFormat implements IFormat {
             return itemFormat;
         }
 
-        public static Multi of(Item ... items) {
+        public static Multi of(Item... items) {
             Multi itemFormat = new Multi();
             for (Item item : items) {
                 itemFormat.itemFormats.add(ItemFormat.of(item));
@@ -107,7 +109,7 @@ public class ItemFormat implements IFormat {
             return itemFormat;
         }
 
-        public static Multi of(ItemStack ... itemStacks) {
+        public static Multi of(ItemStack... itemStacks) {
             Multi itemFormat = new Multi();
             for (ItemStack stack : itemStacks) {
                 itemFormat.itemFormats.add(ItemFormat.of(stack));
@@ -118,12 +120,15 @@ public class ItemFormat implements IFormat {
         public void add(Item item) {
             itemFormats.add(ItemFormat.of(item));
         }
+
         public void add(ItemStack stack) {
             itemFormats.add(ItemFormat.of(stack));
         }
+
         public void add(ItemFormat format) {
             itemFormats.add(format);
         }
+
         public void add(ResourceLocation rl) {
             itemFormats.add(ItemFormat.of(rl));
         }

@@ -44,11 +44,11 @@ public class JsonCommand {
             //generate
             String dirString = "sccoreAnimationExample";
             Path dir = Paths.get(dirString);
-            if(!Files.exists(dir)) Files.createDirectories(dir);
+            if (!Files.exists(dir)) Files.createDirectories(dir);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             Path layerExample = dir.resolve("example_layer.json");
-            if(!Files.exists(layerExample)) Files.createFile(layerExample);
+            if (!Files.exists(layerExample)) Files.createFile(layerExample);
             HashMap<ResourceLocation, Integer> exampleLayer = new HashMap<>();
             exampleLayer.put(SCCore.id("example_layer"), 40);
             exampleLayer.put(ResourceLocation.fromNamespaceAndPath("your_namespace", "example_layer"), 41);
@@ -56,7 +56,7 @@ public class JsonCommand {
             Files.writeString(layerExample, gson.toJson(exampleLayerJson), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             Path clientAnimExample = dir.resolve("example_client_animation.json");
-            if(!Files.exists(clientAnimExample)) Files.createFile(clientAnimExample);
+            if (!Files.exists(clientAnimExample)) Files.createFile(clientAnimExample);
             TreeMap<Integer, CameraData> movement = new TreeMap<>();
             TreeMap<Integer, CameraData> movement1 = new TreeMap<>();
             movement.put(1, CameraData.ZERO);
@@ -71,7 +71,7 @@ public class JsonCommand {
             Files.writeString(clientAnimExample, gson.toJson(exampleClientAnimationJson), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             Path serverAnimExample = dir.resolve("example_server_animation.json");
-            if(!Files.exists(serverAnimExample)) Files.createFile(serverAnimExample);
+            if (!Files.exists(serverAnimExample)) Files.createFile(serverAnimExample);
             ServerAnimation serverAnimation = new ServerAnimation(
                     SCCore.id("animation_key"), Optional.of("测试动画"), 0,
                     Optional.of(new RideData(List.of(SCCore.id("sub_animation")), new Vec3(0, 0, 0), 100, 90, 0)), true,

@@ -1,4 +1,4 @@
-package io.zershyan.sccore.compat.animation.api.utils;
+package io.zershyan.sccore.compat.animation.api.builder;
 
 import io.zershyan.sccore.compat.animation.data.*;
 import io.zershyan.sccore.compat.animation.data.camera.CameraChange;
@@ -31,15 +31,15 @@ import java.util.function.UnaryOperator;
  * @see io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent
  */
 public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
-    private T builder;
     protected final ResourceLocation animationLocation;
+    protected final AABBMovement aabbMovement = new AABBMovement();
     @Nullable
     protected String name = null;
     protected int priority = 0;
     @Nullable
     protected RideData rideData = null;
     protected boolean defaultThirdPerson = false;
-    protected final AABBMovement aabbMovement = new AABBMovement();
+    private T builder;
 
     /**
      * @param animationLocation 关联的关键帧动画资源位置
@@ -52,13 +52,17 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
         this.builder = builder;
     }
 
-    /** 设置动画的可选名称。 */
+    /**
+     * 设置动画的可选名称。
+     */
     public T name(@Nullable String name) {
         this.name = name;
         return builder;
     }
 
-    /** 设置动画优先级，数值越高优先级越高。 */
+    /**
+     * 设置动画优先级，数值越高优先级越高。
+     */
     public T priority(int priority) {
         this.priority = priority;
         return builder;
@@ -75,26 +79,34 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
         return builder;
     }
 
-    /** 设置动画是否默认切换到第三人称视角。 */
+    /**
+     * 设置动画是否默认切换到第三人称视角。
+     */
     public T defaultThirdPerson(boolean defaultThirdPerson) {
         this.defaultThirdPerson = defaultThirdPerson;
         return builder;
     }
 
-    /** 替换整个 AABB 移动时间线。 */
+    /**
+     * 替换整个 AABB 移动时间线。
+     */
     public T aabbMovement(TreeMap<Integer, AABB> aabbMovement) {
         this.aabbMovement.getMovementTree().clear();
         this.aabbMovement.getMovementTree().putAll(aabbMovement);
         return builder;
     }
 
-    /** 在指定 tick 处添加一个 AABB 关键帧。 */
+    /**
+     * 在指定 tick 处添加一个 AABB 关键帧。
+     */
     public T addAABBMovement(int tick, AABB aabb) {
         this.aabbMovement.add(tick, aabb);
         return builder;
     }
 
-    /** 设置移动时间线是否动态 */
+    /**
+     * 设置移动时间线是否动态
+     */
     public T addAABBMovementRelative(boolean relative) {
         this.aabbMovement.relative(relative);
         return builder;
@@ -120,18 +132,24 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
             this.setBuilder(this);
         }
 
-        /** 创建服务端动画构建器。 */
+        /**
+         * 创建服务端动画构建器。
+         */
         public static Server builder(ResourceLocation location) {
             return new Server(location);
         }
 
-        /** 设置跳跃力度修正系数，默认 1.0。 */
+        /**
+         * 设置跳跃力度修正系数，默认 1.0。
+         */
         public Server jumpModifier(float jumpModifier) {
             this.jumpModifier = jumpModifier;
             return this;
         }
 
-        /** 构建服务端动画实例。 */
+        /**
+         * 构建服务端动画实例。
+         */
         @Override
         public ServerAnimation build() {
             return new ServerAnimation(
@@ -162,12 +180,16 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
             this.setBuilder(this);
         }
 
-        /** 创建客户端动画构建器。 */
+        /**
+         * 创建客户端动画构建器。
+         */
         public static Client builder(ResourceLocation location) {
             return new Client(location);
         }
 
-        /** 构建客户端动画实例。 */
+        /**
+         * 构建客户端动画实例。
+         */
         @Override
         public ClientAnimation build() {
             return new ClientAnimation(
@@ -181,13 +203,17 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
             );
         }
 
-        /** 设置第一人称相机变换。 */
+        /**
+         * 设置第一人称相机变换。
+         */
         public Client firstPersonCameraChange(CameraChange firstPersonCameraChange) {
             this.firstPersonCameraChange = firstPersonCameraChange;
             return this;
         }
 
-        /** 设置第三人称相机变换。 */
+        /**
+         * 设置第三人称相机变换。
+         */
         public Client cameraChange(CameraChange cameraChange) {
             this.cameraChange = cameraChange;
             return this;
@@ -208,51 +234,67 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
         private float xRot = 0;
         private float yRot = 0;
 
-        /** 设置骑乘偏移量，相对于车主玩家位置。 */
+        /**
+         * 设置骑乘偏移量，相对于车主玩家位置。
+         */
         public RideDataBuilder offset(Vec3 offset) {
             this.offset = offset;
             return this;
         }
 
-        /** 设置骑乘存在时长（tick），-1 表示无限。 */
+        /**
+         * 设置骑乘存在时长（tick），-1 表示无限。
+         */
         public RideDataBuilder existTick(int existTick) {
             this.existTick = existTick;
             return this;
         }
 
-        /** 设置骑乘实体的 X 轴旋转（俯仰）。 */
+        /**
+         * 设置骑乘实体的 X 轴旋转（俯仰）。
+         */
         public RideDataBuilder xRot(float xRot) {
             this.xRot = xRot;
             return this;
         }
 
-        /** 设置骑乘实体的 Y 轴旋转（偏航）。 */
+        /**
+         * 设置骑乘实体的 Y 轴旋转（偏航）。
+         */
         public RideDataBuilder yRot(float yRot) {
             this.yRot = yRot;
             return this;
         }
 
-        /** 替换所有组件动画。 */
+        /**
+         * 替换所有组件动画。
+         */
         public RideDataBuilder componentAnimations(ResourceLocation... locations) {
             this.componentAnimations.clear();
             this.componentAnimations.addAll(Arrays.stream(locations).toList());
             return this;
         }
 
-        /** 替换所有组件动画。 */
+        /**
+         * 替换所有组件动画。
+         */
         public RideDataBuilder componentAnimations(Collection<ResourceLocation> locations) {
             this.componentAnimations.clear();
             this.componentAnimations.addAll(locations);
             return this;
         }
 
-        /** 追加一个组件动画。 */
+        /**
+         * 追加一个组件动画。
+         */
         public RideDataBuilder addComponentAnimation(ResourceLocation location) {
             this.componentAnimations.add(location);
             return this;
         }
 
-        /** 构建不可变的骑乘数据。 */
+        /**
+         * 构建不可变的骑乘数据。
+         */
         public RideData build() {
             return new RideData(
                     componentAnimations,

@@ -31,7 +31,7 @@ public class SCCoreMixinPlugin implements IMixinConfigPlugin {
         List<String> modList = modInfos.stream().map(ModInfo::getModId).toList();
         String modIds = mixinClassName.replace(this.getClass().getPackageName() + ".", "").replaceAll("^(.*)(\\.).*$", "$1");
         for (String string : modIds.split("\\.")) {
-            if("client".equals(string) || "server".equals(string) || "common".equals(string)) {
+            if ("client".equals(string) || "server".equals(string) || "common".equals(string)) {
                 return true;
             } else if (!modList.contains(string)) return false;
         }

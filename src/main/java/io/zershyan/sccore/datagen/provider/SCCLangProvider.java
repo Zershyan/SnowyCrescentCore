@@ -14,18 +14,26 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 
 
 public class SCCLangProvider extends LanguageProvider {
-    private final String locale;
     private static final String enUs = "en_us";
     private static final String zhCn = "zh_cn";
+    private final String locale;
 
     public SCCLangProvider(PackOutput output, String locale) {
         super(output, SCCore.MODID, locale);
         this.locale = locale;
     }
 
+    public static SCCLangProvider runZhCn(PackOutput output) {
+        return new SCCLangProvider(output, zhCn);
+    }
+
+    public static SCCLangProvider runEnUs(PackOutput output) {
+        return new SCCLangProvider(output, enUs);
+    }
+
     @Override
     protected void addTranslations() {
-        switch (locale){
+        switch (locale) {
             case enUs -> SCCLang.getAllLang().forEach(langEntity ->
                     addTranslation(langEntity.key(), langEntity.lang().enDesc())
             );
@@ -49,13 +57,5 @@ public class SCCLangProvider extends LanguageProvider {
                 add(o.toString(), string);
             }
         }
-    }
-
-    public static SCCLangProvider runZhCn(PackOutput output) {
-        return new SCCLangProvider(output, zhCn);
-    }
-
-    public static SCCLangProvider runEnUs(PackOutput output) {
-        return new SCCLangProvider(output, enUs);
     }
 }

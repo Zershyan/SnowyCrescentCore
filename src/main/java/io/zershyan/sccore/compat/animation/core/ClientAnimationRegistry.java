@@ -16,9 +16,9 @@ import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.api.events.client.ResourceLoadEvent;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
-import io.zershyan.sccore.compat.animation.api.client.AnimationPlayerHelper;
 import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
+import io.zershyan.sccore.compat.animation.api.helper.AnimationPlayerHelper;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import io.zershyan.sccore.compat.animation.imixin.IMixinFactoryHolder;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
@@ -46,11 +46,11 @@ import java.util.*;
  * 通过反射重建已有玩家的动画栈。</p>
  */
 public class ClientAnimationRegistry {
+    public static final String LAYER_DIR = "animation/layer/";
+    public static final String ANIMATION_DIR = "animation/animation/";
     private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
     private static final Map<ResourceLocation, ClientAnimation> Animations = new HashMap<>();
     private static final Map<UUID, Map<ResourceLocation, IAnimation>> CacheAnim = new HashMap<>();
-    public static final String LAYER_DIR = "animation/layer/";
-    public static final String ANIMATION_DIR = "animation/animation/";
 
     @SubscribeEvent
     public static void clientReload(ResourceLoadEvent.Post event) {
@@ -73,7 +73,7 @@ public class ClientAnimationRegistry {
                 location.getNamespace().equals(LAYER_DIR) && location.getPath().endsWith(".json")
         );
         for (Resource value : layerResourceMap.values()) {
-            try (BufferedReader reader = value.openAsReader()){
+            try (BufferedReader reader = value.openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 Layers.putAll(SyncAnimationFactory.LAYER_CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
@@ -88,7 +88,7 @@ public class ClientAnimationRegistry {
                 location.getNamespace().equals(ANIMATION_DIR) && location.getPath().endsWith(".json")
         );
         animationResourceMap.forEach((location, resource) -> {
-            try (BufferedReader reader = resource.openAsReader()){
+            try (BufferedReader reader = resource.openAsReader()) {
                 JsonElement element = JsonParser.parseReader(reader);
                 Animations.put(location, ClientAnimation.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
@@ -110,12 +110,12 @@ public class ClientAnimationRegistry {
         Minecraft instance = Minecraft.getInstance();
         layers.forEach((key, value) -> PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                 key, value, player -> {
-                    if(instance.player == null) return registerPlayerAnimation(player);
+                    if (instance.player == null) return registerPlayerAnimation(player);
                     return CacheAnim.computeIfAbsent(player.getUUID(), uuid -> new HashMap<>())
                             .computeIfAbsent(key, k -> registerPlayerAnimation(player));
                 })
         );
-        if(instance.level == null) return;
+        if (instance.level == null) return;
         try {
             instance.level.players().forEach(ClientAnimationRegistry::reflectAnimationCore);
         } catch (Exception e) {
@@ -135,14 +135,22 @@ public class ClientAnimationRegistry {
         return Map.copyOf(Animations);
     }
 
-    /** 获取所有客户端动画，包括本地注册的与服务端同步的。 */
+    /**
+     * 获取所有客户端动画，包括本地注册的与服务端同步的。
+     */
     public static Map<ResourceLocation, ClientAnimation> getAllAnimations() {
-        return Map.copyOf(new HashMap<>(Animations){{putAll(SyncAnimationFactory.getAnimations());}});
+        return Map.copyOf(new HashMap<>(Animations) {{
+            putAll(SyncAnimationFactory.getAnimations());
+        }});
     }
 
-    /** 获取所有客户端层，包括本地注册的与服务端同步的。 */
+    /**
+     * 获取所有客户端层，包括本地注册的与服务端同步的。
+     */
     public static Map<ResourceLocation, Integer> getAllLayers() {
-        return Map.copyOf(new HashMap<>(Layers){{putAll(SyncAnimationFactory.getLayers());}});
+        return Map.copyOf(new HashMap<>(Layers) {{
+            putAll(SyncAnimationFactory.getLayers());
+        }});
     }
 
     private static KeyframeAnimation getAnimationOfPair(Pair<Integer, IAnimation> pair) {
@@ -163,7 +171,7 @@ public class ClientAnimationRegistry {
     @Nullable
     public static ClientAnimation getAnimation(ResourceLocation location) {
         ClientAnimation anim = Animations.getOrDefault(location, null);
-        if(anim == null) anim = SyncAnimationFactory.getAnimation(location);
+        if (anim == null) anim = SyncAnimationFactory.getAnimation(location);
         return anim;
     }
 
@@ -176,8 +184,8 @@ public class ClientAnimationRegistry {
     @Nullable
     public static KeyframeAnimation getKeyframeAnimation(ResourceLocation location) {
         ClientAnimation animation = getAnimation(location);
-        if(animation == null) animation = SyncAnimationFactory.getAnimation(location);
-        if(animation == null) return null;
+        if (animation == null) animation = SyncAnimationFactory.getAnimation(location);
+        if (animation == null) return null;
         return (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(animation.animationLocation());
     }
 
@@ -206,10 +214,10 @@ public class ClientAnimationRegistry {
             ArrayList<Pair<Integer, IAnimation>> result = new ArrayList<>();
             for (Pair<Integer, IAnimation> oldAnimationPair : List.copyOf(oldArrayList)) {
                 for (Pair<Integer, IAnimation> newAnimationPair : List.copyOf(newArrayList)) {
-                    if(Objects.equals(oldAnimationPair.getLeft(), newAnimationPair.getLeft())) {
+                    if (Objects.equals(oldAnimationPair.getLeft(), newAnimationPair.getLeft())) {
                         KeyframeAnimation oldData = getAnimationOfPair(oldAnimationPair);
                         KeyframeAnimation newData = getAnimationOfPair(newAnimationPair);
-                        if(Objects.equals(oldData, newData)) oldArrayList.remove(oldAnimationPair);
+                        if (Objects.equals(oldData, newData)) oldArrayList.remove(oldAnimationPair);
                     }
                 }
             }
@@ -232,7 +240,7 @@ public class ClientAnimationRegistry {
             for (ResourceLocation layer : dataAnimations.keySet()) {
                 animPlayer.innerPlayAnimation(3, Ease.INOUTSINE, layer, dataAnimations.get(layer));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             SCCore.log.error("Failed to register on {} animation layer: {}", player, e.getMessage(), e);
         }
     }

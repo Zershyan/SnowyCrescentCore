@@ -24,7 +24,7 @@ public class TooltipComponent extends ITemplateComponent {
         this.height = height;
     }
 
-    public TooltipComponent addTooltips(String ... tooltips) {
+    public TooltipComponent addTooltips(String... tooltips) {
         this.tooltips.addAll(Arrays.asList(tooltips));
         return this;
     }
@@ -35,13 +35,13 @@ public class TooltipComponent extends ITemplateComponent {
         return this;
     }
 
-    public TooltipComponent tooltips(String ... tooltips) {
+    public TooltipComponent tooltips(String... tooltips) {
         return tooltips(Arrays.asList(tooltips));
     }
 
     @Override
     public JsonObject toJson(JsonObject object) {
-        if(tooltips.isEmpty()) {
+        if (tooltips.isEmpty()) {
             throw new JsonSyntaxException("tooltips cannot be empty");
         }
         JsonArray array = new JsonArray();

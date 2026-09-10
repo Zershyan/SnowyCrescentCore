@@ -34,13 +34,13 @@ public abstract class RecipePage extends IPageType {
     @Override
     public JsonObject toJson(JsonObject object) {
         object.addProperty("recipe", recipe.toString());
-        if(recipe2 != null) {
+        if (recipe2 != null) {
             object.addProperty("recipe2", recipe2.toString());
         }
-        if(title != null) {
+        if (title != null) {
             object.addProperty("title", title);
         }
-        if(text != null) {
+        if (text != null) {
             object.addProperty("text", text);
         }
         return object;

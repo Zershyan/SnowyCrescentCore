@@ -19,17 +19,17 @@ public class RelationsPage extends IPageType {
         super(ResourceLocation.fromNamespaceAndPath("patchouli", "relations"));
     }
 
-    public RelationsPage addEntries(IPatchouliEntryData ... entries) {
+    public RelationsPage addEntries(IPatchouliEntryData... entries) {
         this.entries.addAll(Arrays.stream(entries).map(IPatchouliEntryData::getId).toList());
         return this;
     }
 
-    public RelationsPage addEntries(ResourceLocation ... entries) {
+    public RelationsPage addEntries(ResourceLocation... entries) {
         this.entries.addAll(Arrays.asList(entries));
         return this;
     }
 
-    public RelationsPage entries(ResourceLocation ... entries) {
+    public RelationsPage entries(ResourceLocation... entries) {
         this.entries.clear();
         this.entries.addAll(Arrays.asList(entries));
         return this;

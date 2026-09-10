@@ -41,7 +41,7 @@ public record SyncAnimationData(UUID player, UUID target) implements CustomPacke
             Level level = context.player().level();
             Player player = level.getPlayerByUUID(player());
             Player target = level.getPlayerByUUID(target());
-            if(player instanceof AbstractClientPlayer clientPlayer && target instanceof AbstractClientPlayer targetPlayer) {
+            if (player instanceof AbstractClientPlayer clientPlayer && target instanceof AbstractClientPlayer targetPlayer) {
                 SCCAnimationApi.animPlayer(clientPlayer).syncAnimation(targetPlayer);
             }
         });

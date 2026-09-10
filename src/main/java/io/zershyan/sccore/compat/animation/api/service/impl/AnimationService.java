@@ -1,5 +1,6 @@
-package io.zershyan.sccore.compat.animation.api.data;
+package io.zershyan.sccore.compat.animation.api.service.impl;
 
+import io.zershyan.sccore.compat.animation.api.service.IAnimationService;
 import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.registry.AnimationAttachments;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
@@ -30,17 +31,25 @@ public class AnimationService implements IAnimationService {
      *
      * @param player 绑定的服务端玩家
      */
-    protected AnimationService(ServerPlayer player) {
+    public AnimationService(ServerPlayer player) {
         this.player = player;
     }
 
-    /** 从 Attachment 读取玩家动画数据。 */
+    private static Supplier<AttachmentType<PlayerAnimations>> type() {
+        return AnimationAttachments.PLAYER_ANIMATIONS;
+    }
+
+    /**
+     * 从 Attachment 读取玩家动画数据。
+     */
     @Override
     public PlayerAnimations getData() {
         return PlayerAnimations.getData(player);
     }
 
-    /** 将动画数据写回玩家的 Attachment，由框架自动同步。 */
+    /**
+     * 将动画数据写回玩家的 Attachment，由框架自动同步。
+     */
     @Override
     public void setData(PlayerAnimations data) {
         player.setData(type(), data);
@@ -54,9 +63,5 @@ public class AnimationService implements IAnimationService {
     @Override
     public Optional<Map.Entry<ResourceLocation, ResourceLocation>> getHighestPriorityAnimation(Predicate<Animation> predicate) {
         return getServerHighestPriorityAnimation(predicate);
-    }
-
-    private static Supplier<AttachmentType<PlayerAnimations>> type() {
-        return AnimationAttachments.PLAYER_ANIMATIONS;
     }
 }

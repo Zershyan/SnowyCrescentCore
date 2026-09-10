@@ -12,7 +12,7 @@ public class SCCCompatFactory {
 
     public static final SCCoreAnimation PlayerAnimator = addCompat(new SCCoreAnimation());
 
-    private static  <T extends ICompatUtils> T addCompat(T utils) {
+    private static <T extends ICompatUtils> T addCompat(T utils) {
         if (compatUtils.add(utils)) {
             return utils;
         } else throw new IllegalStateException("CompatUtils already added.");

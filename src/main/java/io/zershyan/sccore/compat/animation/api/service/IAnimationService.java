@@ -1,5 +1,8 @@
-package io.zershyan.sccore.compat.animation.api.data;
+package io.zershyan.sccore.compat.animation.api.service;
 
+import io.zershyan.sccore.compat.animation.api.helper.AnimationHelper;
+import io.zershyan.sccore.compat.animation.api.service.impl.AnimationService;
+import io.zershyan.sccore.compat.animation.api.service.impl.ClientAnimationService;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
 import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
@@ -43,12 +46,12 @@ public interface IAnimationService {
      *
      * @return 最高优先级动画条目；无动画时为 {@link Optional#empty()}
      */
-    default Optional<Map.Entry<ResourceLocation, ResourceLocation>> getServerHighestPriorityAnimation(Predicate<Animation> predicate){
+    default Optional<Map.Entry<ResourceLocation, ResourceLocation>> getServerHighestPriorityAnimation(Predicate<Animation> predicate) {
         PlayerAnimations data = getData();
         HashMap<ResourceLocation, ResourceLocation> serverAnimMap = new HashMap<>(data.serverAnimMap());
         data.rideAnim().layer().ifPresent(layer -> serverAnimMap.put(layer, data.rideAnim().animation().orElseThrow()));
         Map.copyOf(serverAnimMap).forEach((key, value) -> {
-            if(!predicate.test(ServerAnimationRegistry.commonGetAnimation(value))) serverAnimMap.remove(key);
+            if (!predicate.test(ServerAnimationRegistry.commonGetAnimation(value))) serverAnimMap.remove(key);
         });
         return serverAnimMap.entrySet().stream().max(AnimationHelper.COMPARATOR);
     }

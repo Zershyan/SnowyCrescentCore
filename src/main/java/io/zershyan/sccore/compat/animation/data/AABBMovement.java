@@ -20,7 +20,8 @@ public class AABBMovement {
     private final TreeMap<Integer, AABB> movementTree = new TreeMap<>();
     private boolean relative = true;
 
-    public AABBMovement() {}
+    public AABBMovement() {
+    }
 
     public AABBMovement(boolean relative) {
         this.relative = relative;

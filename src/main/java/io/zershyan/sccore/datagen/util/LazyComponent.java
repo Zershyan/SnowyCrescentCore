@@ -11,7 +11,7 @@ import java.util.Locale;
 public record LazyComponent(String key) {
     private static Object[] formatNumbers(Object[] args, String format) {
         for (int i = 0; i < args.length; i++) {
-            if(args[i] instanceof Float || args[i] instanceof Double) {
+            if (args[i] instanceof Float || args[i] instanceof Double) {
                 args[i] = formatOptimized(format, ((Number) args[i]).doubleValue());
             }
         }

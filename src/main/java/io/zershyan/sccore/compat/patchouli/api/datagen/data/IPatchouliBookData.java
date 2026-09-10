@@ -74,8 +74,9 @@ public interface IPatchouliBookData {
 
     JsonObject serialize();
 
-     class TextOverflowMode {
+    class TextOverflowMode {
         private final IPatchouliBookData bookData;
+
         public TextOverflowMode(IPatchouliBookData bookData) {
             this.bookData = bookData;
         }

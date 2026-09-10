@@ -14,10 +14,10 @@ import java.util.*;
 
 public class MultiblockFormat implements IFormat {
     private static final Logger log = LoggerFactory.getLogger(MultiblockFormat.class);
-    @Nullable
-    private ResourceLocation id;
     private final Map<Character, BlockStateFormat> mapping = new HashMap<>();
     private final List<List<String>> pattern = new ArrayList<>();
+    @Nullable
+    private ResourceLocation id;
     private Boolean symmetrical;
     private Vec3i offset;
     private Vec3i centerIndex;
@@ -26,7 +26,8 @@ public class MultiblockFormat implements IFormat {
         this.id = id;
     }
 
-    MultiblockFormat() {}
+    MultiblockFormat() {
+    }
 
     public static MultiblockFormat create() {
         return new MultiblockFormat();
@@ -37,7 +38,7 @@ public class MultiblockFormat implements IFormat {
         return this;
     }
 
-    public MultiblockFormat pattern(String ... patterns) {
+    public MultiblockFormat pattern(String... patterns) {
         pattern.add(Arrays.asList(patterns));
         return this;
     }
@@ -59,9 +60,9 @@ public class MultiblockFormat implements IFormat {
 
     private boolean valid() {
         try {
-            if(mapping.isEmpty()) throw new JsonParseException("No mapping!");
-            if(pattern.isEmpty()) throw new JsonParseException("No pattern!");
-            if(pattern.get(0).isEmpty()) throw new JsonParseException("Pattern cannot be empty!");
+            if (mapping.isEmpty()) throw new JsonParseException("No mapping!");
+            if (pattern.isEmpty()) throw new JsonParseException("No pattern!");
+            if (pattern.get(0).isEmpty()) throw new JsonParseException("Pattern cannot be empty!");
             StringBuilder regex = new StringBuilder("[ _0");
             for (Character c : mapping.keySet()) {
                 regex.append(c.toString());
@@ -70,23 +71,23 @@ public class MultiblockFormat implements IFormat {
             regex.append(pattern.get(0).get(0).length());
             regex.append("}");
             for (List<String> levelList : pattern) {
-                if(levelList.isEmpty()) throw new JsonParseException("Pattern cannot be empty!");
+                if (levelList.isEmpty()) throw new JsonParseException("Pattern cannot be empty!");
                 for (String patternString : levelList) {
-                    if(!patternString.matches(regex.toString()))
+                    if (!patternString.matches(regex.toString()))
                         throw new JsonParseException("Invalid pattern: " + patternString + "\nValid regex: " + regex);
                 }
             }
-            if(centerIndex != null) {
+            if (centerIndex != null) {
                 int x = centerIndex.getX();
-                if(pattern.size() <= x) throw new JsonParseException("center index of 'x' out of bounds!");
+                if (pattern.size() <= x) throw new JsonParseException("center index of 'x' out of bounds!");
                 List<String> levelList = pattern.get(x);
                 int y = centerIndex.getY();
-                if(levelList.size() <= y) throw new JsonParseException("center index of 'y' out of bounds!");
+                if (levelList.size() <= y) throw new JsonParseException("center index of 'y' out of bounds!");
                 String patternString = levelList.get(y);
                 int z = centerIndex.getZ();
-                if(patternString.length() <= z) throw new JsonParseException("center index of 'z' out of bounds!");
+                if (patternString.length() <= z) throw new JsonParseException("center index of 'z' out of bounds!");
                 char c = patternString.charAt(z);
-                if(mapping.containsKey(c)) mapping.put('0', mapping.get(c));
+                if (mapping.containsKey(c)) mapping.put('0', mapping.get(c));
                 String prefix = patternString.substring(0, z);
                 String suffix = patternString.substring(z + 1);
                 levelList.set(y, prefix + "0" + suffix);
@@ -99,13 +100,13 @@ public class MultiblockFormat implements IFormat {
     }
 
     public String parse() {
-        if(id == null) return null;
+        if (id == null) return null;
         return id.toString();
     }
 
     public JsonObject serialize() {
-        if(id != null) return null;
-        if(!valid()) throw new JsonParseException("Invalid multiblock format");
+        if (id != null) return null;
+        if (!valid()) throw new JsonParseException("Invalid multiblock format");
         JsonObject multiblock = new JsonObject();
         JsonObject mappingObject = new JsonObject();
         mapping.forEach((key, value) ->
@@ -121,10 +122,10 @@ public class MultiblockFormat implements IFormat {
             patternArray.add(innerArray);
         }
         multiblock.add("pattern", patternArray);
-        if(symmetrical != null) {
+        if (symmetrical != null) {
             multiblock.addProperty("symmetrical", symmetrical);
         }
-        if(offset != null) {
+        if (offset != null) {
             JsonArray offsetArray = new JsonArray();
             offsetArray.add(offset.getX());
             offsetArray.add(offset.getY());
@@ -139,10 +140,12 @@ public class MultiblockFormat implements IFormat {
         private final JsonObject multiblock;
         @Nullable
         private final String multiblockId;
+
         public MultiblockObject(@NotNull JsonObject multiblock) {
             this.multiblock = multiblock;
             this.multiblockId = null;
         }
+
         public MultiblockObject(@NotNull String multiblockId) {
             this.multiblock = null;
             this.multiblockId = multiblockId;

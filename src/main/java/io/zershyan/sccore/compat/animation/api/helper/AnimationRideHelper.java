@@ -1,4 +1,4 @@
-package io.zershyan.sccore.compat.animation.api.server;
+package io.zershyan.sccore.compat.animation.api.helper;
 
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;

@@ -45,9 +45,15 @@ public abstract class LayerRegisterEvent extends Event {
         layers.put(key, value);
     }
 
-    /** 客户端动画层注册事件，在客户端资源重载或玩家登录时触发。 */
-    public static class Client extends LayerRegisterEvent { }
+    /**
+     * 客户端动画层注册事件，在客户端资源重载或玩家登录时触发。
+     */
+    public static class Client extends LayerRegisterEvent {
+    }
 
-    /** 服务端动画层注册事件，在服务端启动或资源重载时触发。 */
-    public static class Server extends LayerRegisterEvent { }
+    /**
+     * 服务端动画层注册事件，在服务端启动或资源重载时触发。
+     */
+    public static class Server extends LayerRegisterEvent {
+    }
 }

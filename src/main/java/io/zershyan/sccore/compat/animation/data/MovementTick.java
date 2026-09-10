@@ -31,7 +31,9 @@ public class MovementTick {
         this.returnTick = returnTick;
     }
 
-    /** 推进一 tick，超过 endTick 后回退到 returnTick，达到 stopTick 后标记停止。 */
+    /**
+     * 推进一 tick，超过 endTick 后回退到 returnTick，达到 stopTick 后标记停止。
+     */
     public void tick() {
         this.currentTick++;
         if (this.currentTick > this.endTick) {

@@ -21,7 +21,7 @@ public class MixinMinecraft {
     )
     public void resourceReloadStart(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         ResourceLoadEvent.Pre post = NeoForge.EVENT_BUS.post(new ResourceLoadEvent.Pre());
-        if(post.isCanceled()) cir.setReturnValue(new CompletableFuture<>());
+        if (post.isCanceled()) cir.setReturnValue(new CompletableFuture<>());
     }
 
     @Inject(

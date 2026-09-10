@@ -6,7 +6,7 @@ import io.zershyan.sccore.compat.patchouli.api.datagen.data.format.Variable;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class ItemComponent extends ITemplateComponent{
+public class ItemComponent extends ITemplateComponent {
     @NotNull
     private final Variable<ItemFormat.Multi> item;
     private Boolean framed;
@@ -30,10 +30,10 @@ public class ItemComponent extends ITemplateComponent{
     @Override
     public JsonObject toJson(JsonObject object) {
         object.addProperty("item", item.parseKey());
-        if(framed != null) {
+        if (framed != null) {
             object.addProperty("framed", framed);
         }
-        if(linkRecipe != null) {
+        if (linkRecipe != null) {
             object.addProperty("linkRecipe", linkRecipe);
         }
         return object;

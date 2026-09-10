@@ -18,15 +18,16 @@ public class SCCPatchouliBookProvider extends PatchouliBookProvider {
 
     /**
      * You can see a link: <a href="https://vazkiimods.github.io/Patchouli/">Patchouli WIKI</a>
+     *
      * @param provider provider
-     * @param output pack output
+     * @param output   pack output
      * @see IPatchouliBookData
      */
     @Override
     protected void addBooks(HolderLookup.Provider provider, PackOutput output) {
-        IPatchouliBookData bookData = createBook("lexicon",  "This is book name.", "This is landing text.")
+        IPatchouliBookData bookData = createBook("lexicon", "This is book name.", "This is landing text.")
                 .i18n(true).indexIcon(ItemFormat.of(Items.ENCHANTED_BOOK)).allowExtensions(true).showProgress(false)
-                .creativeTab(ResourceLocation.withDefaultNamespace("food_and_drinks"))
+//                .creativeTab(ResourceLocation.withDefaultNamespace("food_and_drinks"))
                 .bookTexture(ResourceLocation.fromNamespaceAndPath("patchouli", "textures/gui/book_purple.png"))
                 .dontGenerateBook(false);
     }

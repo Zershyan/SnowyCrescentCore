@@ -11,13 +11,6 @@ import java.util.function.Function;
  * 相机变换关键帧序列，按 tick 存储相机偏移与欧拉角，支持线性插值采样。
  */
 public record CameraChange(TreeMap<Integer, CameraData> movement, boolean relativeEuler) {
-    public CameraChange() {
-        this(new TreeMap<>(), true);
-    }
-    public CameraChange(TreeMap<Integer, CameraData> movement) {
-        this(movement, true);
-    }
-
     public static final Codec<CameraChange> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.unboundedMap(Codec.STRING.xmap(Integer::parseInt, Object::toString), CameraData.CODEC)
                     .xmap(TreeMap::new, Function.identity())
@@ -25,6 +18,14 @@ public record CameraChange(TreeMap<Integer, CameraData> movement, boolean relati
                     .forGetter(CameraChange::movement),
             Codec.BOOL.optionalFieldOf("relativeEuler", true).forGetter(CameraChange::relativeEuler)
     ).apply(i, CameraChange::new));
+
+    public CameraChange() {
+        this(new TreeMap<>(), true);
+    }
+
+    public CameraChange(TreeMap<Integer, CameraData> movement) {
+        this(movement, true);
+    }
 
     /**
      * 在 movement 关键帧之间按 tick 线性插值，得到该时刻的相机变换数据。

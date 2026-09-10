@@ -29,7 +29,7 @@ public class MixinEntity {
         if (player == null) return;
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
         CameraData cache = CameraTransformStateHandler.getCache(player, firstPerson);
-        if(cache == null) return;
+        if (cache == null) return;
         float roll = cache.eulerAngle().roll();
         if (roll == 0f) return;
         double dx = yRot.get();

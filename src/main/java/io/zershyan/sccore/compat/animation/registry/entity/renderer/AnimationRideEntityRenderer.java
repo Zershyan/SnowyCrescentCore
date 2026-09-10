@@ -27,8 +27,10 @@ public class AnimationRideEntityRenderer extends EntityRenderer<AnimationRideEnt
     }
 
     @Override
-    public void render(@NotNull AnimationRideEntity pEntity, float pEntityYaw, float pPartialTick, @NotNull PoseStack pPoseStack, @NotNull MultiBufferSource pBuffer, int pPackedLight) {}
+    public void render(@NotNull AnimationRideEntity pEntity, float pEntityYaw, float pPartialTick, @NotNull PoseStack pPoseStack, @NotNull MultiBufferSource pBuffer, int pPackedLight) {
+    }
 
     @Override
-    protected void renderNameTag(@NotNull AnimationRideEntity entity, @NotNull Component displayName, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, float partialTick) { }
+    protected void renderNameTag(@NotNull AnimationRideEntity entity, @NotNull Component displayName, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, float partialTick) {
+    }
 }

@@ -19,8 +19,6 @@ import java.util.Optional;
  * @see CameraChange
  */
 public class ClientAnimation extends Animation {
-    private final CameraChange firstPersonCameraChange;
-    private final CameraChange cameraChange;
     public static final Codec<ClientAnimation> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("animationLocation").forGetter(ClientAnimation::animationLocation),
             Codec.STRING.optionalFieldOf("name").forGetter(ClientAnimation::name),
@@ -37,22 +35,29 @@ public class ClientAnimation extends Animation {
             RideData.CODEC.optionalFieldOf("rideData").forGetter(ClientAnimation::rideData),
             Codec.BOOL.optionalFieldOf("defaultThirdPerson", false).forGetter(ClientAnimation::defaultThirdPerson)
     ).apply(i, ClientAnimation::new));
+    private final CameraChange firstPersonCameraChange;
+    private final CameraChange cameraChange;
+
     public ClientAnimation(ResourceLocation animationLocation, Optional<String> name, int priority, Optional<RideData> rideData, boolean defaultThirdPerson, CameraChange firstPersonCameraChange, CameraChange cameraChange) {
         super(animationLocation, name, priority, rideData, defaultThirdPerson, new AABBMovement());
         this.firstPersonCameraChange = firstPersonCameraChange;
         this.cameraChange = cameraChange;
     }
+
     public ClientAnimation(ResourceLocation animationLocation, @Nullable String name, int priority, @Nullable RideData rideData, boolean defaultThirdPerson, CameraChange firstPersonCameraChange, CameraChange cameraChange) {
         super(animationLocation, Optional.ofNullable(name), priority, Optional.ofNullable(rideData), defaultThirdPerson, new AABBMovement());
         this.firstPersonCameraChange = firstPersonCameraChange;
         this.cameraChange = cameraChange;
     }
+
     public ClientAnimation(ResourceLocation animationLocation, Optional<String> name, int priority, Optional<RideData> rideData, boolean defaultThirdPerson) {
         this(animationLocation, name, priority, rideData, defaultThirdPerson, new CameraChange(), new CameraChange());
     }
+
     public ClientAnimation(ResourceLocation animationLocation, @Nullable String name, int priority, @Nullable RideData data, boolean defaultThirdPerson) {
         this(animationLocation, Optional.ofNullable(name), priority, Optional.ofNullable(data), defaultThirdPerson, new CameraChange(), new CameraChange());
     }
+
     public ClientAnimation(ServerAnimation animation) {
         super(animation.animationLocation(), Optional.ofNullable(animation.getName()), animation.priority(), Optional.ofNullable(animation.getRideData()), animation.defaultThirdPerson(), animation.aabbMovement());
         this.firstPersonCameraChange = new CameraChange();
@@ -66,6 +71,7 @@ public class ClientAnimation extends Animation {
     public CameraChange firstPersonCameraChange() {
         return firstPersonCameraChange;
     }
+
     public CameraChange cameraChange() {
         return cameraChange;
     }
