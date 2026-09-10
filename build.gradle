@@ -175,6 +175,7 @@ publishing {
         }
     }
     repositories {
+        mavenLocal()
         maven {
             name = 'LTDNexus'
             url = 'https://nexus.bot.leisuretimedock.top/repository/maven-releases/'
