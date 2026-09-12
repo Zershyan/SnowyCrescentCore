@@ -5,8 +5,8 @@ import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
