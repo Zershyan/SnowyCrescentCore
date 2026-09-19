@@ -254,6 +254,30 @@ public class AnimationHelper {
     }
 
     /**
+     * 判断玩家身上是否存在动画
+     *
+     * @param layer       动画层的资源位置
+     * @return 是否存在动画
+     */
+    public boolean hasAnimation(ResourceLocation layer) {
+        if (SCCAnimationApi.isLayerExist(layer)) {
+            ResourceLocation anim = getData().serverAnimMap().getOrDefault(layer, null);
+            if (anim == null) anim = getData().clientAnimMap().getOrDefault(layer, null);
+            if (anim == null) {
+                PlayerAnimations.RideAnim rideAnim = getData().rideAnim();
+                ResourceLocation rideAnimLayer = rideAnim.layer().orElse(null);
+                if (layer.equals(rideAnimLayer)) {
+                    anim = rideAnim.animation().orElse(null);
+                }
+            }
+            return anim != null;
+        } else {
+            warnUnknowLayer(layer);
+            return false;
+        }
+    }
+
+    /**
      * 动画数据批量操作上下文，支持链式调用。
      *
      * <p>通过 {@link AnimationHelper#operaData(Function)} 获取实例。每次修改会在内部副本上累积，
