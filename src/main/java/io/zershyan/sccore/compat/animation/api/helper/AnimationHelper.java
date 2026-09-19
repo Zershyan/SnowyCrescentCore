@@ -15,11 +15,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -227,6 +225,32 @@ public class AnimationHelper {
      */
     public PlayerAnimations getData() {
         return service.getData();
+    }
+
+    /**
+     * 判断玩家身上是否存在对应动画
+     * <p>如果动画资源位置为null，则是判断是否为无动画</p>
+     *
+     * @param layer       动画层的资源位置
+     * @param animationId 动画的资源位置
+     * @return 是否存在对应动画
+     */
+    public boolean hasAnimation(ResourceLocation layer, @Nullable ResourceLocation animationId) {
+        if (SCCAnimationApi.isLayerExist(layer)) {
+            ResourceLocation anim = getData().serverAnimMap().getOrDefault(layer, null);
+            if (anim == null) anim = getData().clientAnimMap().getOrDefault(layer, null);
+            if (anim == null) {
+                PlayerAnimations.RideAnim rideAnim = getData().rideAnim();
+                ResourceLocation rideAnimLayer = rideAnim.layer().orElse(null);
+                if (layer.equals(rideAnimLayer)) {
+                    anim = rideAnim.animation().orElse(null);
+                }
+            }
+            return Objects.equals(anim, animationId);
+        } else {
+            warnUnknowLayer(layer);
+            return false;
+        }
     }
 
     /**
