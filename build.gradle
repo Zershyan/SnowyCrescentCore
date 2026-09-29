@@ -229,13 +229,20 @@ tasks.register('finalizeArtifacts') {
     def releaseVersion = isAlphaBuild ? version : baseVersion
     doLast {
         def builtJar = new File(libsDir, "${modId}-${modVersion}.jar")
-        def finalJar = new File(libsDir, "${modId}-${releaseVersion}.jar")
-        // buildAlpha 的最终包和原包同名，不需要搬运
-        if (releaseVersion != modVersion && builtJar.exists()) {
-            Files.copy(builtJar.toPath(), finalJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            def originDir = new File(libsDir, 'origin')
-            originDir.mkdirs()
-            Files.move(builtJar.toPath(), new File(originDir, "${modId}-${modVersion}-origin.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+        def backupJar = new File(new File(libsDir, 'origin'), "${modId}-${modVersion}-origin.jar")
+        if (releaseVersion != modVersion) {
+            // 最终包与原包内容一致，只是名字不带编号；原包上一轮可能已搬进 origin，就从那里取
+            def source = builtJar.exists() ? builtJar : backupJar
+            if (source.exists()) {
+                Files.copy(source.toPath(), new File(libsDir, "${modId}-${releaseVersion}.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+                if (source == builtJar) {
+                    backupJar.parentFile.mkdirs()
+                    Files.move(builtJar.toPath(), backupJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                }
+            }
+        } else if (!builtJar.exists() && backupJar.exists()) {
+            // buildAlpha 的最终包与原包同名，把上一轮搬走的原包取回来
+            Files.copy(backupJar.toPath(), builtJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
         ["${modId}-${modVersion}-javadoc.jar", "${modId}-${modVersion}-sources.jar"].each {
             new File(libsDir, it).delete()
