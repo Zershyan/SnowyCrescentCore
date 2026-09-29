@@ -20,7 +20,10 @@ plugins {
 apply plugin: 'org.spongepowered.mixin'
 
 group = mod_group_id
-version = mod_version
+// 包内版本号恒带 +build.<编号>，只有 buildAlpha 会把这个编号也写进 jar 文件名
+def isAlphaBuild = gradle.startParameter.taskNames.any { it.endsWith('buildAlpha') }
+def baseVersion = "${mod_version}-${minecraft_version}"
+version = "${baseVersion}+build.${mod_build_number}"
 
 base {
     archivesName = mod_id
@@ -157,7 +160,7 @@ tasks.named('processResources', ProcessResources).configure {
             mod_id: mod_id,
             mod_name: mod_name,
             mod_license: mod_license,
-            mod_version: mod_version,
+            mod_version: version,
             mod_authors: mod_authors,
             mod_description: mod_description,
             mod_credits: mod_credits,
@@ -260,16 +263,40 @@ publishing {
     }
 }
 
-gradle.buildFinished {
-    def javadocJar = file("build/libs/${mod_id}-${mod_version}-javadoc.jar")
-    def sourcesJar = file("build/libs/${mod_id}-${mod_version}-sources.jar")
-    def allJarsJar = file("build/libs/${mod_id}-${mod_version}-all.jar")
-    if (javadocJar.exists()) ant.delete(file: javadocJar)
-    if (sourcesJar.exists()) ant.delete(file: sourcesJar)
-    if (allJarsJar.exists()) {
-        ant.move(file: allJarsJar, tofile: file("build/libs/${mod_id}-${mod_version}.jar"))
+// 与 build 完全相同，只是版本号会带上 +build.<编号>
+tasks.register('buildAlpha') {
+    group = 'build'
+    description = '打成 alpha 包，产物版本号带 +build.<编号>'
+    dependsOn 'build'
+}
+
+// 打包收尾：jarJar 的 -all 产物改名成最终包，原包挪进 libs/origin；发布用的辅助包不留存
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
+tasks.register('finalizeArtifacts') {
+    group = 'build'
+    description = '整理 build/libs：最终包改名到顶层，原包挪进 origin 子目录'
+    def libsDir = layout.buildDirectory.dir('libs').get().asFile
+    def modId = mod_id
+    def modVersion = version
+    def releaseVersion = isAlphaBuild ? version : baseVersion
+    doLast {
+        def fatJar = new File(libsDir, "${modId}-${modVersion}-all.jar")
+        if (fatJar.exists()) {
+            Files.copy(fatJar.toPath(), new File(libsDir, "${modId}-${releaseVersion}.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+            def originDir = new File(libsDir, 'origin')
+            originDir.mkdirs()
+            Files.move(fatJar.toPath(), new File(originDir, "${modId}-${modVersion}-all.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+        ["${modId}-${modVersion}-javadoc.jar", "${modId}-${modVersion}-sources.jar"].each {
+            new File(libsDir, it).delete()
+        }
     }
 }
+
+tasks.named('build') { finalizedBy 'finalizeArtifacts' }
+tasks.named('publishToMavenLocal') { finalizedBy 'finalizeArtifacts' }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
