@@ -283,11 +283,15 @@ tasks.register('finalizeArtifacts') {
     def releaseVersion = isAlphaBuild ? version : baseVersion
     doLast {
         def fatJar = new File(libsDir, "${modId}-${modVersion}-all.jar")
-        if (fatJar.exists()) {
-            Files.copy(fatJar.toPath(), new File(libsDir, "${modId}-${releaseVersion}.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
-            def originDir = new File(libsDir, 'origin')
-            originDir.mkdirs()
-            Files.move(fatJar.toPath(), new File(originDir, "${modId}-${modVersion}-all.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+        def backupJar = new File(new File(libsDir, 'origin'), "${modId}-${modVersion}-all.jar")
+        // 最终包由 jarJar 的 -all 产物改名而来；上一轮可能已搬进 origin，就从那里取
+        def source = fatJar.exists() ? fatJar : backupJar
+        if (source.exists()) {
+            Files.copy(source.toPath(), new File(libsDir, "${modId}-${releaseVersion}.jar").toPath(), StandardCopyOption.REPLACE_EXISTING)
+            if (source == fatJar) {
+                backupJar.parentFile.mkdirs()
+                Files.move(fatJar.toPath(), backupJar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
         }
         ["${modId}-${modVersion}-javadoc.jar", "${modId}-${modVersion}-sources.jar"].each {
             new File(libsDir, it).delete()
