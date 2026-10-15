@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * SnowyCrescentCore 动画系统的统一 API 入口。
@@ -129,7 +130,7 @@ public class SCCAnimationApi {
      */
     public static boolean isLayerExist(ResourceLocation layer) {
         return ServerAnimationRegistry.getLayers().containsKey(layer)
-                || ClientAnimationRegistry.getAllLayers().containsKey(layer);
+                || (FMLEnvironment.dist == Dist.CLIENT && ClientAnimationRegistry.getAllLayers().containsKey(layer));
     }
 
     /**
@@ -143,6 +144,6 @@ public class SCCAnimationApi {
      */
     public static boolean isAnimationExist(ResourceLocation animationId) {
         return ServerAnimationRegistry.getAnimations().containsKey(animationId)
-                || ClientAnimationRegistry.getAllAnimations().containsKey(animationId);
+                || (FMLEnvironment.dist == Dist.CLIENT && ClientAnimationRegistry.getAllAnimations().containsKey(animationId));
     }
 }
