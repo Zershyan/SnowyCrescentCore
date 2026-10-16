@@ -129,8 +129,7 @@ public class SCCAnimationApi {
      * @return 任一侧存在该层则返回 {@code true}，否则返回 {@code false}
      */
     public static boolean isLayerExist(ResourceLocation layer) {
-        return ServerAnimationRegistry.getLayers().containsKey(layer)
-                || (FMLEnvironment.dist == Dist.CLIENT && ClientAnimationRegistry.getAllLayers().containsKey(layer));
+        return FMLEnvironment.dist != Dist.CLIENT || ClientAnimationRegistry.getAllLayers().containsKey(layer);
     }
 
     /**
