@@ -2,6 +2,7 @@ package io.zershyan.sccore.compat.animation.api.events;
 
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,11 @@ import java.util.Map;
  * @see AnimationRegisterEvent
  */
 public abstract class LayerRegisterEvent extends Event {
-    private final Map<ResourceLocation, Integer> layers = new HashMap<>();
+    protected final Map<ResourceLocation, Integer> layers = new HashMap<>();
+    private final Common common = new Common();
+    public LayerRegisterEvent() {
+        NeoForge.EVENT_BUS.post(common);
+    }
 
     /**
      * 获取所有已注册的动画层。
@@ -32,6 +37,7 @@ public abstract class LayerRegisterEvent extends Event {
      * @return 动画层资源位置到优先级的映射
      */
     public Map<ResourceLocation, Integer> getLayers() {
+        layers.putAll(common.getLayers());
         return layers;
     }
 
@@ -55,5 +61,17 @@ public abstract class LayerRegisterEvent extends Event {
      * 服务端动画层注册事件，在服务端启动或资源重载时触发。
      */
     public static class Server extends LayerRegisterEvent {
+    }
+
+    /**
+     * 通用动画层注册事件，在双端启动或资源重载时触发。
+     */
+    public static final class Common extends LayerRegisterEvent {
+        public Common() {}
+
+        @Override
+        public Map<ResourceLocation, Integer> getLayers() {
+            return layers;
+        }
     }
 }

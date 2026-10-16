@@ -111,23 +111,47 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
         this.aabbMovement.relative(relative);
         return builder;
     }
+    
+    interface ClientBuilder {
+        /**
+         * 设置第一人称相机变换。
+         */
+        AnimationBuilder<?> firstPersonCameraChange(CameraChange firstPersonCameraChange);
+
+        /**
+         * 设置第三人称相机变换。
+         */
+        AnimationBuilder<?> cameraChange(CameraChange cameraChange);
+
+        /**
+         * 构建客户端动画实例。
+         */
+        ClientAnimation buildClient();
+    }
+
+    interface ServerBuilder {
+        /**
+         * 设置跳跃力度修正系数，默认 1.0。
+         */
+        AnimationBuilder<?> jumpModifier(float jumpModifier);
+
+        /**
+         * 构建服务端动画实例。
+         */
+        ServerAnimation buildServer();
+    }
 
     /**
-     * 构建最终的动画对象。
-     *
-     * @return 构建完成的动画实例
+     * 共用动画构建器，全通用属性
      */
-    protected abstract Animation build();
-
-    /**
-     * 服务端动画构建器，在通用属性基础上增加 {@code jumpModifier}。
-     *
-     * @see ServerAnimation
-     */
-    public static class Server extends AnimationBuilder<Server> {
+    public static class Common extends AnimationBuilder<Common> implements ClientBuilder, ServerBuilder {
         private float jumpModifier = 1.0f;
+        @NotNull
+        private CameraChange firstPersonCameraChange = new CameraChange();
+        @NotNull
+        private CameraChange cameraChange = new CameraChange();
 
-        private Server(ResourceLocation animationLocation) {
+        private Common(ResourceLocation animationLocation) {
             super(animationLocation);
             this.setBuilder(this);
         }
@@ -135,23 +159,12 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
         /**
          * 创建服务端动画构建器。
          */
-        public static Server builder(ResourceLocation location) {
-            return new Server(location);
+        public static Common builder(ResourceLocation location) {
+            return new Common(location);
         }
 
-        /**
-         * 设置跳跃力度修正系数，默认 1.0。
-         */
-        public Server jumpModifier(float jumpModifier) {
-            this.jumpModifier = jumpModifier;
-            return this;
-        }
-
-        /**
-         * 构建服务端动画实例。
-         */
         @Override
-        public ServerAnimation build() {
+        public ServerAnimation buildServer() {
             return new ServerAnimation(
                     animationLocation,
                     Optional.ofNullable(name),
@@ -162,36 +175,9 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
                     jumpModifier
             );
         }
-    }
-
-    /**
-     * 客户端动画构建器，在通用属性基础上增加第一人称/第三人称相机变换。
-     *
-     * @see ClientAnimation
-     */
-    public static class Client extends AnimationBuilder<Client> {
-        @NotNull
-        private CameraChange firstPersonCameraChange = new CameraChange();
-        @NotNull
-        private CameraChange cameraChange = new CameraChange();
-
-        private Client(ResourceLocation animationLocation) {
-            super(animationLocation);
-            this.setBuilder(this);
-        }
-
-        /**
-         * 创建客户端动画构建器。
-         */
-        public static Client builder(ResourceLocation location) {
-            return new Client(location);
-        }
-
-        /**
-         * 构建客户端动画实例。
-         */
+        
         @Override
-        public ClientAnimation build() {
+        public ClientAnimation buildClient() {
             return new ClientAnimation(
                     animationLocation,
                     Optional.ofNullable(name),
@@ -202,19 +188,22 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
                     cameraChange
             );
         }
-
-        /**
-         * 设置第一人称相机变换。
-         */
-        public Client firstPersonCameraChange(CameraChange firstPersonCameraChange) {
-            this.firstPersonCameraChange = firstPersonCameraChange;
+        
+        @Override
+        public Common jumpModifier(float jumpModifier) {
+            this.jumpModifier = jumpModifier;
             return this;
         }
 
-        /**
-         * 设置第三人称相机变换。
-         */
-        public Client cameraChange(CameraChange cameraChange) {
+
+        @Override
+        public Common firstPersonCameraChange(CameraChange firstPersonCameraChange) {
+            this.firstPersonCameraChange = firstPersonCameraChange;
+            return this;
+        }
+        
+        @Override
+        public Common cameraChange(CameraChange cameraChange) {
             this.cameraChange = cameraChange;
             return this;
         }
@@ -303,6 +292,95 @@ public abstract class AnimationBuilder<T extends AnimationBuilder<?>> {
                     xRot,
                     yRot
             );
+        }
+    }
+    
+    /**
+     * 服务端动画构建器，在通用属性基础上增加 {@code jumpModifier}。
+     *
+     * @see ServerAnimation
+     */
+    public static class Server extends AnimationBuilder<Server> implements ServerBuilder {
+        private float jumpModifier = 1.0f;
+
+        private Server(ResourceLocation animationLocation) {
+            super(animationLocation);
+            this.setBuilder(this);
+        }
+
+        /**
+         * 创建服务端动画构建器。
+         */
+        public static Server builder(ResourceLocation location) {
+            return new Server(location);
+        }
+        
+        @Override
+        public Server jumpModifier(float jumpModifier) {
+            this.jumpModifier = jumpModifier;
+            return this;
+        }
+        
+        @Override
+        public ServerAnimation buildServer() {
+            return new ServerAnimation(
+                    animationLocation,
+                    Optional.ofNullable(name),
+                    priority,
+                    Optional.ofNullable(rideData),
+                    defaultThirdPerson,
+                    aabbMovement,
+                    jumpModifier
+            );
+        }
+    }
+    
+    /**
+     * 客户端动画构建器，在通用属性基础上增加第一人称/第三人称相机变换。
+     *
+     * @see ClientAnimation
+     */
+    public static class Client extends AnimationBuilder<Client> implements ClientBuilder {
+        @NotNull
+        private CameraChange firstPersonCameraChange = new CameraChange();
+        @NotNull
+        private CameraChange cameraChange = new CameraChange();
+
+        private Client(ResourceLocation animationLocation) {
+            super(animationLocation);
+            this.setBuilder(this);
+        }
+
+        /**
+         * 创建客户端动画构建器。
+         */
+        public static Client builder(ResourceLocation location) {
+            return new Client(location);
+        }
+        
+        @Override
+        public ClientAnimation buildClient() {
+            return new ClientAnimation(
+                    animationLocation,
+                    Optional.ofNullable(name),
+                    priority,
+                    Optional.ofNullable(rideData),
+                    defaultThirdPerson,
+                    firstPersonCameraChange,
+                    cameraChange
+            );
+        }
+        
+        @Override
+        public Client firstPersonCameraChange(CameraChange firstPersonCameraChange) {
+            this.firstPersonCameraChange = firstPersonCameraChange;
+            return this;
+        }
+        
+        @Override
+        public Client cameraChange(CameraChange cameraChange) {
+            this.cameraChange = cameraChange;
+            return this;
         }
     }
 }
