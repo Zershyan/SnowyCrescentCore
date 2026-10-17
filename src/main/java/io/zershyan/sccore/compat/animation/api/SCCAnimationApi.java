@@ -15,7 +15,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * SnowyCrescentCore 动画系统的统一 API 入口。
@@ -122,27 +121,28 @@ public class SCCAnimationApi {
     /**
      * 判断指定动画层是否已注册。
      *
-     * <p>同时检查服务端注册表（{@link ServerAnimationRegistry}）与客户端注册表
-     * （{@link ClientAnimationRegistry}，包含同步动画），任一侧存在即返回 {@code true}。</p>
+     * <p>服务端只检查服务端注册表（{@link ServerAnimationRegistry}）；客户端检查客户端注册表
+     * （{@link ClientAnimationRegistry}），其中已包含服务端同步来的层。
+     * 因此单人存档里同一进程内的服务端线程与客户端线程会得到各自逻辑端的答案。</p>
      *
      * @param layer 动画层的资源位置
-     * @return 任一侧存在该层则返回 {@code true}，否则返回 {@code false}
+     * @return 当前逻辑端存在该层则返回 {@code true}，否则返回 {@code false}
      */
     public static boolean isLayerExist(ResourceLocation layer) {
-        return FMLEnvironment.dist != Dist.CLIENT || ClientAnimationRegistry.getAllLayers().containsKey(layer);
+        return registries().getService().getAllLayers().contains(layer);
     }
 
     /**
      * 判断指定动画是否已注册。
      *
-     * <p>同时检查服务端注册表（{@link ServerAnimationRegistry}）与客户端注册表
-     * （{@link ClientAnimationRegistry}，包含同步动画），任一侧存在即返回 {@code true}。</p>
+     * <p>与 {@link #isLayerExist(ResourceLocation)} 同口径：服务端只检查服务端注册表
+     * （{@link ServerAnimationRegistry}）；客户端检查客户端注册表
+     * （{@link ClientAnimationRegistry}），其中已包含服务端同步来的动画。</p>
      *
      * @param animationId 动画的资源位置
-     * @return 任一侧存在该动画则返回 {@code true}，否则返回 {@code false}
+     * @return 当前逻辑端存在该动画则返回 {@code true}，否则返回 {@code false}
      */
     public static boolean isAnimationExist(ResourceLocation animationId) {
-        return ServerAnimationRegistry.getAnimations().containsKey(animationId)
-                || (FMLEnvironment.dist == Dist.CLIENT && ClientAnimationRegistry.getAllAnimations().containsKey(animationId));
+        return registries().getService().getAllAnimations().containsKey(animationId);
     }
 }
