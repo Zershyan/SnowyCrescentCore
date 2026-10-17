@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,22 +42,17 @@ public class JsonCommand {
     private static int generateExample(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         try {
-            //generate
             String dirString = "sccoreAnimationExample";
             Path dir = Paths.get(dirString);
             if (!Files.exists(dir)) Files.createDirectories(dir);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-            Path layerExample = dir.resolve("example_layer.json");
-            if (!Files.exists(layerExample)) Files.createFile(layerExample);
             HashMap<ResourceLocation, Integer> exampleLayer = new HashMap<>();
             exampleLayer.put(SCCore.id("example_layer"), 40);
             exampleLayer.put(ResourceLocation.fromNamespaceAndPath("your_namespace", "example_layer"), 41);
             JsonElement exampleLayerJson = SyncAnimationFactory.LAYER_CODEC.encodeStart(JsonOps.INSTANCE, exampleLayer).getOrThrow();
-            Files.writeString(layerExample, gson.toJson(exampleLayerJson), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            writeJson(dir.resolve("example_layer.json"), gson, exampleLayerJson);
 
-            Path clientAnimExample = dir.resolve("example_client_animation.json");
-            if (!Files.exists(clientAnimExample)) Files.createFile(clientAnimExample);
             TreeMap<Integer, CameraData> movement = new TreeMap<>();
             TreeMap<Integer, CameraData> movement1 = new TreeMap<>();
             movement.put(1, CameraData.ZERO);
@@ -68,17 +64,15 @@ public class JsonCommand {
                     new CameraChange(movement1)
             );
             JsonElement exampleClientAnimationJson = ClientAnimation.CODEC.encodeStart(JsonOps.INSTANCE, clientAnimation).getOrThrow();
-            Files.writeString(clientAnimExample, gson.toJson(exampleClientAnimationJson), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            writeJson(dir.resolve("example_client_animation.json"), gson, exampleClientAnimationJson);
 
-            Path serverAnimExample = dir.resolve("example_server_animation.json");
-            if (!Files.exists(serverAnimExample)) Files.createFile(serverAnimExample);
             ServerAnimation serverAnimation = new ServerAnimation(
                     SCCore.id("animation_key"), Optional.of("测试动画"), 0,
                     Optional.of(new RideData(List.of(SCCore.id("sub_animation")), new Vec3(0, 0, 0), 100, 90, 0)), true,
                     new AABBMovement(true).add(1, new AABB(Vec3.ZERO, Vec3.ZERO.add(2.0, 2.0, 2.0))), 1.0f
             );
             JsonElement exampleServerAnimationJson = ServerAnimation.CODEC.encodeStart(JsonOps.INSTANCE, serverAnimation).getOrThrow();
-            Files.writeString(serverAnimExample, gson.toJson(exampleServerAnimationJson), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            writeJson(dir.resolve("example_server_animation.json"), gson, exampleServerAnimationJson);
             source.sendSuccess(() -> SCCKeyLang.AnimationToJson.get(dirString).withStyle(ChatFormatting.GREEN), true);
         } catch (Exception e) {
             source.sendFailure(SCCKeyLang.CommandRunFail.withStyle(ChatFormatting.RED));
@@ -86,5 +80,10 @@ public class JsonCommand {
             return 0;
         }
         return 1;
+    }
+
+    private static void writeJson(Path path, Gson gson, JsonElement element) throws IOException {
+        Files.writeString(path, gson.toJson(element),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

@@ -74,7 +74,7 @@ public class SCCKeyLang extends SCCLang {
             "Application sent.");
     public static final LazyComponent AppliedJoinMessage = entryLazy(AnimationPrefix + CommandPrefix + "applied_join_message",
             "%s§b§l 申请§r加入动画。",
-            "%S§b§l Apply for §r to join your animation.");
+            "%s§b§l Apply for §r to join your animation.");
     public static final LazyComponent AcceptApplySuccess = entryLazy(AnimationPrefix + CommandPrefix + "accept_apply_success",
             "%s 接受了 %s 的申请。",
             "%s has accepted the application of %s.");
@@ -111,11 +111,11 @@ public class SCCKeyLang extends SCCLang {
         return key;
     }
 
-    private static MutableComponent entry(String key, String enUs, String zhCn) {
+    private static MutableComponent entry(String key, String zhCn, String enUs) {
         return Component.translatable(entryString(key, enUs, zhCn));
     }
 
-    private static LazyComponent entryLazy(String key, String enUs, String zhCn) {
+    private static LazyComponent entryLazy(String key, String zhCn, String enUs) {
         return new LazyComponent(entryString(key, enUs, zhCn));
     }
 

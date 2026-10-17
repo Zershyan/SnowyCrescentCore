@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemFormat implements IFormat {
     private final String item;
@@ -138,13 +139,8 @@ public class ItemFormat implements IFormat {
         }
 
         public String parse() {
-            StringBuilder builder = new StringBuilder();
-            for (ItemFormat itemFormat : itemFormats) {
-                builder.append(itemFormat.parse());
-                builder.append(",");
-            }
-            builder.deleteCharAt(builder.length() - 1);
-            return builder.toString();
+            if (itemFormats.isEmpty()) throw new IllegalArgumentException("At least one item is required");
+            return itemFormats.stream().map(ItemFormat::parse).collect(Collectors.joining(","));
         }
     }
 }

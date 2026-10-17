@@ -3,6 +3,7 @@ package io.zershyan.sccore.compat.animation.core;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import dev.kosmx.playerAnim.api.IPlayable;
 import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
@@ -46,11 +47,13 @@ import java.util.*;
  * 通过反射重建已有玩家的动画栈。</p>
  */
 public class ClientAnimationRegistry {
-    public static final String LAYER_DIR = "animation/layer/";
-    public static final String ANIMATION_DIR = "animation/animation/";
+    public static final String LAYER_DIR = "animation/layer";
+    public static final String ANIMATION_DIR = "animation/animation";
     private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
     private static final Map<ResourceLocation, ClientAnimation> Animations = new HashMap<>();
     private static final Map<UUID, Map<ResourceLocation, IAnimation>> CacheAnim = new HashMap<>();
+    private static final Set<ResourceLocation> LocalLayerIds = new HashSet<>();
+    private static final Set<ResourceLocation> SyncLayerIds = new HashSet<>();
 
     @SubscribeEvent
     public static void clientReload(ResourceLoadEvent.Post event) {
@@ -62,6 +65,12 @@ public class ClientAnimationRegistry {
         reloadData();
     }
 
+    @SubscribeEvent
+    public static void clientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        CacheAnim.clear();
+        SyncAnimationFactory.clear();
+    }
+
     private static void reloadData() {
         Layers.clear();
         Animations.clear();
@@ -69,8 +78,8 @@ public class ClientAnimationRegistry {
         Layers.putAll(NeoForge.EVENT_BUS.post(new LayerRegisterEvent.Client()).getLayers());
         // 资源包驱动的注册Layer
         ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-        Map<ResourceLocation, Resource> layerResourceMap = resourceManager.listResources(SCCore.MODID, location ->
-                location.getNamespace().equals(LAYER_DIR) && location.getPath().endsWith(".json")
+        Map<ResourceLocation, Resource> layerResourceMap = resourceManager.listResources(LAYER_DIR,
+                location -> location.getPath().endsWith(".json")
         );
         for (Resource value : layerResourceMap.values()) {
             try (BufferedReader reader = value.openAsReader()) {
@@ -84,8 +93,8 @@ public class ClientAnimationRegistry {
         // 事件驱动的注册Animation
         Animations.putAll(NeoForge.EVENT_BUS.post(new AnimationRegisterEvent.Client()).getAnimations());
         // 资源包驱动的注册Animation
-        Map<ResourceLocation, Resource> animationResourceMap = resourceManager.listResources(SCCore.MODID, location ->
-                location.getNamespace().equals(ANIMATION_DIR) && location.getPath().endsWith(".json")
+        Map<ResourceLocation, Resource> animationResourceMap = resourceManager.listResources(ANIMATION_DIR,
+                location -> location.getPath().endsWith(".json")
         );
         animationResourceMap.forEach((location, resource) -> {
             try (BufferedReader reader = resource.openAsReader()) {
@@ -103,10 +112,27 @@ public class ClientAnimationRegistry {
     /**
      * 深度注册 Layer，将 Layer 映射到 Player Animator 的底层数据中。
      *
+     * <p>注册前会移除上一次本地注册的工厂：资源包删除某个层后，其旧工厂不应继续生效。</p>
+     *
      * @param layers 需要注册的 Layer 层
      */
     public static void registerLayers(Map<ResourceLocation, Integer> layers) {
-        IMixinFactoryHolder.of(PlayerAnimationFactory.ANIMATION_DATA_FACTORY).sccore$clearAnimations(layers.keySet());
+        applyLayers(layers, LocalLayerIds);
+    }
+
+    /**
+     * 深度注册服务端同步来的 Layer，与本地注册各自维护已注册集合。
+     *
+     * @param layers 服务端同步来的 Layer 层
+     */
+    public static void registerSyncLayers(Map<ResourceLocation, Integer> layers) {
+        applyLayers(layers, SyncLayerIds);
+    }
+
+    private static void applyLayers(Map<ResourceLocation, Integer> layers, Set<ResourceLocation> registered) {
+        IMixinFactoryHolder.of(PlayerAnimationFactory.ANIMATION_DATA_FACTORY).sccore$clearAnimations(registered);
+        registered.clear();
+        registered.addAll(layers.keySet());
         Minecraft instance = Minecraft.getInstance();
         layers.forEach((key, value) -> PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                 key, value, player -> {
@@ -115,7 +141,7 @@ public class ClientAnimationRegistry {
                             .computeIfAbsent(key, k -> registerPlayerAnimation(player));
                 })
         );
-        if (instance.level == null) return;
+        if (layers.isEmpty() || instance.level == null) return;
         try {
             instance.level.players().forEach(ClientAnimationRegistry::reflectAnimationCore);
         } catch (Exception e) {
@@ -154,8 +180,8 @@ public class ClientAnimationRegistry {
     }
 
     private static KeyframeAnimation getAnimationOfPair(Pair<Integer, IAnimation> pair) {
-        return Optional.ofNullable((KeyframeAnimationPlayer) ((ModifierLayer<?>) pair.getRight()).getAnimation())
-                .map(KeyframeAnimationPlayer::getData).orElse(null);
+        if (!(pair.getRight() instanceof ModifierLayer<?> modifierLayer)) return null;
+        return modifierLayer.getAnimation() instanceof KeyframeAnimationPlayer player ? player.getData() : null;
     }
 
     public static Map<UUID, Map<ResourceLocation, IAnimation>> getCacheAnim() {
@@ -170,23 +196,22 @@ public class ClientAnimationRegistry {
      */
     @Nullable
     public static ClientAnimation getAnimation(ResourceLocation location) {
-        ClientAnimation anim = Animations.getOrDefault(location, null);
-        if (anim == null) anim = SyncAnimationFactory.getAnimation(location);
-        return anim;
+        ClientAnimation anim = SyncAnimationFactory.getAnimation(location);
+        return anim != null ? anim : Animations.getOrDefault(location, null);
     }
 
     /**
      * 获取指定动画对应的 Player Animator 关键帧动画。
      *
      * @param location 动画资源位置
-     * @return 关键帧动画，不存在则返回 {@code null}
+     * @return 关键帧动画，不存在或不是关键帧动画时返回 {@code null}
      */
     @Nullable
     public static KeyframeAnimation getKeyframeAnimation(ResourceLocation location) {
         ClientAnimation animation = getAnimation(location);
-        if (animation == null) animation = SyncAnimationFactory.getAnimation(location);
         if (animation == null) return null;
-        return (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(animation.animationLocation());
+        IPlayable playable = PlayerAnimationRegistry.getAnimation(animation.animationLocation());
+        return playable instanceof KeyframeAnimation keyframe ? keyframe : null;
     }
 
     /**

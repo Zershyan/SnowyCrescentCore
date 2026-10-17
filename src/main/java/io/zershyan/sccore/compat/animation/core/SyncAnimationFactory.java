@@ -26,7 +26,7 @@ public class SyncAnimationFactory {
      * 重新加载同步层，同时注册到 Player Animator。
      */
     public static void reloadLayers(Map<ResourceLocation, Integer> layers) {
-        ClientAnimationRegistry.registerLayers(layers);
+        ClientAnimationRegistry.registerSyncLayers(layers);
         Layers.clear();
         Layers.putAll(layers);
     }
@@ -37,6 +37,15 @@ public class SyncAnimationFactory {
     public static void reloadAnimations(Map<ResourceLocation, ClientAnimation> layers) {
         Animations.clear();
         Animations.putAll(layers);
+    }
+
+    /**
+     * 清空同步数据，并移除对应的 Player Animator 工厂。
+     */
+    public static void clear() {
+        ClientAnimationRegistry.registerSyncLayers(Map.of());
+        Layers.clear();
+        Animations.clear();
     }
 
     @Nullable

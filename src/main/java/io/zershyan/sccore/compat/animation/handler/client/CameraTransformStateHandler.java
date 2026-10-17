@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +41,11 @@ public final class CameraTransformStateHandler {
         for (AbstractClientPlayer player : instance.level.players()) {
             samplePlayer(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void onClientLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        SnapShots.clear();
     }
 
     private static void samplePlayer(AbstractClientPlayer player) {

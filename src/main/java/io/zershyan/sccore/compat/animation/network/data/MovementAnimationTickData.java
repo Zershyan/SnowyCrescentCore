@@ -11,7 +11,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
@@ -43,16 +42,22 @@ public record MovementAnimationTickData(UUID playerUUID, Optional<ResourceLocati
 
     public void handler(IPayloadContext context) {
         context.enqueueWork(() -> {
-            if (context.player() instanceof Player sender) {
-                if (animationId().isEmpty()) {
-                    MovementAnimationTickHandler.removeData(playerUUID());
-                } else {
-                    MovementAnimationTickHandler.putData(playerUUID(), this);
-                }
-                if (sender instanceof ServerPlayer) {
-                    PacketDistributor.sendToAllPlayers(this);
-                }
+            if (!(context.player() instanceof ServerPlayer sender)) {
+                applyData();
+                return;
             }
+            if (!playerUUID().equals(sender.getUUID())) return;
+            applyData();
+            // 该数据只影响实体自身的碰撞箱，因此仅需广播给追踪该玩家及其本人
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(sender, this);
         });
+    }
+
+    private void applyData() {
+        if (animationId().isEmpty()) {
+            MovementAnimationTickHandler.removeData(playerUUID());
+        } else {
+            MovementAnimationTickHandler.putData(playerUUID(), this);
+        }
     }
 }

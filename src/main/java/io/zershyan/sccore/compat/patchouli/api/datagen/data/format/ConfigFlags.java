@@ -2,6 +2,7 @@ package io.zershyan.sccore.compat.patchouli.api.datagen.data.format;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConfigFlags implements IFormat {
     private boolean negation = false;
@@ -73,20 +74,14 @@ public class ConfigFlags implements IFormat {
 
         @Override
         public String parse() {
+            if (flags.isEmpty()) throw new IllegalArgumentException("At least one config flag is required");
             String prefix;
             if (junction != null) {
                 prefix = junction ? "&" : "|";
             } else if (customPrefix != null) {
                 prefix = customPrefix;
             } else throw new NullPointerException("Junction or Custom prefix required");
-
-            StringBuilder sb = new StringBuilder(prefix);
-            for (ConfigFlags flag : flags) {
-                sb.append(flag.parse());
-                sb.append(",");
-            }
-            sb.deleteCharAt(sb.length() - 1);
-            return sb.toString();
+            return prefix + flags.stream().map(ConfigFlags::parse).collect(Collectors.joining(","));
         }
     }
 }

@@ -32,7 +32,6 @@ public class PatchouliBookData implements IPatchouliBookData {
     private Boolean useBlockyFont;
     private Boolean pauseGame;
     private Boolean allowExtensions;
-    private ResourceLocation extend;
     private ResourceLocation creativeTab;
     private ResourceLocation bookTexture;
     private ResourceLocation fillerTexture;
@@ -175,12 +174,6 @@ public class PatchouliBookData implements IPatchouliBookData {
     }
 
     @Override
-    public PatchouliBookData extend(ResourceLocation extend) {
-        this.extend = extend;
-        return this;
-    }
-
-    @Override
     public PatchouliBookData creativeTab(ResourceLocation creativeTab) {
         this.creativeTab = creativeTab;
         return this;
@@ -308,9 +301,6 @@ public class PatchouliBookData implements IPatchouliBookData {
         if (allowExtensions != null) {
             object.addProperty("allow_extensions", allowExtensions);
         }
-        if (extend != null) {
-            object.addProperty("extend", extend.toString());
-        }
         if (creativeTab != null) {
             object.addProperty("creative_tab", creativeTab.toString());
         }
@@ -327,7 +317,7 @@ public class PatchouliBookData implements IPatchouliBookData {
             object.addProperty("advancements_tab", advancementsTab.toString());
         }
         if (model != null) {
-            object.addProperty("book_model", model.toString());
+            object.addProperty("model", model.toString());
         }
         if (openSound != null) {
             object.addProperty("open_sound", openSound.toString());

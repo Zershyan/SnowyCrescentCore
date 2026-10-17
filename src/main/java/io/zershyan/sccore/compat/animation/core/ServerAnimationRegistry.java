@@ -40,8 +40,8 @@ import java.util.Map;
  * 玩家登录时自动将注册数据同步到客户端。</p>
  */
 public class ServerAnimationRegistry {
-    public static final String LAYER_DIR = "animation/layer/";
-    public static final String ANIMATION_DIR = "animation/animation/";
+    public static final String LAYER_DIR = "animation/layer";
+    public static final String ANIMATION_DIR = "animation/animation";
     private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
     private static final Map<ResourceLocation, ServerAnimation> Animations = new HashMap<>();
 
@@ -73,8 +73,8 @@ public class ServerAnimationRegistry {
         Layers.putAll(NeoForge.EVENT_BUS.post(new LayerRegisterEvent.Server()).getLayers());
         // 资源包驱动的注册Layer
         ResourceManager resourceManager = server.getResourceManager();
-        Map<ResourceLocation, Resource> layerResourceMap = resourceManager.listResources(SCCore.MODID, location ->
-                location.getNamespace().equals(LAYER_DIR) && location.getPath().endsWith(".json")
+        Map<ResourceLocation, Resource> layerResourceMap = resourceManager.listResources(LAYER_DIR,
+                location -> location.getPath().endsWith(".json")
         );
         for (Resource value : layerResourceMap.values()) {
             try (BufferedReader reader = value.openAsReader()) {
@@ -88,8 +88,8 @@ public class ServerAnimationRegistry {
         // 事件驱动的注册Animation
         Animations.putAll(NeoForge.EVENT_BUS.post(new AnimationRegisterEvent.Server()).getAnimations());
         // 资源包驱动的注册Animation
-        Map<ResourceLocation, Resource> animationResourceMap = resourceManager.listResources(SCCore.MODID, location ->
-                location.getNamespace().equals(ANIMATION_DIR) && location.getPath().endsWith(".json")
+        Map<ResourceLocation, Resource> animationResourceMap = resourceManager.listResources(ANIMATION_DIR,
+                location -> location.getPath().endsWith(".json")
         );
         animationResourceMap.forEach((location, resource) -> {
             try (BufferedReader reader = resource.openAsReader()) {

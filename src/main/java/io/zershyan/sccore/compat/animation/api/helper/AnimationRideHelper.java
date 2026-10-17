@@ -1,5 +1,6 @@
 package io.zershyan.sccore.compat.animation.api.helper;
 
+import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
 import io.zershyan.sccore.compat.animation.data.ClientRideAnimDTO;
@@ -69,7 +70,8 @@ public class AnimationRideHelper {
      * @param animation 客户端骑乘动画数据
      */
     public void startRide(ResourceLocation layer, ClientRideAnimDTO animation) {
-        startRide(layer, new AnimationRideEntity.RideAnimation(animation.id(), animation.animation()), player.position(), false);
+        startRide(layer, animation == null ? null : new AnimationRideEntity.RideAnimation(animation.id(), animation.animation()),
+                player.position(), false);
     }
 
     /**
@@ -107,25 +109,32 @@ public class AnimationRideHelper {
     }
 
     private void startRide(ResourceLocation layer, AnimationRideEntity.RideAnimation animation, Vec3 pos, boolean force) {
+        if (layer == null) {
+            stopRide();
+            return;
+        }
+        if (animation == null || animation.animation() == null) {
+            SCCore.log.warn("Start ride animation failed, unknown animation: {}",
+                    animation == null ? null : animation.animLoc()
+            );
+            return;
+        }
         PlayerAnimations oldData = PlayerAnimations.getData(player);
         ResourceLocation oldLayer = oldData.rideAnim().layer().orElse(null);
         Entity vehicle = player.getVehicle();
         if (Objects.equals(layer, oldLayer) && vehicle instanceof AnimationRideEntity) {
             return;
         }
-        if (layer == null) {
-            stopRide();
-        } else if (animation != null) {
-            AnimationRideEntity.create(player, layer, animation, force, pos);
-        }
+        AnimationRideEntity.create(player, layer, animation, force, pos);
     }
 
     /**
-     * 同步骑乘动画数据给指定目标玩家。
+     * 令本玩家的骑乘动画 tick 对齐到目标玩家。
      *
-     * <p>向所有客户端广播同步包，使目标玩家的骑乘动画 tick 与本玩家对齐。</p>
+     * <p>向所有客户端广播同步包，由客户端把目标的当前 tick 写入本玩家的动画，
+     * 因此本玩家（通常是刚上车的乘客）会跟随目标（通常是车主）的播放进度。</p>
      *
-     * @param target 目标玩家
+     * @param target 作为 tick 基准的目标玩家
      */
     public void syncRideAnim(ServerPlayer target) {
         PacketDistributor.sendToAllPlayers(new SyncAnimationData(player.getUUID(), target.getUUID()));

@@ -11,7 +11,7 @@ public abstract class ITemplateComponent {
     protected Integer x;
     protected Integer y;
     protected ResourceLocation advancement;
-    protected ResourceLocation negateAdvancement;
+    protected boolean negateAdvancement;
     protected String guard;
     protected String group;
     protected ConfigFlags flag;
@@ -39,7 +39,7 @@ public abstract class ITemplateComponent {
         return this;
     }
 
-    public ITemplateComponent negateAdvancement(ResourceLocation negateAdvancement) {
+    public ITemplateComponent negateAdvancement(boolean negateAdvancement) {
         this.negateAdvancement = negateAdvancement;
         return this;
     }
@@ -73,8 +73,8 @@ public abstract class ITemplateComponent {
         if (advancement != null) {
             object.addProperty("advancement", advancement.toString());
         }
-        if (negateAdvancement != null) {
-            object.addProperty("negate_advancement", negateAdvancement.toString());
+        if (negateAdvancement) {
+            object.addProperty("negate_advancement", true);
         }
         if (guard != null) {
             object.addProperty("guard", guard);

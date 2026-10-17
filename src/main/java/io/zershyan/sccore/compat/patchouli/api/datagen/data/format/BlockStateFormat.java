@@ -45,6 +45,13 @@ public class BlockStateFormat implements IFormat {
         return stateFormat.property(state.getValues());
     }
 
+    /**
+     * 任意方块，Patchouli 中对应 {@code ANY}。
+     */
+    public static BlockStateFormat any() {
+        return new BlockStateFormat("ANY");
+    }
+
     @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) {
         return property.getName((T) comparable);

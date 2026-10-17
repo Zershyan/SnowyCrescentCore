@@ -13,6 +13,7 @@ public class QuestPage extends IPageType {
     }
 
     public QuestPage trigger(ResourceLocation trigger) {
+        this.trigger = trigger;
         return this;
     }
 

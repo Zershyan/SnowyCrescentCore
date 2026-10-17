@@ -29,7 +29,7 @@ public class SCCore {
 
         SCCPackets.register(modEventBus);
         SCCConfigs.register(modContainer);
-        SCCCommands.register(neoEventBus, modEventBus);
+        SCCCommands.register(modEventBus);
         SCCCompatFactory.register(neoEventBus, modEventBus);
 
         boolean needExample = !FMLEnvironment.production && StartupConfig.enableExample.get();

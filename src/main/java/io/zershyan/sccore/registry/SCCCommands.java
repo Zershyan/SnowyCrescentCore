@@ -1,54 +1,37 @@
 package io.zershyan.sccore.registry;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.zershyan.sccore.SCCore;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.minecraft.commands.Commands.literal;
-
 public class SCCCommands {
-    static final Set<String> animationCommand = new HashSet<>(Set.of(SCCore.MODID, "sc", "scc"));
+    private static final Set<String> animationCommand = new HashSet<>(Set.of(SCCore.MODID, "sc", "scc"));
 
+    /**
+     * 追加动画命令别名，需在命令注册事件之前调用才会生效。
+     *
+     * @param alias 新的命令别名
+     */
     public static void addCommandAlias(String alias) {
         animationCommand.add(alias);
     }
 
+    /**
+     * 获取全部动画命令别名。
+     *
+     * @return 命令别名的快照
+     */
     public static Set<String> getAnimationCommand() {
-        return animationCommand;
+        return Set.copyOf(animationCommand);
     }
 
-    public static void register(IEventBus forgeBus, IEventBus modBus) {
-        forgeBus.addListener(SCCCommands::commonCommandRegister);
-        forgeBus.addListener(SCCCommands::clientCommandRegister);
+    public static void register(IEventBus modBus) {
         Arguments.register(modBus);
-    }
-
-
-    public static void commonCommandRegister(RegisterCommandsEvent event) {
-        animationCommand.forEach(string -> {
-            LiteralArgumentBuilder<CommandSourceStack> builder = literal(string);
-            CommandBuildContext buildContext = event.getBuildContext();
-
-            event.getDispatcher().register(builder);
-        });
-    }
-
-    public static void clientCommandRegister(RegisterClientCommandsEvent event) {
-        animationCommand.forEach(string -> {
-            LiteralArgumentBuilder<CommandSourceStack> builder = literal(string);
-
-            event.getDispatcher().register(builder);
-        });
     }
 
     public static class Arguments {
@@ -57,7 +40,6 @@ public class SCCCommands {
         );
 
         public static void register(IEventBus eventBus) {
-
             REGISTRY.register(eventBus);
         }
     }

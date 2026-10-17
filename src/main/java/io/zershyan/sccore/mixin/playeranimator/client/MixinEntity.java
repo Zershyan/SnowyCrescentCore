@@ -26,7 +26,8 @@ public class MixinEntity {
     ) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null) return;
+        // 相机 roll 只属于本地玩家的视角，不能让其他实体的转向也被它旋转
+        if (player == null || Entity.class.cast(this) != player) return;
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
         CameraData cache = CameraTransformStateHandler.getCache(player, firstPerson);
         if (cache == null) return;

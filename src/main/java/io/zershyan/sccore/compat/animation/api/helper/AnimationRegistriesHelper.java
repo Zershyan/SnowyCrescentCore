@@ -10,6 +10,10 @@ import net.neoforged.fml.loading.FMLLoader;
 
 /**
  * 获取动画或动画层数据实例
+ *
+ * <p>实现按调用所处的逻辑端选择注册表：专用服务端，以及物理客户端上的集成服务端线程，
+ * 都只能看到服务端注册表；客户端主线程读取客户端注册表（本地注册 + 服务端同步）。
+ * 单人存档中服务端线程与客户端线程共享同一进程，因此不能仅凭物理端判定。</p>
  */
 public class AnimationRegistriesHelper {
 
@@ -20,18 +24,21 @@ public class AnimationRegistriesHelper {
     }
 
     public static AnimationRegistriesHelper getInstance() {
-        Dist dist = FMLLoader.getDist();
-        if (dist.isDedicatedServer() || !testIfClient()) {
+        if (FMLLoader.getDist().isDedicatedServer() || !isClientThread()) {
             return new AnimationRegistriesHelper(new RegistriesService());
-        } else {
-            return new AnimationRegistriesHelper(new ClientRegistriesService());
         }
+        return new AnimationRegistriesHelper(new ClientRegistriesService());
     }
 
+    /**
+     * 判断当前线程是否为物理客户端的客户端线程。
+     *
+     * @return 当前线程持有客户端逻辑时为 {@code true}
+     */
     @OnlyIn(Dist.CLIENT)
-    private static boolean testIfClient() {
+    private static boolean isClientThread() {
         Minecraft instance = Minecraft.getInstance();
-        return !instance.isLocalServer();
+        return instance.isSameThread();
     }
 
     public IRegistriesService<?> getService() {

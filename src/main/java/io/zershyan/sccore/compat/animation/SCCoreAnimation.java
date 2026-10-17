@@ -23,7 +23,6 @@ public class SCCoreAnimation implements ICompatUtils {
     @Override
     public void addClientListener(IEventBus forgeBus, IEventBus modBus) {
         forgeBus.register(ClientAnimationRegistry.class);
-        forgeBus.addListener(AnimationCommands::clientCommandRegister);
     }
 
     @Override
@@ -43,7 +42,6 @@ public class SCCoreAnimation implements ICompatUtils {
 
         //server
         registrar.playToServer(UpdateAnimationData.TYPE, UpdateAnimationData.STREAM_CODEC, UpdateAnimationData::handler);
-        registrar.playToServer(UpdateRideAnimationData.TYPE, UpdateRideAnimationData.STREAM_CODEC, UpdateRideAnimationData::handler);
 
         //client
         registrar.playToClient(RegisterLayerData.TYPE, RegisterLayerData.STREAM_CODEC, RegisterLayerData::handler);

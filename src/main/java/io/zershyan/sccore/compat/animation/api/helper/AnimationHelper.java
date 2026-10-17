@@ -5,19 +5,20 @@ import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.api.service.IAnimationService;
 import io.zershyan.sccore.compat.animation.api.service.impl.AnimationService;
 import io.zershyan.sccore.compat.animation.api.service.impl.ClientAnimationService;
-import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
 import io.zershyan.sccore.compat.animation.data.Animation;
-import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,7 +27,7 @@ import java.util.function.Predicate;
  * 玩家动画数据操作助手，是动画 API 操作玩家动画数据的主要入口。
  *
  * <p>本类对 {@link IAnimationService} 做了一层封装，提供动画的播放、移除、骑乘动画控制
- * 以及批量数据修改能力。根据玩家类型自动绑定到服务端
+ * 以及批量数据修改能力。根据玩家所处逻辑端自动绑定到服务端
  * （{@link AnimationService}）或客户端（{@link ClientAnimationService}）的实现，
  * 因此同一套 API 可同时工作在双端。</p>
  *
@@ -58,45 +59,37 @@ import java.util.function.Predicate;
  */
 @SuppressWarnings("unused")
 public class AnimationHelper {
-    public static final Comparator<Map.Entry<ResourceLocation, ResourceLocation>> COMPARATOR;
-
-    static {
-        Comparator<Map.Entry<ResourceLocation, ResourceLocation>> comparingInt = Comparator.comparingInt(entry -> {
-            ClientAnimation animation = SyncAnimationFactory.getAnimation(entry.getValue());
-            if (animation == null) return Integer.MIN_VALUE;
-            if (animation.aabbMovement().isEmpty()) return Integer.MIN_VALUE;
-            return animation.priority();
-        });
-        COMPARATOR = comparingInt.thenComparingInt(entry ->
-                ClientAnimationRegistry.getAllLayers().getOrDefault(entry.getKey(), Integer.MIN_VALUE));
-    }
-
     private final IAnimationService service;
+    private final boolean clientSide;
 
     /**
      * 私有构造，通过 {@link #of(Player)} 创建实例。
      *
-     * @param service 实际承担数据读写的动画服务
+     * @param service    实际承担数据读写的动画服务
+     * @param clientSide 是否处于客户端上下文，客户端只能提交客户端动画映射
      */
-    private AnimationHelper(IAnimationService service) {
+    private AnimationHelper(IAnimationService service, boolean clientSide) {
         this.service = service;
+        this.clientSide = clientSide;
     }
 
     /**
-     * 根据玩家类型创建动画助手。
+     * 根据玩家所处逻辑端创建动画助手。
      *
-     * <p>若为 {@link ServerPlayer} 则使用 {@link AnimationService}（数据存于服务端 Attachment），
-     * 否则使用 {@link ClientAnimationService}（修改会发包同步到服务端）。</p>
+     * <p>逻辑服务端（含单人存档的集成服务端）使用 {@link AnimationService}，数据存于服务端 Attachment；
+     * 逻辑客户端使用 {@link ClientAnimationService}，修改会提交到服务端的客户端动画映射并同步给其他玩家。</p>
      *
      * @param player 目标玩家
      * @return 绑定该玩家的动画助手
      */
     public static AnimationHelper of(Player player) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            return new AnimationHelper(new AnimationService(serverPlayer));
-        } else {
-            return new AnimationHelper(new ClientAnimationService(player));
+        if (player.level().isClientSide()) {
+            if (!(player instanceof AbstractClientPlayer clientPlayer)) {
+                throw new IllegalArgumentException("Client side player is not an AbstractClientPlayer: " + player);
+            }
+            return new AnimationHelper(new ClientAnimationService(clientPlayer), true);
         }
+        return new AnimationHelper(new AnimationService(player), false);
     }
 
     /**
@@ -123,11 +116,17 @@ public class AnimationHelper {
         opera.apply(new Opera(this));
     }
 
+    private static boolean isServerAnimation(ResourceLocation animationId) {
+        return ServerAnimationRegistry.getAnimations().containsKey(animationId)
+                || SyncAnimationFactory.getAnimations().containsKey(animationId);
+    }
+
     /**
      * 在指定层播放动画。
      *
-     * <p>自动判断动画属于服务端动画（{@link ServerAnimationRegistry} / {@link SyncAnimationFactory}）
-     * 还是客户端动画，并分别写入对应映射。若层不存在则跳过并记录警告日志。</p>
+     * <p>服务端按动画来源写入服务端动画映射或客户端动画映射；客户端一律写入客户端动画映射，
+     * 因此客户端播放的动画会随 Attachment 同步给所有拥有同层同动画的玩家。
+     * 若层不存在则跳过并记录警告日志。</p>
      *
      * @param layer       动画层的资源位置
      * @param animationId 动画的资源位置
@@ -136,10 +135,8 @@ public class AnimationHelper {
         try {
             if (!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
             operaData(opera -> {
-                if (ServerAnimationRegistry.getAnimations().containsKey(animationId)
-                        || SyncAnimationFactory.getAnimations().containsKey(animationId)) {
-                    opera.newServerAnim(layer, animationId);
-                } else opera.newClientAnim(layer, animationId);
+                if (clientSide || !isServerAnimation(animationId)) opera.newClientAnim(layer, animationId);
+                else opera.newServerAnim(layer, animationId);
                 return opera.endOpera();
             });
         } catch (Exception e) {

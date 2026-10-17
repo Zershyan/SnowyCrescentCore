@@ -82,12 +82,13 @@ public class AnimationPlayerHelper {
     }
 
     /**
-     * 将本玩家的当前动画 tick 同步到目标玩家的同名层，使二者保持同步播放。
+     * 将本玩家的骑乘动画 tick 对齐到目标玩家的同名层，使二者保持同步播放。
      *
-     * <p>通过 Mixin 接口 {@link IMixinKeyframeAnimationPlayer} 写入目标动画的 {@code currentTick}。
-     * 任一方缺少对应层或动画时静默返回。</p>
+     * <p>实际是把目标的 {@code currentTick} 写入本玩家的动画：调用方（通常是后加入的乘客）
+     * 跟随目标（通常是车主）的播放进度。通过 Mixin 接口 {@link IMixinKeyframeAnimationPlayer}
+     * 完成写入，任一方缺少对应层或动画时静默返回。</p>
      *
-     * @param target 需要被同步的目标客户端玩家
+     * @param target 作为 tick 基准的目标客户端玩家
      */
     @SuppressWarnings("unchecked")
     public void syncAnimation(AbstractClientPlayer target) {
@@ -163,9 +164,7 @@ public class AnimationPlayerHelper {
                 );
             }
         }
-        KeyframeAnimationPlayer layerAnimation = (KeyframeAnimationPlayer) modifierLayer.getAnimation();
-        if (layerAnimation != null) layerAnimation.stop();
-        modifierLayer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeLength, ease), iAnimation);
+        modifierLayer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeLength, ease), iAnimation, true);
     }
 
     /**

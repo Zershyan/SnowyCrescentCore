@@ -22,8 +22,6 @@ public interface IPatchouliBookData {
 
     IPatchouliBookData allowExtensions(Boolean allowExtensions);
 
-    IPatchouliBookData extend(ResourceLocation extend);
-
     IPatchouliBookData creativeTab(ResourceLocation creativeTab);
 
     IPatchouliBookData subtitle(String subtitle);

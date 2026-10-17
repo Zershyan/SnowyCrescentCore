@@ -23,6 +23,8 @@ import java.util.Optional;
 @EventBusSubscriber(modid = SCCore.MODID, value = Dist.CLIENT)
 public class AnimationPlayerHandler {
     private static KeyframeAnimationPlayer currentAnimation;
+    private static ResourceLocation currentAnimationId;
+    private static int lastSentTick = Integer.MIN_VALUE;
 
     @SubscribeEvent
     public static void sendAnimationTick(ClientTickEvent.Pre event) {
@@ -35,12 +37,18 @@ public class AnimationPlayerHandler {
             );
             if (max.isEmpty()) return;
             Map.Entry<ResourceLocation, ResourceLocation> entry = max.get();
-            currentAnimation = SCCAnimationApi.animPlayer(player).getKeyframeAnimationPlayer(entry.getKey());
-            if (currentAnimation == null) return;
-            int currentTick = currentAnimation.getCurrentTick();
+            KeyframeAnimationPlayer animation = SCCAnimationApi.animPlayer(player).getKeyframeAnimationPlayer(entry.getKey());
+            if (animation == null) return;
+            int currentTick = animation.getCurrentTick();
+            // 动画未切换且 tick 未前进时无需重复上报，避免定格动画持续发包
+            if (entry.getValue().equals(currentAnimationId) && currentTick == lastSentTick) return;
+            currentAnimation = animation;
+            currentAnimationId = entry.getValue();
+            lastSentTick = currentTick;
             MovementAnimationTickData movementAnimationTickData = new MovementAnimationTickData(player.getUUID(), Optional.of(entry.getValue()), currentTick);
             PacketDistributor.sendToServer(movementAnimationTickData);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            SCCore.log.error("Failed to report movement animation tick: {}", e.getMessage(), e);
         }
     }
 
@@ -52,9 +60,13 @@ public class AnimationPlayerHandler {
             if (player == null) return;
             if (currentAnimation == null) return;
             if (currentAnimation.isActive()) return;
+            currentAnimation = null;
+            currentAnimationId = null;
+            lastSentTick = Integer.MIN_VALUE;
             MovementAnimationTickData movementAnimationTickData = new MovementAnimationTickData(player.getUUID(), Optional.empty(), 0);
             PacketDistributor.sendToServer(movementAnimationTickData);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            SCCore.log.error("Failed to report movement animation stop: {}", e.getMessage(), e);
         }
     }
 
@@ -66,21 +78,18 @@ public class AnimationPlayerHandler {
             if (instance.player == null) return;
             if (instance.player.tickCount % 20 != 0) return;
             for (AbstractClientPlayer player : instance.level.players()) {
-                AnimationPlayerHelper helper = SCCAnimationApi.animPlayer(player);
                 Map<ResourceLocation, IAnimation> map = ClientAnimationRegistry.getCacheAnim().get(player.getUUID());
                 if (map == null) continue;
+                AnimationPlayerHelper helper = SCCAnimationApi.animPlayer(player);
                 map.forEach((key, iAnimation) -> {
-                    try {
-                        IAnimation animation = ((ModifierLayer<?>) iAnimation).getAnimation();
-                        if (animation == null) return;
-                        if (!animation.isActive()) {
-                            helper.removeAnimation(key);
-                        }
-                    } catch (Exception ignored) {
-                    }
+                    if (!(iAnimation instanceof ModifierLayer<?> modifierLayer)) return;
+                    IAnimation animation = modifierLayer.getAnimation();
+                    if (animation == null || animation.isActive()) return;
+                    helper.removeAnimation(key);
                 });
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            SCCore.log.error("Failed to clear stopped animations: {}", e.getMessage(), e);
         }
     }
 }

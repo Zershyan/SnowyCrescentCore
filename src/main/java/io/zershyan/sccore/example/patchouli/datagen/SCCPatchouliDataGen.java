@@ -11,9 +11,9 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 public class SCCPatchouliDataGen {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
-        //In 1.21.1, book will generate in directory "assets".
+        //1.21.1 中 book.json 生成到 data 目录
         event.createProvider(SCCPatchouliBookProvider::new);
-        //In 1.21.1, content will generate in directory "data".
+        //1.21.1 中书籍内容生成到 assets 目录
         event.createProvider(SCCPatchouliContentProvider::new);
     }
 }

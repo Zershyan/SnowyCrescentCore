@@ -57,20 +57,15 @@ public class AnimationRideEntity extends Entity {
         this.owner = pPlayer;
         this.layer = layer;
         this.animation = animation;
-        Optional<RideData> rideData = animation.animation().rideData();
-        LinkedHashMap<ResourceLocation, UUID> map = new LinkedHashMap<>();
-        rideData.ifPresent(ride -> {
-            List<ResourceLocation> componentAnimations = ride.componentAnimations();
-            for (ResourceLocation componentAnimation : componentAnimations) {
+        animation.animation().rideData().ifPresent(ride -> {
+            for (ResourceLocation componentAnimation : ride.componentAnimations()) {
                 componentPlayers.put(componentAnimation, null);
-                map.put(componentAnimation, null);
             }
         });
 
         entityData.set(OWNER_UUID, getOwner().getUUID());
         entityData.set(LAYER, layer);
         entityData.set(ANIMATION_ID, animation.animLoc());
-        entityData.set(COMPONENT_PLAYERS_UUID, map);
     }
 
     @Nullable
@@ -98,7 +93,7 @@ public class AnimationRideEntity extends Entity {
         float yRot = rideData.yRot();
         if (xRot == 0 && yRot == 0) seat.setRot(player.getXRot(), player.getYRot());
         else seat.setRot(yRot, xRot);
-        if (rideAnim instanceof ServerAnimation) pos.add(rideData.offset());
+        if (rideAnim instanceof ServerAnimation) pos = pos.add(rideData.offset());
         seat.setPos(pos.x, pos.y + 0.6f, pos.z);
         player.level().addFreshEntity(seat);
         player.startRiding(seat, force);
@@ -248,7 +243,7 @@ public class AnimationRideEntity extends Entity {
     public record RideAnimation(ResourceLocation animLoc, Animation animation) {
     }
 
-    public class ComponentPlayer extends TreeMap<ResourceLocation, ServerPlayer> {
+    public class ComponentPlayer extends LinkedHashMap<ResourceLocation, ServerPlayer> {
         @Override
         public ServerPlayer put(ResourceLocation key, ServerPlayer value) {
             ServerPlayer put = super.put(key, value);

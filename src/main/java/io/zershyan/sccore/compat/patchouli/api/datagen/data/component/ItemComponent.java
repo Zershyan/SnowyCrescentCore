@@ -34,7 +34,7 @@ public class ItemComponent extends ITemplateComponent {
             object.addProperty("framed", framed);
         }
         if (linkRecipe != null) {
-            object.addProperty("linkRecipe", linkRecipe);
+            object.addProperty("link_recipe", linkRecipe);
         }
         return object;
     }

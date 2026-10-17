@@ -18,7 +18,7 @@ public class EmptyPage extends IPageType {
     @Override
     public JsonObject toJson(JsonObject object) {
         if (drawFiller != null) {
-            object.addProperty("drawFiller", drawFiller);
+            object.addProperty("draw_filler", drawFiller);
         }
         return object;
     }

@@ -33,6 +33,7 @@ public class MixinMinecraftServer {
     )
     public void reloadResourceStart(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         ServerReloadEvent.Pre post = NeoForge.EVENT_BUS.post(new ServerReloadEvent.Pre(MinecraftServer.class.cast(this)));
-        if (post.isCanceled()) cir.setReturnValue(new CompletableFuture<>());
+        // 取消重载时返回已完成的 future：调用方继续执行，但不会真正重载资源
+        if (post.isCanceled()) cir.setReturnValue(CompletableFuture.completedFuture(null));
     }
 }

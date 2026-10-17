@@ -57,11 +57,8 @@ public class PatchouliEntryData implements IPatchouliEntryData {
 
     @Override
     public PatchouliEntryData addExtraRecipeMapping(ItemFormat.Multi itemFormat, IPageType pageType) {
-        for (int i = 0; i < pages.size(); i++) {
-            if (pages.get(i) == pageType) {
-                addExtraRecipeMapping(itemFormat, i);
-            }
-        }
+        int index = pages.lastIndexOf(pageType);
+        if (index >= 0) addExtraRecipeMapping(itemFormat, index);
         return this;
     }
 
@@ -151,7 +148,7 @@ public class PatchouliEntryData implements IPatchouliEntryData {
             object.addProperty("secret", secret);
         }
         if (readByDefault != null) {
-            object.addProperty("readByDefault", readByDefault);
+            object.addProperty("read_by_default", readByDefault);
         }
         if (sortnum != null) {
             object.addProperty("sortnum", sortnum);
