@@ -12,8 +12,11 @@ tasks.named('wrapper', Wrapper).configure {
 group = mod_group_id
 // 包内版本号恒带 +build.<编号>，只有 buildAlpha 会把这个编号也写进 jar 文件名
 def isAlphaBuild = gradle.startParameter.taskNames.any { it.endsWith('buildAlpha') }
+// buildAlpha 用 +1 后的编号构建，成功后把同一编号写回 gradle.properties，
+// 使产物里的编号与 properties 始终一致
+def buildNumber = mod_build_number.toInteger() + (isAlphaBuild ? 1 : 0)
 def baseVersion = "${mod_version}-${minecraft_version}"
-version = "${baseVersion}+build.${mod_build_number}"
+version = "${baseVersion}+build.${buildNumber}"
 
 sourceSets.main.resources {
     srcDir('src/generated/resources')
@@ -209,11 +212,26 @@ idea {
     }
 }
 
-// 与 build 完全相同，只是版本号会带上 +build.<编号>
+// 与 build 完全相同，只是编号 +1 并把该编号同步回 gradle.properties
 tasks.register('buildAlpha') {
     group = 'build'
-    description = '打成 alpha 包，产物版本号带 +build.<编号>'
+    description = '打成 alpha 包，产物版本号带 +build.<编号>，构建成功后把该编号同步回 gradle.properties'
     dependsOn 'build'
+    def propsFile = layout.projectDirectory.file('gradle.properties').asFile
+    def buildNumberBefore = mod_build_number
+    def buildNumberUsed = buildNumber
+    doLast {
+        def text = propsFile.getText('UTF-8')
+        def matcher = (text =~ '(?m)^mod_build_number=\\s*(\\d+)\\s*$')
+        if (!matcher.find()) {
+            logger.warn('mod_build_number not found in gradle.properties, skipped sync')
+            return
+        }
+        propsFile.setText(
+                text.replaceFirst('(?m)^mod_build_number=\\s*\\d+\\s*$', "mod_build_number=${buildNumberUsed}"),
+                'UTF-8')
+        logger.lifecycle("mod_build_number synced: ${buildNumberBefore} -> ${buildNumberUsed}")
+    }
 }
 
 // 打包收尾：原包（带编号）挪进 libs/origin，最终包改名到 libs 顶层；发布用的 javadoc/sources 辅助包不留存
