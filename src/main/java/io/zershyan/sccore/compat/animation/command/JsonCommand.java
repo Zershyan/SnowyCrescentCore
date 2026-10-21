@@ -14,7 +14,7 @@ import io.zershyan.sccore.compat.animation.data.RideData;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import io.zershyan.sccore.compat.animation.data.camera.CameraChange;
 import io.zershyan.sccore.compat.animation.data.camera.CameraData;
-import io.zershyan.sccore.datagen.init.SCCKeyLang;
+import io.zershyan.sccore.datagen.lang.SCCKeyLang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
@@ -76,7 +76,7 @@ public class JsonCommand {
             source.sendSuccess(() -> SCCKeyLang.AnimationToJson.get(dirString).withStyle(ChatFormatting.GREEN), true);
         } catch (Exception e) {
             source.sendFailure(SCCKeyLang.CommandRunFail.withStyle(ChatFormatting.RED));
-            SCCore.log.error(e.getMessage());
+            SCCore.LOGGER.error(e.getMessage());
             return 0;
         }
         return 1;

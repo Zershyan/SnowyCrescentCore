@@ -1,9 +1,8 @@
 package io.zershyan.sccore;
 
 
-import com.mojang.logging.LogUtils;
 import io.zershyan.sccore.compat.SCCCompatFactory;
-import io.zershyan.sccore.config.StartupConfig;
+import io.zershyan.sccore.registry.config.StartupConfig;
 import io.zershyan.sccore.example.animation.ExampleAnimations;
 import io.zershyan.sccore.example.patchouli.ExamplePatchouli;
 import io.zershyan.sccore.registry.SCCCommands;
@@ -17,27 +16,28 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mod(SCCore.MODID)
 public class SCCore {
-    public static final Logger log = LogUtils.getLogger();
+    public static final Logger LOGGER = LoggerFactory.getLogger(SCCore.class);
     public static final String MODID = "sccore";
     public static final String NAME = "Snowy Crescent Core";
 
     public SCCore(IEventBus modEventBus, Dist dist, ModContainer modContainer) {
         IEventBus neoEventBus = NeoForge.EVENT_BUS;
 
-        SCCPackets.register(modEventBus);
-        SCCConfigs.register(modContainer);
-        SCCCommands.register(modEventBus);
+        SCCPackets.doRegister(modEventBus);
+        SCCConfigs.doRegister(modContainer);
+        SCCCommands.doRegister(modEventBus);
         SCCCompatFactory.register(neoEventBus, modEventBus);
 
         boolean needExample = !FMLEnvironment.production && StartupConfig.enableExample.get();
         if (needExample) {
-            ExampleAnimations.register(neoEventBus);
-            ExamplePatchouli.register(neoEventBus, modEventBus);
+            ExampleAnimations.doRegister(neoEventBus);
+            ExamplePatchouli.doRegister(neoEventBus, modEventBus);
             if (dist.isClient()) {
-                ExampleAnimations.registerClient(neoEventBus);
+                ExampleAnimations.doRegisterClient(neoEventBus);
             }
         }
     }

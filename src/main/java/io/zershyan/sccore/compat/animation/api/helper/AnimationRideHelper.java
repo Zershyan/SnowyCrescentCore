@@ -114,7 +114,7 @@ public class AnimationRideHelper {
             return;
         }
         if (animation == null || animation.animation() == null) {
-            SCCore.log.warn("Start ride animation failed, unknown animation: {}",
+            SCCore.LOGGER.warn("Start ride animation failed, unknown animation: {}",
                     animation == null ? null : animation.animLoc()
             );
             return;

@@ -1,16 +1,18 @@
 package io.zershyan.sccore.compat;
 
 
-import com.mojang.logging.LogUtils;
-import io.zershyan.sccore.SCCore;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 
 public interface ICompatUtils {
+    Logger LOGGER = LoggerFactory.getLogger(ICompatUtils.class);
+
     default boolean testLoadedAndRun(Runnable runnable) {
         if (isModLoaded()) runnable.run();
         else return false;
@@ -55,7 +57,7 @@ public interface ICompatUtils {
         try {
             testLoadedAndRun(() -> init(forgeBus, modBus));
         } catch (Exception e) {
-            LogUtils.getLogger().error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -70,7 +72,7 @@ public interface ICompatUtils {
         try {
             testLoadedAndRun(() -> registerNetwork(registrar));
         } catch (Exception e) {
-            SCCore.log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 

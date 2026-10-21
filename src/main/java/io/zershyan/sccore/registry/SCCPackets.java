@@ -24,7 +24,7 @@ public class SCCPackets {
         SCCCompatFactory.registerNetwork(registrar);
     }
 
-    public static void register(IEventBus eventBus) {
-        eventBus.addListener(SCCPackets::payloadRegister);
+    public static void doRegister(IEventBus modEventBus) {
+        modEventBus.addListener(SCCPackets::payloadRegister);
     }
 }

@@ -1,6 +1,6 @@
 package io.zershyan.sccore.datagen.provider;
 
-import io.zershyan.sccore.datagen.init.SCCKeyLang;
+import io.zershyan.sccore.datagen.lang.SCCKeyLang;
 import net.minecraft.DetectedVersion;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.metadata.PackMetadataGenerator;

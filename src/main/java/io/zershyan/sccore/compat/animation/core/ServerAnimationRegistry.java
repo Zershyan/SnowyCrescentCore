@@ -81,7 +81,7 @@ public class ServerAnimationRegistry {
                 JsonElement element = JsonParser.parseReader(reader);
                 Layers.putAll(SyncAnimationFactory.LAYER_CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
-                SCCore.log.error(e.getMessage());
+                SCCore.LOGGER.error(e.getMessage());
             }
         }
 
@@ -96,7 +96,7 @@ public class ServerAnimationRegistry {
                 JsonElement element = JsonParser.parseReader(reader);
                 Animations.put(location, ServerAnimation.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
-                SCCore.log.error(e.getMessage());
+                SCCore.LOGGER.error(e.getMessage());
             }
         });
     }

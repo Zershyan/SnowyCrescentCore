@@ -1,4 +1,4 @@
-package io.zershyan.sccore.datagen.init;
+package io.zershyan.sccore.datagen.lang;
 
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.datagen.util.LazyComponent;

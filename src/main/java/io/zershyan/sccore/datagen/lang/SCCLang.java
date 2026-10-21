@@ -1,4 +1,4 @@
-package io.zershyan.sccore.datagen.init;
+package io.zershyan.sccore.datagen.lang;
 
 import java.util.ArrayList;
 import java.util.List;

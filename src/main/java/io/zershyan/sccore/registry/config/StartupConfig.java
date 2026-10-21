@@ -1,6 +1,6 @@
-package io.zershyan.sccore.config;
+package io.zershyan.sccore.registry.config;
 
-import io.zershyan.sccore.datagen.init.SCCConfigLang;
+import io.zershyan.sccore.datagen.lang.SCCConfigLang;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class StartupConfig {

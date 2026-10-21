@@ -3,7 +3,6 @@
 	"minVersion": "0.8",
 	"package": "io.zershyan.sccore.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"refmap": "sccore.refmap.json",
 	"plugin": "io.zershyan.sccore.mixin.SCCoreMixinPlugin",
 	"mixins": [
 		"playeranimator.common.MixinEntity",

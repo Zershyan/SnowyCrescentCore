@@ -10,7 +10,7 @@ public class ExamplePatchouli {
      * @param modBus
      * @see SCCore#SCCore
      */
-    public static void register(IEventBus forgeBus, IEventBus modBus) {
+    public static void doRegister(IEventBus forgeBus, IEventBus modBus) {
         modBus.addListener(SCCPatchouliDataGen::gatherData);
     }
 }

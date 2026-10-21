@@ -48,7 +48,7 @@ public class AnimationPlayerHandler {
             MovementAnimationTickData movementAnimationTickData = new MovementAnimationTickData(player.getUUID(), Optional.of(entry.getValue()), currentTick);
             PacketDistributor.sendToServer(movementAnimationTickData);
         } catch (Exception e) {
-            SCCore.log.error("Failed to report movement animation tick: {}", e.getMessage(), e);
+            SCCore.LOGGER.error("Failed to report movement animation tick: {}", e.getMessage(), e);
         }
     }
 
@@ -66,7 +66,7 @@ public class AnimationPlayerHandler {
             MovementAnimationTickData movementAnimationTickData = new MovementAnimationTickData(player.getUUID(), Optional.empty(), 0);
             PacketDistributor.sendToServer(movementAnimationTickData);
         } catch (Exception e) {
-            SCCore.log.error("Failed to report movement animation stop: {}", e.getMessage(), e);
+            SCCore.LOGGER.error("Failed to report movement animation stop: {}", e.getMessage(), e);
         }
     }
 
@@ -89,7 +89,7 @@ public class AnimationPlayerHandler {
                 });
             }
         } catch (Exception e) {
-            SCCore.log.error("Failed to clear stopped animations: {}", e.getMessage(), e);
+            SCCore.LOGGER.error("Failed to clear stopped animations: {}", e.getMessage(), e);
         }
     }
 }

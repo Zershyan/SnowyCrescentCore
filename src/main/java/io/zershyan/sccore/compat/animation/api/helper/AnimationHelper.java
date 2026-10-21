@@ -140,7 +140,7 @@ public class AnimationHelper {
                 return opera.endOpera();
             });
         } catch (Exception e) {
-            SCCore.log.warn("Play animation error, layer : {}, animation : {}", layer, animationId);
+            SCCore.LOGGER.warn("Play animation error, layer : {}, animation : {}", layer, animationId);
         }
     }
 
@@ -195,7 +195,7 @@ public class AnimationHelper {
             if (!SCCAnimationApi.isLayerExist(layer)) throw new RuntimeException("Unknown layer.");
             operaData(opera -> opera.setRideAnim(layer, rideAnim.animation().orElseThrow()).endOpera());
         } catch (Exception e) {
-            SCCore.log.warn("Play ride animation error, layer : {}, animation : {}",
+            SCCore.LOGGER.warn("Play ride animation error, layer : {}, animation : {}",
                     rideAnim.layer().orElse(null), rideAnim.animation().orElse(null)
             );
         }
@@ -211,7 +211,7 @@ public class AnimationHelper {
     }
 
     private void warnUnknowLayer(ResourceLocation layer) {
-        SCCore.log.warn("Remove animation error, layer : {}.", layer);
+        SCCore.LOGGER.warn("Remove animation error, layer : {}.", layer);
     }
 
     /**

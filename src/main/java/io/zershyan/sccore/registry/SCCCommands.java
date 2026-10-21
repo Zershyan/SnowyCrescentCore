@@ -30,8 +30,8 @@ public class SCCCommands {
         return Set.copyOf(animationCommand);
     }
 
-    public static void register(IEventBus modBus) {
-        Arguments.register(modBus);
+    public static void doRegister(IEventBus modBus) {
+        Arguments.doRegister(modBus);
     }
 
     public static class Arguments {
@@ -39,7 +39,7 @@ public class SCCCommands {
                 Registries.COMMAND_ARGUMENT_TYPE, SCCore.MODID
         );
 
-        public static void register(IEventBus eventBus) {
+        public static void doRegister(IEventBus eventBus) {
             REGISTRY.register(eventBus);
         }
     }

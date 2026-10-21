@@ -1,8 +1,7 @@
 package io.zershyan.sccore.datagen.provider;
 
-import com.mojang.logging.LogUtils;
 import io.zershyan.sccore.SCCore;
-import io.zershyan.sccore.datagen.init.SCCLang;
+import io.zershyan.sccore.datagen.lang.SCCLang;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
@@ -11,9 +10,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.LanguageProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SCCLangProvider extends LanguageProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SCCLangProvider.class);
     private static final String enUs = "en_us";
     private static final String zhCn = "zh_cn";
     private final String locale;
@@ -53,7 +55,7 @@ public class SCCLangProvider extends LanguageProvider {
             case EntityType<?> object -> add(object, string);
             case TagKey<?> object -> add(object, string);
             default -> {
-                LogUtils.getLogger().error("Unknown object type: {}", o.getClass());
+                LOGGER.error("Unknown object type: {}", o.getClass());
                 add(o.toString(), string);
             }
         }

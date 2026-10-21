@@ -9,7 +9,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 @EventBusSubscriber(modid = SCCore.MODID)
-public class DataGenHandler {
+public class DataGeneratorHandler {
 
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {

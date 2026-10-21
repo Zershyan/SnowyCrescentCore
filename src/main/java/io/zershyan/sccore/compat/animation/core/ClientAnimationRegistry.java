@@ -21,7 +21,7 @@ import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.helper.AnimationPlayerHelper;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
-import io.zershyan.sccore.compat.animation.imixin.IMixinFactoryHolder;
+import io.zershyan.sccore.util.mixin.playeranimator.IMixinFactoryHolder;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -86,7 +86,7 @@ public class ClientAnimationRegistry {
                 JsonElement element = JsonParser.parseReader(reader);
                 Layers.putAll(SyncAnimationFactory.LAYER_CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
-                SCCore.log.error(e.getMessage());
+                SCCore.LOGGER.error(e.getMessage());
             }
         }
 
@@ -101,7 +101,7 @@ public class ClientAnimationRegistry {
                 JsonElement element = JsonParser.parseReader(reader);
                 Animations.put(location, ClientAnimation.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             } catch (Exception e) {
-                SCCore.log.error(e.getMessage());
+                SCCore.LOGGER.error(e.getMessage());
             }
         });
 
@@ -145,7 +145,7 @@ public class ClientAnimationRegistry {
         try {
             instance.level.players().forEach(ClientAnimationRegistry::reflectAnimationCore);
         } catch (Exception e) {
-            SCCore.log.error("{} reflect error: {}", ClientAnimationRegistry.class.getName(), e.getMessage());
+            SCCore.LOGGER.error("{} reflect error: {}", ClientAnimationRegistry.class.getName(), e.getMessage());
         }
     }
 
@@ -266,7 +266,7 @@ public class ClientAnimationRegistry {
                 animPlayer.innerPlayAnimation(3, Ease.INOUTSINE, layer, dataAnimations.get(layer));
             }
         } catch (Exception e) {
-            SCCore.log.error("Failed to register on {} animation layer: {}", player, e.getMessage(), e);
+            SCCore.LOGGER.error("Failed to register on {} animation layer: {}", player, e.getMessage(), e);
         }
     }
 }

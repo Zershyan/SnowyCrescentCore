@@ -1,4 +1,4 @@
-package io.zershyan.sccore.compat.animation.imixin;
+package io.zershyan.sccore.util.mixin.playeranimator;
 
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationFactory;
