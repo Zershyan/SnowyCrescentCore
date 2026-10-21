@@ -26,10 +26,6 @@ import java.util.Map;
  */
 public abstract class LayerRegisterEvent extends Event {
     protected final Map<ResourceLocation, Integer> layers = new HashMap<>();
-    private final Common common = new Common();
-    public LayerRegisterEvent() {
-        NeoForge.EVENT_BUS.post(common);
-    }
 
     /**
      * 获取所有已注册的动画层。
@@ -37,7 +33,6 @@ public abstract class LayerRegisterEvent extends Event {
      * @return 动画层资源位置到优先级的映射
      */
     public Map<ResourceLocation, Integer> getLayers() {
-        layers.putAll(common.getLayers());
         return layers;
     }
 
@@ -55,23 +50,35 @@ public abstract class LayerRegisterEvent extends Event {
      * 客户端动画层注册事件，在客户端资源重载或玩家登录时触发。
      */
     public static class Client extends LayerRegisterEvent {
+        private final Common common = new Common();
+        public Client() {
+            NeoForge.EVENT_BUS.post(common);
+        }
+
+        public Map<ResourceLocation, Integer> getLayers() {
+            layers.putAll(common.getLayers());
+            return layers;
+        }
     }
 
     /**
      * 服务端动画层注册事件，在服务端启动或资源重载时触发。
      */
     public static class Server extends LayerRegisterEvent {
+        private final Common common = new Common();
+        public Server() {
+            NeoForge.EVENT_BUS.post(common);
+        }
+
+        public Map<ResourceLocation, Integer> getLayers() {
+            layers.putAll(common.getLayers());
+            return layers;
+        }
     }
 
     /**
      * 通用动画层注册事件，在双端启动或资源重载时触发。
      */
     public static final class Common extends LayerRegisterEvent {
-        public Common() {}
-
-        @Override
-        public Map<ResourceLocation, Integer> getLayers() {
-            return layers;
-        }
     }
 }
