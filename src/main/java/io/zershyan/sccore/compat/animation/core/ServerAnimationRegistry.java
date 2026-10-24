@@ -7,7 +7,6 @@ import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.api.events.client.ServerReloadEvent;
 import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
-import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import io.zershyan.sccore.compat.animation.network.data.RegisterAnimationData;
 import io.zershyan.sccore.compat.animation.network.data.RegisterLayerData;
@@ -107,15 +106,18 @@ public class ServerAnimationRegistry {
     }
 
     /**
-     * 统一查询动画：先查服务端注册表，再查同步动画工厂。
+     * 统一查询服务端动画：先查服务端注册表，再查同步动画工厂。
+     *
+     * <p>服务端只有注册表，客户端两者都有（注册表在客户端进程通常为空），
+     * 因此两端用同一方法都能拿到带 AABB 与相机数据的服务端定义。</p>
      *
      * @param animationLocation 动画资源位置
-     * @return 动画实例，不存在则返回 {@code null}
+     * @return 服务端动画实例，不存在则返回 {@code null}
      */
     @Nullable
-    public static Animation commonGetAnimation(ResourceLocation animationLocation) {
-        if (Animations.containsKey(animationLocation)) return Animations.get(animationLocation);
-        else return SyncAnimationFactory.getAnimation(animationLocation);
+    public static ServerAnimation commonGetAnimation(ResourceLocation animationLocation) {
+        ServerAnimation animation = Animations.get(animationLocation);
+        return animation != null ? animation : SyncAnimationFactory.getAnimation(animationLocation);
     }
 
     public static Map<ResourceLocation, Integer> getLayers() {

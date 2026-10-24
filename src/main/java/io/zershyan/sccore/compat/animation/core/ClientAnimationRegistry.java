@@ -20,7 +20,9 @@ import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.api.events.AnimationRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.events.LayerRegisterEvent;
 import io.zershyan.sccore.compat.animation.api.helper.AnimationPlayerHelper;
+import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.data.ClientAnimation;
+import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import io.zershyan.sccore.util.mixin.playeranimator.IMixinFactoryHolder;
 import io.zershyan.sccore.compat.animation.registry.attachment.PlayerAnimations;
 import net.minecraft.client.Minecraft;
@@ -42,9 +44,12 @@ import java.util.*;
 /**
  * 客户端动画注册表，管理客户端动画层与动画定义的注册、加载与 Player Animator 层绑定。
  *
- * <p>注册来源与服务端相同（事件驱动 + 资源包驱动），此外还负责将注册的层
- * 深度绑定到 Player Animator 的 {@code AnimationStack} 中，并在资源重载时
- * 通过反射重建已有玩家的动画栈。</p>
+ * <p>动画定义来自事件驱动与 {@code assets} 侧的 {@code animation/animation}；服务端定义位于
+ * {@code data} 侧的同名路径，由资源管理器的 {@code PackType} 天然隔离，不会在此被读取，
+ * 而是随登录由 {@link SyncAnimationFactory} 下发。层同样如此，并与下发的层表合并。</p>
+ *
+ * <p>本类还负责将注册的层深度绑定到 Player Animator 的 {@code AnimationStack} 中，
+ * 并在资源重载时通过反射重建已有玩家的动画栈。</p>
  */
 public class ClientAnimationRegistry {
     public static final String LAYER_DIR = "animation/layer";
@@ -162,12 +167,18 @@ public class ClientAnimationRegistry {
     }
 
     /**
-     * 获取所有客户端动画，包括本地注册的与服务端同步的。
+     * 获取所有客户端可见动画，包括本地注册的与服务端同步的。
+     *
+     * <p>同 ID 时按 priority 取用，同优先级使用本地注册的客户端定义。</p>
      */
-    public static Map<ResourceLocation, ClientAnimation> getAllAnimations() {
-        return Map.copyOf(new HashMap<>(Animations) {{
-            putAll(SyncAnimationFactory.getAnimations());
-        }});
+    public static Map<ResourceLocation, Animation> getAllAnimations() {
+        Map<ResourceLocation, Animation> result = new HashMap<>();
+        SyncAnimationFactory.getAnimations().forEach(result::put);
+        Animations.forEach((location, animation) -> {
+            Animation synced = result.get(location);
+            if (synced == null || animation.priority() >= synced.priority()) result.put(location, animation);
+        });
+        return Map.copyOf(result);
     }
 
     /**
@@ -189,15 +200,19 @@ public class ClientAnimationRegistry {
     }
 
     /**
-     * 查询客户端动画，优先查同步动画工厂，再查本地注册表。
+     * 查询客户端可见的动画定义：服务端同步定义与本地注册定义中优先级更高者，
+     * 同优先级时使用本地定义。
      *
      * @param location 动画资源位置
-     * @return 动画实例，不存在则返回 {@code null}
+     * @return 动画定义，两端都不存在时返回 {@code null}
      */
     @Nullable
-    public static ClientAnimation getAnimation(ResourceLocation location) {
-        ClientAnimation anim = SyncAnimationFactory.getAnimation(location);
-        return anim != null ? anim : Animations.getOrDefault(location, null);
+    public static Animation getAnimation(ResourceLocation location) {
+        ServerAnimation synced = SyncAnimationFactory.getAnimation(location);
+        ClientAnimation local = Animations.get(location);
+        if (synced == null) return local;
+        if (local == null) return synced;
+        return local.priority() >= synced.priority() ? local : synced;
     }
 
     /**
@@ -208,7 +223,7 @@ public class ClientAnimationRegistry {
      */
     @Nullable
     public static KeyframeAnimation getKeyframeAnimation(ResourceLocation location) {
-        ClientAnimation animation = getAnimation(location);
+        Animation animation = getAnimation(location);
         if (animation == null) return null;
         IPlayable playable = PlayerAnimationRegistry.getAnimation(animation.animationLocation());
         return playable instanceof KeyframeAnimation keyframe ? keyframe : null;

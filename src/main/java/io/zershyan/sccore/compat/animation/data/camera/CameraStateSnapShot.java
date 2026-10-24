@@ -1,12 +1,12 @@
 package io.zershyan.sccore.compat.animation.data.camera;
 
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
-import io.zershyan.sccore.compat.animation.data.ClientAnimation;
+import io.zershyan.sccore.compat.animation.data.Animation;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 
 public class CameraStateSnapShot {
-    private @Nullable ClientAnimation curAnimation;
+    private @Nullable Animation curAnimation;
     private @Nullable KeyframeAnimationPlayer curKeyframeAnimation;
     private @Nullable CameraData cacheFirst;
     private @Nullable CameraData cacheThird;
@@ -18,11 +18,11 @@ public class CameraStateSnapShot {
         this.cacheThird = null;
     }
 
-    public @Nullable ClientAnimation getCurAnimation() {
+    public @Nullable Animation getCurAnimation() {
         return curAnimation;
     }
 
-    public void setCurAnimation(@Nullable ClientAnimation curAnimation) {
+    public void setCurAnimation(@Nullable Animation curAnimation) {
         this.curAnimation = curAnimation;
     }
 

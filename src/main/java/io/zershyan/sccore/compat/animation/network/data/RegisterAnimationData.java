@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
-import io.zershyan.sccore.compat.animation.data.ClientAnimation;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,7 +14,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -41,12 +39,6 @@ public record RegisterAnimationData(
     }
 
     public void handler(IPayloadContext context) {
-        context.enqueueWork(() -> {
-            HashMap<ResourceLocation, ServerAnimation> animations = animations();
-            Map<ResourceLocation, ClientAnimation> results = new HashMap<>();
-            animations.forEach((location, animation) ->
-                    results.put(location, new ClientAnimation(animation)));
-            SyncAnimationFactory.reloadAnimations(results);
-        });
+        context.enqueueWork(() -> SyncAnimationFactory.reloadAnimations(animations()));
     }
 }

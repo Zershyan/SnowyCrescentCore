@@ -7,6 +7,7 @@ import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.api.helper.AnimationPlayerHelper;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
+import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import io.zershyan.sccore.compat.animation.network.data.MovementAnimationTickData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -33,7 +34,7 @@ public class AnimationPlayerHandler {
             AbstractClientPlayer player = instance.player;
             if (player == null) return;
             Optional<Map.Entry<ResourceLocation, ResourceLocation>> max = SCCAnimationApi.animation(player).getHighestPriorityAnimation(
-                    animation -> !animation.aabbMovement().isEmpty()
+                    animation -> animation instanceof ServerAnimation serverAnimation && !serverAnimation.aabbMovement().isEmpty()
             );
             if (max.isEmpty()) return;
             Map.Entry<ResourceLocation, ResourceLocation> entry = max.get();

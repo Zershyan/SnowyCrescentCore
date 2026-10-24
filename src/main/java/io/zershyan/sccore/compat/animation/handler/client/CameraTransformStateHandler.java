@@ -5,7 +5,7 @@ import io.zershyan.sccore.SCCore;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.api.helper.AnimationHelper;
 import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
-import io.zershyan.sccore.compat.animation.data.ClientAnimation;
+import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.data.camera.CameraData;
 import io.zershyan.sccore.compat.animation.data.camera.CameraStateSnapShot;
 import net.minecraft.client.Minecraft;
@@ -50,18 +50,14 @@ public final class CameraTransformStateHandler {
 
     private static void samplePlayer(AbstractClientPlayer player) {
         AnimationHelper helper = SCCAnimationApi.animation(player);
-        Optional<Map.Entry<ResourceLocation, ResourceLocation>> max = helper.getHighestPriorityAnimation(animation -> {
-            if (animation instanceof ClientAnimation clientAnimation) {
-                return clientAnimation.hasCameraChange();
-            } else return false;
-        });
+        Optional<Map.Entry<ResourceLocation, ResourceLocation>> max = helper.getHighestPriorityAnimation(Animation::hasCameraChange);
 
         CameraStateSnapShot snapShot = SnapShots.computeIfAbsent(player.getUUID(), uuid -> new CameraStateSnapShot());
         testValid:
         {
             if (max.isEmpty()) break testValid;
             Map.Entry<ResourceLocation, ResourceLocation> entry = max.get();
-            ClientAnimation animation = ClientAnimationRegistry.getAnimation(entry.getValue());
+            Animation animation = ClientAnimationRegistry.getAnimation(entry.getValue());
             if (animation == null) break testValid;
             KeyframeAnimationPlayer currentAnimation = SCCAnimationApi.animPlayer(player).getKeyframeAnimationPlayer(entry.getKey());
             if (currentAnimation == null) break testValid;

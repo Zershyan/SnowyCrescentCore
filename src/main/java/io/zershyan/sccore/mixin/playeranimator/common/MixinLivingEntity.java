@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.zershyan.sccore.compat.animation.api.SCCAnimationApi;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
-import io.zershyan.sccore.compat.animation.data.Animation;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,9 +35,9 @@ public abstract class MixinLivingEntity {
             });
             if (max.isEmpty()) break modifyJumpPower;
             ResourceLocation value = max.get().getValue();
-            Animation animation = ServerAnimationRegistry.commonGetAnimation(value);
-            if (!(animation instanceof ServerAnimation serverAnimation)) break modifyJumpPower;
-            return getJumpPower(serverAnimation.jumpModifier());
+            ServerAnimation animation = ServerAnimationRegistry.commonGetAnimation(value);
+            if (animation == null) break modifyJumpPower;
+            return getJumpPower(animation.jumpModifier());
         }
         return original.call(instance);
     }

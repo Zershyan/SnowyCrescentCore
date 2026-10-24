@@ -1,8 +1,8 @@
 package io.zershyan.sccore.compat.animation.api.events;
 
+import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
-import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +10,12 @@ import java.util.Map;
 /**
  * 动画层注册事件，在动画注册表重载时由 NeoForge 事件总线分发。
  *
- * <p>模组监听 {@link Client} 或 {@link Server} 子类事件，通过
+ * <p>模组监听 {@link Server} 或 {@link Client} 子类事件，通过
  * {@link #registerLayer(ResourceLocation, Integer)} 注册自定义动画层及其优先级。
  * 层的优先级决定了 Player Animator 的 {@code AnimationStack} 中各层的叠加顺序。</p>
+ *
+ * <p>只需注册 {@link Server}：服务端在玩家登录时下发层表（见 {@link SyncAnimationFactory}），
+ * 客户端据此获得同一份层数据。{@link Client} 仅用于纯客户端层，这类层不会同步给服务端。</p>
  *
  * <h3>典型用法</h3>
  * <pre>{@code
@@ -48,37 +51,17 @@ public abstract class LayerRegisterEvent extends Event {
 
     /**
      * 客户端动画层注册事件，在客户端资源重载或玩家登录时触发。
+     *
+     * <p>只应注册纯客户端层：服务端不会收到这些层，因此不参与服务端侧的优先级仲裁。</p>
      */
     public static class Client extends LayerRegisterEvent {
-        private final Common common = new Common();
-        public Client() {
-            NeoForge.EVENT_BUS.post(common);
-        }
-
-        public Map<ResourceLocation, Integer> getLayers() {
-            layers.putAll(common.getLayers());
-            return layers;
-        }
     }
 
     /**
      * 服务端动画层注册事件，在服务端启动或资源重载时触发。
+     *
+     * <p>注册的层会随登录同步下发到客户端，两端因此保持一致。</p>
      */
     public static class Server extends LayerRegisterEvent {
-        private final Common common = new Common();
-        public Server() {
-            NeoForge.EVENT_BUS.post(common);
-        }
-
-        public Map<ResourceLocation, Integer> getLayers() {
-            layers.putAll(common.getLayers());
-            return layers;
-        }
-    }
-
-    /**
-     * 通用动画层注册事件，在双端启动或资源重载时触发。
-     */
-    public static final class Common extends LayerRegisterEvent {
     }
 }

@@ -3,7 +3,7 @@ package io.zershyan.sccore.mixin.playeranimator.common;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import io.zershyan.sccore.api.SCCoreApi;
 import io.zershyan.sccore.compat.animation.core.ServerAnimationRegistry;
-import io.zershyan.sccore.compat.animation.data.Animation;
+import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import io.zershyan.sccore.compat.animation.handler.common.MovementAnimationTickHandler;
 import io.zershyan.sccore.compat.animation.network.data.MovementAnimationTickData;
 import net.minecraft.resources.ResourceLocation;
@@ -69,7 +69,7 @@ public class MixinEntity {
         if (data == null) return original;
         Optional<ResourceLocation> resourceLocation = data.animationId();
         if (resourceLocation.isEmpty()) return original;
-        Animation animation = ServerAnimationRegistry.commonGetAnimation(resourceLocation.get());
+        ServerAnimation animation = ServerAnimationRegistry.commonGetAnimation(resourceLocation.get());
         if (animation == null) return original;
         float partialTick = SCCoreApi.tryGetPartialTick(player.level());
         AABB aabb = sccore$getInterpolatedAABB(data.currentTick(), partialTick, animation.aabbMovement().getMovementTree());
