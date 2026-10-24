@@ -17,6 +17,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -25,6 +26,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 服务端动画注册表，管理服务端动画层与动画定义的注册、加载与同步。
@@ -43,16 +47,36 @@ public class ServerAnimationRegistry {
     public static final String ANIMATION_DIR = "animation/animation";
     private static final Map<ResourceLocation, Integer> Layers = new HashMap<>();
     private static final Map<ResourceLocation, ServerAnimation> Animations = new HashMap<>();
+    private static final Set<UUID> notifiedPlayers = ConcurrentHashMap.newKeySet();
 
     @SubscribeEvent
     public static void serverInit(ServerAboutToStartEvent event) {
+        // 新世界启动：上一个世界的下发记录必须作废，单人存档退出重进时才能重新下发
+        notifiedPlayers.clear();
         reloadData(event.getServer());
     }
 
     @SubscribeEvent
+    public static void initPlayerOnJoin(EntityJoinLevelEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (!notifiedPlayers.add(player.getUUID())) return;
+        sendDataToPlayer(player);
+    }
+
+    /**
+     * 可能不够早，所以上面写了个EntityJoinLevelEvent，这个是兜底
+     * @param event
+     */
+    @SubscribeEvent
     public static void initPlayer(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (!notifiedPlayers.add(player.getUUID())) return;
         sendDataToPlayer(player);
+    }
+
+    @SubscribeEvent
+    public static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        notifiedPlayers.remove(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -101,8 +125,9 @@ public class ServerAnimationRegistry {
     }
 
     private static void sendDataToPlayer(ServerPlayer player) {
-        PacketDistributor.sendToPlayer(player, new RegisterLayerData(new HashMap<>(Layers)));
+        // 先发动画定义再发层表：客户端注册层时会重建动画栈，此时定义已经就位
         PacketDistributor.sendToPlayer(player, new RegisterAnimationData(new HashMap<>(Animations)));
+        PacketDistributor.sendToPlayer(player, new RegisterLayerData(new HashMap<>(Layers)));
     }
 
     /**

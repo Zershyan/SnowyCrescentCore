@@ -136,7 +136,11 @@ public class AnimationPlayerHelper {
      * 播放/移除层动画的内部实现。
      *
      * <p>取得该层的 {@code ModifierLayer}，用 {@code KeyframeAnimationPlayer} 包装注册表中的关键帧动画，
-     * 先停止旧动画，再以指定淡入长度与缓动替换。若动画在注册表中不存在，会向本地玩家提示并清理对应映射项。</p>
+     * 以指定淡入长度与缓动替换。</p>
+     *
+     * <p>动画定义尚未下发到客户端时保持静默：登录阶段的 Attachment 同步可能早于注册数据，
+     * 此时清掉该层并等待 {@link ClientAnimationRegistry#replayPlayerAnimations()} 补播。
+     * 只有定义存在却取不到关键帧时，才认为是资源缺失并提示本地玩家。</p>
      *
      * @param fadeLength 淡入持续 tick 数
      * @param ease       淡入缓动
@@ -149,22 +153,27 @@ public class AnimationPlayerHelper {
                 .getPlayerAssociatedData(player).get(layer);
         if (modifierLayer == null) return;
         KeyframeAnimationPlayer iAnimation = null;
-        Minecraft instance = Minecraft.getInstance();
-        LocalPlayer localPlayer = instance.player;
         if (animation != null) {
             KeyframeAnimation keyframeAnimation = ClientAnimationRegistry.getKeyframeAnimation(animation);
-            iAnimation = keyframeAnimation != null ? new KeyframeAnimationPlayer(keyframeAnimation) : null;
-            if (keyframeAnimation == null && localPlayer != null) {
-                localPlayer.sendSystemMessage(SCCKeyLang.AnimationResourceNotFound
-                        .get(animation.toString()).withStyle(ChatFormatting.RED));
-                SCCAnimationApi.animation(player).operaData(opera -> opera
-                        .removeClientAnim(layer)
-                        .removeServerAnim(layer)
-                        .endOpera()
-                );
+            if (keyframeAnimation != null) {
+                iAnimation = new KeyframeAnimationPlayer(keyframeAnimation);
+            } else if (ClientAnimationRegistry.getAnimation(animation) != null) {
+                reportMissingResource(layer, animation);
             }
         }
         modifierLayer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeLength, ease), iAnimation, true);
+    }
+
+    private void reportMissingResource(ResourceLocation layer, ResourceLocation animation) {
+        LocalPlayer localPlayer = Minecraft.getInstance().player;
+        if (localPlayer == null) return;
+        localPlayer.sendSystemMessage(SCCKeyLang.AnimationResourceNotFound
+                .get(animation.toString()).withStyle(ChatFormatting.RED));
+        SCCAnimationApi.animation(player).operaData(opera -> opera
+                .removeClientAnim(layer)
+                .removeServerAnim(layer)
+                .endOpera()
+        );
     }
 
     /**

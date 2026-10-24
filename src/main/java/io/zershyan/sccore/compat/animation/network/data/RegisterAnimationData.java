@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import io.zershyan.sccore.SCCore;
+import io.zershyan.sccore.compat.animation.core.ClientAnimationRegistry;
 import io.zershyan.sccore.compat.animation.core.SyncAnimationFactory;
 import io.zershyan.sccore.compat.animation.data.ServerAnimation;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -39,6 +40,9 @@ public record RegisterAnimationData(
     }
 
     public void handler(IPayloadContext context) {
-        context.enqueueWork(() -> SyncAnimationFactory.reloadAnimations(animations()));
+        context.enqueueWork(() -> {
+            SyncAnimationFactory.reloadAnimations(animations());
+            ClientAnimationRegistry.replayPlayerAnimations();
+        });
     }
 }

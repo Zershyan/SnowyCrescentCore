@@ -154,6 +154,18 @@ public class ClientAnimationRegistry {
         }
     }
 
+    /**
+     * 重新应用所有在线玩家的动画栈。
+     *
+     * <p>服务端下发动画定义后调用：登录阶段的 Attachment 同步可能早于注册数据，
+     * 此前因定义缺失而未能播放的动画会在此时补上。</p>
+     */
+    public static void replayPlayerAnimations() {
+        Minecraft instance = Minecraft.getInstance();
+        if (instance.level == null) return;
+        instance.level.players().forEach(ClientAnimationRegistry::reflectAnimationCore);
+    }
+
     private static IAnimation registerPlayerAnimation(AbstractClientPlayer player) {
         return new ModifierLayer<>();
     }
