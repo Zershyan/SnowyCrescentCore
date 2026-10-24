@@ -52,7 +52,7 @@ public class CameraStateSnapShot {
         }
         CameraData absData = calAbsolutionCurrentData(partialTick, firstPerson);
         if (absData == null) absData = CameraData.ZERO;
-        if (cache == null) cache = absData;
+        if (cache == null) cache = CameraData.ZERO;
 
         float deltaTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
         float delta = deltaTicks / 5.0F;
